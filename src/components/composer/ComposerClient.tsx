@@ -625,7 +625,7 @@ export function ComposerClient({
             )}
             {selected.length > 1 && (
               <p className="text-[11px] text-faint">
-                Switch tabs under "Per-platform tweaks" to preview each network.
+                Switch tabs under &ldquo;Per-platform tweaks&rdquo; to preview each network.
               </p>
             )}
           </div>

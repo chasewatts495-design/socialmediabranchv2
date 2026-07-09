@@ -127,7 +127,7 @@ export function DemoControls({ simulateFailures }: { simulateFailures: boolean }
           <p className="text-sm font-medium">Simulate publish failures</p>
           <p className="text-xs text-muted">
             ~1 in 6 demo publishes fails with a retryable error so you can see
-            the queue's retry flow.
+            the queue&apos;s retry flow.
           </p>
         </div>
         <button

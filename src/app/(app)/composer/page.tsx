@@ -35,7 +35,7 @@ export default async function ComposerPage({
       </h1>
       <p className="mb-6 text-xs text-muted md:text-sm">
         One post, every platform — Branch adapts the caption and checks each
-        network's rules before anything goes out.
+        network&apos;s rules before anything goes out.
       </p>
       <ComposerClient accounts={accounts} assets={assets} initial={initial} />
     </div>

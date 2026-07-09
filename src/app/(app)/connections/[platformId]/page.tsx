@@ -153,9 +153,9 @@ export default async function PlatformWizardPage({
         <Card className="p-4 md:p-5">
           <h2 className="text-sm font-semibold">Recording Snapchat stats</h2>
           <p className="mt-1 text-xs leading-relaxed text-muted">
-            Open the account's analytics page and use <strong>Add stats</strong>{" "}
+            Open the account&apos;s analytics page and use <strong>Add stats</strong>{" "}
             for quick entries, or import a CSV export. Composing a post that
-            includes Snapchat creates a "post manually" checklist item in the
+            includes Snapchat creates a &ldquo;post manually&rdquo; checklist item in the
             queue with your caption and media ready to copy.
           </p>
         </Card>

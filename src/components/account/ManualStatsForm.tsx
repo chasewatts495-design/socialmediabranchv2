@@ -45,7 +45,7 @@ export function ManualStatsForm({ accountId }: { accountId: string }) {
           className="mt-4 rounded-2xl border border-border bg-surface-2 p-4 fade-up"
         >
           <p className="mb-3 text-xs text-muted">
-            Copy the numbers from the platform's own insights screen. Existing
+            Copy the numbers from the platform&apos;s own insights screen. Existing
             entries for the same date are overwritten.
           </p>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

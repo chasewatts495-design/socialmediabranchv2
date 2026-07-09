@@ -29,6 +29,7 @@ export default async function SettingsPage() {
   const keyMasked = apiKey
     ? `sk-ant-…${apiKey.slice(-4)}`
     : null;
+  // eslint-disable-next-line react-hooks/purity -- server component; wall-clock staleness is intended
   const tickAge = lastTick ? Date.now() - new Date(lastTick).getTime() : null;
   const tickStale = tickAge === null || tickAge > 15 * 60_000;
 

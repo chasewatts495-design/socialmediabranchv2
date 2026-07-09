@@ -1,0 +1,107 @@
+import { expect, test } from "@playwright/test";
+import { isMobile, login } from "./helpers";
+
+test.describe.configure({ mode: "serial" });
+
+test("password gate blocks wrong password and accepts the right one", async ({ page }) => {
+  await page.goto("/login");
+  await page.locator("#password").fill("wrong-password");
+  await page.locator('button[type="submit"]').click();
+  await expect(page.locator("text=Wrong password")).toBeVisible();
+  await login(page);
+});
+
+test("responsive shell: sidebar on desktop, bottom tabs on mobile", async ({ page }) => {
+  await login(page);
+  const sidebar = page.getByTestId("sidebar-nav");
+  const tabBar = page.getByTestId("bottom-tab-bar");
+  if (isMobile(page)) {
+    await expect(tabBar).toBeVisible();
+    await expect(sidebar).toBeHidden();
+  } else {
+    await expect(sidebar).toBeVisible();
+    await expect(tabBar).toBeHidden();
+  }
+  // No horizontal page scroll at either viewport.
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+});
+
+test("dashboard shows unified analytics from seeded data", async ({ page }) => {
+  await login(page);
+  await expect(page.locator("text=Total followers").first()).toBeVisible();
+  await expect(page.getByTestId("follower-trend")).toBeVisible();
+  await expect(page.getByTestId("engagement-bars")).toBeVisible();
+  // Range toggle changes the query param.
+  await page.locator('a:has-text("7d")').first().click();
+  await page.waitForURL(/range=7/);
+  await expect(page.locator("text=last 7 days").first()).toBeVisible();
+});
+
+test("composer publishes to multiple accounts through demo connectors", async ({ page }) => {
+  await login(page);
+  await page.goto("/composer");
+  // Pick the first media asset.
+  await page.locator('section:has-text("1 · Media") button').first().click();
+  await page
+    .getByTestId("master-caption")
+    .fill(`E2E multi-post ${Date.now()} — hello from the test suite`);
+  // Instagram + Facebook + TikTok.
+  for (const p of ["instagram", "facebook", "tiktok"]) {
+    await page.locator(`[data-testid^="account-toggle-${p}-"]`).first().click();
+  }
+  const publish = page.locator('[data-testid="publish-now"]:visible').first();
+  await expect(publish).toBeEnabled();
+  await publish.click();
+  await expect(page.locator("text=/Published (everywhere|to)/")).toBeVisible({
+    timeout: 60_000,
+  });
+  const published = page.locator("li:has-text('Published')");
+  expect(await published.count()).toBeGreaterThanOrEqual(3);
+});
+
+test("strategist runs a demo report and streams demo chat", async ({ page }) => {
+  await login(page);
+  await page.goto("/strategist");
+  // Reports tab on mobile.
+  if (isMobile(page)) {
+    await page.locator("text=Reports & Ad Builder").click();
+  }
+  await page.locator("text=Weekly review").first().click();
+  await expect(page.locator("text=Demo analysis").first()).toBeVisible({
+    timeout: 60_000,
+  });
+  await expect(page.locator("text=Next week").first()).toBeVisible();
+
+  // Chat (demo mode streams a data-aware reply).
+  if (isMobile(page)) {
+    await page.locator("button:has-text('Chat')").first().click();
+  }
+  await page.getByTestId("chat-input").fill("What is working right now?");
+  await page.locator('button[aria-label="Send"]').click();
+  await expect(page.locator("text=Demo strategist").first()).toBeVisible({
+    timeout: 30_000,
+  });
+});
+
+test("calendar and queue render", async ({ page }) => {
+  await login(page);
+  await page.goto("/calendar");
+  await expect(page.locator("h1:has-text('Calendar')")).toBeVisible();
+  await page.goto("/calendar?tab=queue");
+  // Queue list or empty-state message.
+  await expect(
+    page.getByTestId("queue-list").or(page.getByText("Queue is clear")).first(),
+  ).toBeVisible();
+});
+
+test("connections wizard + capability matrix are honest about Snapchat", async ({ page }) => {
+  await login(page);
+  await page.goto("/connections");
+  await expect(page.locator("text=Capability matrix")).toBeVisible();
+  await expect(page.locator("text=No public API").first()).toBeVisible();
+  await page.goto("/connections/snapchat");
+  await expect(page.locator("text=Why Snapchat is manual")).toBeVisible();
+});

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getDb } from "@/lib/db/client";
 import { PLATFORM_DEFS } from "@/lib/connectors/registry";
-import { PLATFORM_IDS, type PlatformId } from "@/lib/connectors/types";
+import { PLATFORM_IDS } from "@/lib/connectors/types";
 import { Badge, Card, CardHeader } from "@/components/ui/primitives";
 import { AccountAvatar } from "@/components/dashboard/AccountAvatar";
 import { ModeChip } from "@/components/dashboard/PlatformBadge";

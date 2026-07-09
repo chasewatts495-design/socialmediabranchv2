@@ -11,7 +11,8 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border bg-surface",
+        // min-w-0 lets cards shrink inside grid/flex tracks (charts overflow otherwise)
+        "min-w-0 rounded-2xl border border-border bg-surface",
         className,
       )}
     >

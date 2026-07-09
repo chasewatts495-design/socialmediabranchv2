@@ -1,6 +1,6 @@
 import { and, desc, eq, gte } from "drizzle-orm";
 import { getDb } from "./client";
-import { accounts, metricSnapshots, postTargets, posts } from "./schema";
+import { metricSnapshots, postTargets, posts } from "./schema";
 import type { SnapshotRow } from "./queries";
 import { daysAgo } from "@/lib/connectors/demo/generators";
 import { engagementRate } from "@/lib/metrics/engagement";

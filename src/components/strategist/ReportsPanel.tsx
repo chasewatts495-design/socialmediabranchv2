@@ -383,7 +383,7 @@ export function ReportsPanel({
       {adOpen && (
         <div className="rounded-2xl border border-accent/40 bg-surface-2 p-4 fade-up">
           <p className="mb-3 text-xs text-muted">
-            Describe what you're promoting — the strategist builds a
+            Describe what you&apos;re promoting — the strategist builds a
             platform-specific campaign brief with scripts, captions, CTAs, and
             the psychology behind every element.
           </p>
