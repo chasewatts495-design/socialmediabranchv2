@@ -1,0 +1,18 @@
+# Optional: local Postgres if you prefer it over the embedded PGlite database.
+# Run `docker compose up -d`, then set in .env.local:
+#   DATABASE_URL=postgresql://branch:branch@localhost:5432/branch
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: branch
+      POSTGRES_PASSWORD: branch
+      POSTGRES_DB: branch
+    ports:
+      - "5432:5432"
+    volumes:
+      - branch-pgdata:/var/lib/postgresql/data
+
+volumes:
+  branch-pgdata:

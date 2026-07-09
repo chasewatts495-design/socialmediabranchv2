@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0b0e14;
+  --color-surface: #121722;
+  --color-surface-2: #1a2130;
+  --color-surface-3: #222b3d;
+  --color-border: #26304a;
+  --color-ink: #e7ecf5;
+  --color-muted: #94a1b8;
+  --color-faint: #5c6982;
+  --color-accent: #7c5cff;
+  --color-accent-strong: #9b82ff;
+  --color-accent-soft: #251f47;
+  --color-success: #34d399;
+  --color-success-soft: #0d2b22;
+  --color-warning: #fbbf24;
+  --color-warning-soft: #2e2410;
+  --color-danger: #f87171;
+  --color-danger-soft: #331616;
+  --color-info: #60a5fa;
+  --color-info-soft: #12233b;
+
+  --color-p-instagram: #e4405f;
+  --color-p-facebook: #1877f2;
+  --color-p-tiktok: #22d3ee;
+  --color-p-x: #cbd5e1;
+  --color-p-youtube: #ff4d4d;
+  --color-p-reddit: #ff4500;
+  --color-p-pinterest: #e60023;
+  --color-p-snapchat: #fffc00;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-3);
+  border-radius: 6px;
+  border: 2px solid var(--color-bg);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-up {
+  animation: fade-up 0.25s ease-out both;
+}
