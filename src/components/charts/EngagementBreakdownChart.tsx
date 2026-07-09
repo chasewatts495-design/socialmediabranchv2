@@ -1,43 +1,46 @@
 "use client";
 
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import type { PlatformId } from "@/lib/connectors/types";
-import { PLATFORM_CHART_COLORS, PLATFORM_LABELS } from "@/lib/metrics/colors";
 import { formatCompact } from "@/lib/metrics/engagement";
 import { CHART, shortDate } from "./theme";
 
-export function FollowerTrendChart({
+const SERIES = [
+  { key: "likes", label: "Likes", color: "#3d87f5" },
+  { key: "comments", label: "Comments", color: "#0095b0" },
+  { key: "shares", label: "Shares", color: "#8b5cf6" },
+  { key: "saves", label: "Saves", color: "#cc2957" },
+] as const;
+
+export function EngagementBreakdownChart({
   data,
-  platforms,
 }: {
   data: Array<Record<string, number | string>>;
-  platforms: PlatformId[];
 }) {
   return (
     <div>
-      {/* Legend: identity never rides on color alone */}
-      <div className="mb-3 flex gap-3 overflow-x-auto px-1 pb-1 text-[11px] text-muted">
-        {platforms.map((p) => (
-          <span key={p} className="flex shrink-0 items-center gap-1.5">
-            <span
-              className="h-2 w-2 rounded-full"
-              style={{ background: PLATFORM_CHART_COLORS[p] }}
-            />
-            {PLATFORM_LABELS[p]}
+      <div className="mb-3 flex gap-3 overflow-x-auto px-1 text-[11px] text-muted">
+        {SERIES.map((s) => (
+          <span key={s.key} className="flex shrink-0 items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full" style={{ background: s.color }} />
+            {s.label}
           </span>
         ))}
       </div>
-      <div className="h-56 md:h-72" data-testid="follower-trend">
+      <div className="h-48 md:h-56">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+          <BarChart
+            data={data}
+            margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
+            barCategoryGap="35%"
+          >
             <CartesianGrid stroke={CHART.grid} vertical={false} />
             <XAxis
               dataKey="date"
@@ -56,27 +59,24 @@ export function FollowerTrendChart({
             />
             <Tooltip
               {...CHART.tooltip}
+              cursor={{ fill: "#1a213066" }}
               labelFormatter={(l) => shortDate(String(l))}
               formatter={(value, name) => [
                 Number(value).toLocaleString(),
-                PLATFORM_LABELS[name as PlatformId] ?? String(name),
+                SERIES.find((s) => s.key === name)?.label ?? String(name),
               ]}
-              itemSorter={(item) => -Number(item.value ?? 0)}
             />
-            {platforms.map((p) => (
-              <Line
-                key={p}
-                type="monotone"
-                dataKey={p}
-                stroke={PLATFORM_CHART_COLORS[p]}
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, strokeWidth: 0 }}
-                connectNulls
+            {SERIES.map((s, i) => (
+              <Bar
+                key={s.key}
+                dataKey={s.key}
+                stackId="eng"
+                fill={s.color}
                 isAnimationActive={false}
+                radius={i === SERIES.length - 1 ? [4, 4, 0, 0] : undefined}
               />
             ))}
-          </LineChart>
+          </BarChart>
         </ResponsiveContainer>
       </div>
     </div>

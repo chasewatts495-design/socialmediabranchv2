@@ -59,7 +59,7 @@ export function EngagementBarChart({
             cursor={{ fill: "#1a213066" }}
             formatter={(value) => [`${value}%`, "Engagement rate"]}
           />
-          <Bar dataKey="er" maxBarSize={18} radius={[0, 4, 4, 0]}>
+          <Bar dataKey="er" maxBarSize={18} radius={[0, 4, 4, 0]} isAnimationActive={false}>
             <LabelList
               dataKey="er"
               position="right"
