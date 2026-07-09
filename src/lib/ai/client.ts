@@ -1,12 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getSetting, setSetting } from "@/lib/settings";
 
-export const DEFAULT_MODEL = "claude-sonnet-5";
-export const AI_MODELS = [
-  { id: "claude-sonnet-5", label: "Claude Sonnet 5 (recommended)" },
-  { id: "claude-opus-4-8", label: "Claude Opus 4.8 (most capable, pricier)" },
-  { id: "claude-haiku-4-5", label: "Claude Haiku 4.5 (fastest, cheapest)" },
-] as const;
+export { AI_MODELS, DEFAULT_MODEL } from "./models";
+import { DEFAULT_MODEL } from "./models";
 
 /** Client from the owner's stored key; null → demo mode. */
 export async function getAnthropicClient(): Promise<Anthropic | null> {
