@@ -60,6 +60,14 @@ export async function syncAccount(
   });
   if (!account) return { ok: false, upserted: 0, message: "Account not found" };
 
+  if (!account.syncEnabled) {
+    return {
+      ok: true,
+      upserted: 0,
+      message: "Sync is turned off for this account.",
+    };
+  }
+
   const connector = resolveConnector({
     platformId: account.platformId as PlatformId,
     mode: account.mode as "demo" | "live" | "manual",

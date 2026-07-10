@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, isNotNull } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNotNull, isNull, or } from "drizzle-orm";
 import { getDb } from "./client";
 import {
   accounts,
@@ -60,7 +60,10 @@ export interface DashboardData {
   activity: (typeof activityLog.$inferSelect)[];
 }
 
-export async function getDashboardData(rangeDays: number): Promise<DashboardData> {
+export async function getDashboardData(
+  rangeDays: number,
+  brandId?: string,
+): Promise<DashboardData> {
   const db = await getDb();
   const since = daysAgo(rangeDays - 1);
   const sincePrev = daysAgo(rangeDays * 2 - 1);
@@ -68,13 +71,22 @@ export async function getDashboardData(rangeDays: number): Promise<DashboardData
   const accountRows = await db
     .select()
     .from(accounts)
+    .where(brandId ? eq(accounts.brandId, brandId) : undefined)
     .orderBy(accounts.sortOrder);
+  const accountIds = accountRows.map((a) => a.id);
 
-  const snapshots = await db
-    .select()
-    .from(metricSnapshots)
-    .where(gte(metricSnapshots.date, sincePrev))
-    .orderBy(metricSnapshots.date);
+  const snapshots = accountIds.length
+    ? await db
+        .select()
+        .from(metricSnapshots)
+        .where(
+          and(
+            gte(metricSnapshots.date, sincePrev),
+            inArray(metricSnapshots.accountId, accountIds),
+          ),
+        )
+        .orderBy(metricSnapshots.date)
+    : [];
 
   const byAccount = new Map<string, SnapshotRow[]>();
   for (const s of snapshots) {
@@ -204,6 +216,7 @@ export async function getDashboardData(rangeDays: number): Promise<DashboardData
         eq(postTargets.status, "published"),
         isNotNull(postTargets.metrics),
         gte(postTargets.publishedAt, sinceDate),
+        brandId ? eq(accounts.brandId, brandId) : undefined,
       ),
     );
 
@@ -242,9 +255,20 @@ export async function getDashboardData(rangeDays: number): Promise<DashboardData
     )
     .slice(0, 5);
 
+  // Brand scope keeps app-level events (null accountId) visible.
   const activity = await db
     .select()
     .from(activityLog)
+    .where(
+      brandId && accountIds.length
+        ? or(
+            isNull(activityLog.accountId),
+            inArray(activityLog.accountId, accountIds),
+          )
+        : brandId
+          ? isNull(activityLog.accountId)
+          : undefined,
+    )
     .orderBy(desc(activityLog.ts))
     .limit(6);
 
@@ -283,9 +307,10 @@ export async function getDashboardData(rangeDays: number): Promise<DashboardData
   };
 }
 
-export async function getAccountsWithPlatform() {
+export async function getAccountsWithPlatform(brandId?: string) {
   const db = await getDb();
   return db.query.accounts.findMany({
+    where: brandId ? (a, { eq: eq_ }) => eq_(a.brandId, brandId) : undefined,
     with: { platform: true },
     orderBy: (a, { asc }) => asc(a.sortOrder),
   });

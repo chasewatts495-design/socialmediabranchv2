@@ -2,6 +2,7 @@ import { desc } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { activityLog } from "@/lib/db/schema";
 import { getSetting } from "@/lib/settings";
+import { listBrands } from "@/lib/brands";
 import { DEFAULT_MODEL, getAiUsageThisMonth } from "@/lib/ai/client";
 import { storageMode } from "@/lib/storage";
 import { Card, CardHeader, Badge } from "@/components/ui/primitives";
@@ -10,13 +11,14 @@ import {
   DemoControls,
   ModelPicker,
 } from "@/components/settings/SettingsForms";
+import { BrandManager } from "@/components/settings/BrandManager";
 import { relativeTime } from "@/lib/relative-time";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const db = await getDb();
-  const [apiKey, model, simulateFailures, lastTick, usage, activity] =
+  const [apiKey, model, simulateFailures, lastTick, usage, activity, brands, accountRows] =
     await Promise.all([
       getSetting("anthropic.apiKey"),
       getSetting("ai.model"),
@@ -24,6 +26,8 @@ export default async function SettingsPage() {
       getSetting("cron.lastTickAt"),
       getAiUsageThisMonth(),
       db.select().from(activityLog).orderBy(desc(activityLog.ts)).limit(15),
+      listBrands(),
+      db.query.accounts.findMany({ orderBy: (a, { asc }) => asc(a.sortOrder) }),
     ]);
 
   const keyMasked = apiKey
@@ -66,6 +70,30 @@ export default async function SettingsPage() {
               <p className="mt-1">No Claude usage yet this month.</p>
             )}
           </div>
+        </div>
+      </Card>
+
+      <Card id="brands">
+        <CardHeader
+          title="Brands"
+          subtitle="Group accounts by brand and switch between them from the sidebar"
+        />
+        <div className="p-4 md:p-5">
+          <BrandManager
+            brands={brands.map((b) => ({
+              id: b.id,
+              name: b.name,
+              color: b.color,
+              isDemo: b.isDemo,
+              accountCount: b.accountCount,
+            }))}
+            accounts={accountRows.map((a) => ({
+              id: a.id,
+              handle: a.handle,
+              platformId: a.platformId,
+              brandId: a.brandId,
+            }))}
+          />
         </div>
       </Card>
 

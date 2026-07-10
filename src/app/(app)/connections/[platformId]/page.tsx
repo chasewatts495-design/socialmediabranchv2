@@ -7,6 +7,7 @@ import { Badge, Card, CardHeader } from "@/components/ui/primitives";
 import { AccountAvatar } from "@/components/dashboard/AccountAvatar";
 import { ModeChip } from "@/components/dashboard/PlatformBadge";
 import {
+  AccountPermissionToggles,
   AccountRowActions,
   AddAccountForm,
   CredentialForm,
@@ -120,7 +121,12 @@ export default async function PlatformWizardPage({
                   Analytics →
                 </Link>
               </div>
-              <div className="mt-3">
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <AccountPermissionToggles
+                  accountId={a.id}
+                  postingEnabled={a.postingEnabled}
+                  syncEnabled={a.syncEnabled}
+                />
                 <AccountRowActions accountId={a.id} canDelete />
               </div>
               {caps.auth.credentialFields.length > 0 && (

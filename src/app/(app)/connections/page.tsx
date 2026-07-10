@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getDb } from "@/lib/db/client";
+import { brandScope, getActiveBrandId } from "@/lib/brands";
 import { PLATFORM_DEFS } from "@/lib/connectors/registry";
 import { PLATFORM_IDS } from "@/lib/connectors/types";
 import { Badge, Card, CardHeader } from "@/components/ui/primitives";
@@ -25,7 +26,9 @@ const COST_LABEL = {
 
 export default async function ConnectionsPage() {
   const db = await getDb();
+  const brandId = brandScope(await getActiveBrandId());
   const accounts = await db.query.accounts.findMany({
+    where: brandId ? (a, { eq }) => eq(a.brandId, brandId) : undefined,
     orderBy: (a, { asc }) => asc(a.sortOrder),
   });
 

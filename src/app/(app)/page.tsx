@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ensureSeeded } from "@/lib/db/ensure-seeded";
 import { getDashboardData } from "@/lib/db/queries";
+import { brandScope, getActiveBrand, getActiveBrandId } from "@/lib/brands";
 import { Card, CardHeader, StatDelta } from "@/components/ui/primitives";
 import { FollowerTrendChart } from "@/components/charts/FollowerTrendChart";
 import { EngagementBarChart } from "@/components/charts/EngagementBarChart";
@@ -30,7 +31,11 @@ export default async function DashboardPage({
 }) {
   await ensureSeeded();
   const range = parseRange((await searchParams).range);
-  const data = await getDashboardData(range);
+  const activeBrand = await getActiveBrand();
+  const data = await getDashboardData(
+    range,
+    brandScope(await getActiveBrandId()),
+  );
   const t = data.totals;
 
   const statCards = [
@@ -68,7 +73,9 @@ export default async function DashboardPage({
             Dashboard
           </h1>
           <p className="mt-0.5 text-xs text-muted md:text-sm">
-            All {data.accounts.length} accounts · last {range} days
+            {activeBrand ? activeBrand.name : "All brands"} ·{" "}
+            {data.accounts.length} account{data.accounts.length === 1 ? "" : "s"}{" "}
+            · last {range} days
           </p>
         </div>
         <RangeToggle current={range} />

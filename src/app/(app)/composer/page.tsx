@@ -3,6 +3,7 @@ import {
   getComposerAccounts,
   getDraftInitial,
 } from "@/lib/db/composer-queries";
+import { brandScope, getActiveBrandId } from "@/lib/brands";
 import {
   ComposerClient,
   type ComposerInitial,
@@ -17,7 +18,7 @@ export default async function ComposerPage({
 }) {
   const { draft, media } = await searchParams;
   const [accounts, assets] = await Promise.all([
-    getComposerAccounts(),
+    getComposerAccounts(brandScope(await getActiveBrandId())),
     getLibraryAssets(),
   ]);
 

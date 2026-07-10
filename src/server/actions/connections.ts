@@ -10,6 +10,7 @@ import { PLATFORM_IDS, type PlatformId } from "@/lib/connectors/types";
 import { encryptSecret } from "@/lib/crypto/secretbox";
 import { PLATFORM_BADGE_COLORS } from "@/lib/metrics/colors";
 import { syncAccount, contextFor } from "@/lib/scheduler/jobs";
+import { brandScope, getActiveBrandId } from "@/lib/brands";
 import type { ActionResult } from "./accounts";
 
 const uuid = () => crypto.randomUUID();
@@ -39,9 +40,13 @@ export async function addAccountAction(
   const accountId = uuid();
 
   const existingCount = (await db.select({ id: accounts.id }).from(accounts)).length;
+  // New accounts join whichever brand is active ("All brands" → no brand yet,
+  // assignable later from the brand manager).
+  const brandId = brandScope(await getActiveBrandId()) ?? null;
   await db.insert(accounts).values({
     id: accountId,
     platformId,
+    brandId,
     handle: parsed.data.handle,
     displayName: parsed.data.displayName,
     avatarColor: PLATFORM_BADGE_COLORS[platformId],

@@ -3,6 +3,7 @@ import {
   getCalendarPosts,
   getQueueRows,
 } from "@/lib/db/calendar-queries";
+import { brandScope, getActiveBrandId } from "@/lib/brands";
 import { CalendarClient } from "@/components/calendar/CalendarClient";
 import { QueueTable } from "@/components/calendar/QueueTable";
 import { cn } from "@/components/ui/cn";
@@ -26,9 +27,10 @@ export default async function CalendarPage({
   const monthEnd = new Date(monthStart);
   monthEnd.setMonth(monthEnd.getMonth() + 1);
 
+  const brandId = brandScope(await getActiveBrandId());
   const [posts, queue] = await Promise.all([
-    getCalendarPosts(monthStart, monthEnd),
-    getQueueRows(),
+    getCalendarPosts(monthStart, monthEnd, brandId),
+    getQueueRows(brandId),
   ]);
 
   const attention = queue.filter((q) =>

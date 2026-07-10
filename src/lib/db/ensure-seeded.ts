@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import { getDb } from "./client";
+import { getDb, type Db } from "./client";
 import { settings } from "./schema";
-import { runSeed, SEED_VERSION } from "./seed";
+import { clearDemoData, runSeed, SEED_VERSION } from "./seed";
 
 const LOCK_KEY = "seed.lock";
 const VERSION_KEY = "seed.version";
@@ -14,6 +14,14 @@ async function readSetting(key: string) {
     .where(eq(settings.key, key))
     .limit(1);
   return rows[0]?.value ?? null;
+}
+
+/** Re-seed, first clearing an older seed's demo rows so nothing duplicates. */
+async function seedFresh(db: Db) {
+  const existing = await readSetting(VERSION_KEY);
+  if (existing === SEED_VERSION) return;
+  if (existing !== null) await clearDemoData(db);
+  await runSeed(db);
 }
 
 /**
@@ -34,9 +42,7 @@ export async function ensureSeeded(): Promise<void> {
 
   if (claimed.length > 0) {
     try {
-      if ((await readSetting(VERSION_KEY)) !== SEED_VERSION) {
-        await runSeed(db);
-      }
+      await seedFresh(db);
     } finally {
       await db.delete(settings).where(eq(settings.key, LOCK_KEY));
     }
@@ -57,9 +63,7 @@ export async function ensureSeeded(): Promise<void> {
     .returning({ key: settings.key });
   if (reclaim.length > 0) {
     try {
-      if ((await readSetting(VERSION_KEY)) !== SEED_VERSION) {
-        await runSeed(db);
-      }
+      await seedFresh(db);
     } finally {
       await db.delete(settings).where(eq(settings.key, LOCK_KEY));
     }

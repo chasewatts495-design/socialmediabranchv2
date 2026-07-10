@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "./nav";
+import { BrandSwitcher, type BrandOption } from "./BrandSwitcher";
 import { cn } from "@/components/ui/cn";
 import {
   IconCalendar,
@@ -24,7 +25,13 @@ const ICONS = {
   settings: IconSettings,
 };
 
-export function SidebarNav() {
+export function SidebarNav({
+  brands,
+  activeBrandId,
+}: {
+  brands: BrandOption[];
+  activeBrandId: string;
+}) {
   const pathname = usePathname();
 
   return (
@@ -40,6 +47,10 @@ export function SidebarNav() {
           <p className="text-sm font-semibold leading-tight">Branch</p>
           <p className="text-[11px] text-faint">Social command center</p>
         </div>
+      </div>
+
+      <div className="px-3 pb-1">
+        <BrandSwitcher brands={brands} activeBrandId={activeBrandId} />
       </div>
 
       <nav className="mt-2 flex-1 space-y-1 px-3">

@@ -4,12 +4,15 @@ import { cn } from "./cn";
 export function Card({
   children,
   className,
+  id,
 }: {
   children: ReactNode;
   className?: string;
+  id?: string;
 }) {
   return (
     <div
+      id={id}
       className={cn(
         // min-w-0 lets cards shrink inside grid/flex tracks (charts overflow otherwise)
         "min-w-0 rounded-2xl border border-border bg-surface",

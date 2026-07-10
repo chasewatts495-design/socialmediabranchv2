@@ -1,5 +1,6 @@
 import { desc } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
+import { brandScope, getActiveBrandId } from "@/lib/brands";
 import { aiReports } from "@/lib/db/schema";
 import { getSetting } from "@/lib/settings";
 import { ChatPanel, type ChatMessage } from "@/components/strategist/ChatPanel";
@@ -16,6 +17,7 @@ export const dynamic = "force-dynamic";
 
 export default async function StrategistPage() {
   const db = await getDb();
+  const brandId = brandScope(await getActiveBrandId());
 
   const [latestConversation, reportRows, accountRows, apiKey] = await Promise.all([
     db.query.aiConversations.findFirst({
@@ -23,7 +25,10 @@ export default async function StrategistPage() {
       with: { messages: { orderBy: (m, { asc }) => asc(m.createdAt), limit: 60 } },
     }),
     db.select().from(aiReports).orderBy(desc(aiReports.createdAt)).limit(12),
-    db.query.accounts.findMany({ orderBy: (a, { asc }) => asc(a.sortOrder) }),
+    db.query.accounts.findMany({
+      where: brandId ? (a, { eq }) => eq(a.brandId, brandId) : undefined,
+      orderBy: (a, { asc }) => asc(a.sortOrder),
+    }),
     getSetting("anthropic.apiKey"),
   ]);
 

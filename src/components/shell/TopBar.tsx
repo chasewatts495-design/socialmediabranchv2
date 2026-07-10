@@ -2,18 +2,27 @@
 
 import Link from "next/link";
 import { IconPlug, IconSettings } from "@/components/ui/icons";
+import { BrandSwitcher, type BrandOption } from "./BrandSwitcher";
 
-/** Mobile-only top bar: brand + shortcuts that don't fit the tab bar. */
-export function TopBar() {
+/** Mobile-only top bar: brand switcher + shortcuts that don't fit the tab bar. */
+export function TopBar({
+  brands,
+  activeBrandId,
+}: {
+  brands: BrandOption[];
+  activeBrandId: string;
+}) {
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-bg/90 px-4 py-3 backdrop-blur md:hidden">
-      <Link href="/" className="flex items-center gap-2">
+    <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-border bg-bg/90 px-4 py-3 backdrop-blur md:hidden">
+      <Link href="/" className="flex shrink-0 items-center" aria-label="Home">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">
           B
         </span>
-        <span className="text-sm font-semibold">Branch</span>
       </Link>
-      <div className="flex items-center gap-1">
+      <div className="min-w-0 flex-1 max-w-56">
+        <BrandSwitcher brands={brands} activeBrandId={activeBrandId} compact />
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
         <Link
           href="/connections"
           aria-label="Connections"

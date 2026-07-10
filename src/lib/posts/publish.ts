@@ -49,13 +49,38 @@ async function publishSingleTarget(
       platformId: string;
       handle: string;
       mode: string;
+      postingEnabled: boolean;
     };
   },
   fallbackCaption: string,
   media: PublishMedia[],
   simulateFailures: boolean,
-): Promise<"published" | "failed" | "manual_required"> {
+): Promise<"published" | "failed" | "manual_required" | "skipped"> {
   const account = target.account;
+
+  // Permission gate — catches scheduled posts whose account was switched off
+  // after scheduling, and anything that slipped past the composer UI.
+  if (!account.postingEnabled) {
+    await db
+      .update(postTargets)
+      .set({
+        status: "skipped",
+        errorCode: "POSTING_DISABLED",
+        errorMessage:
+          "Posting is turned off for this account — enable it in Connections.",
+        lastAttemptAt: new Date(),
+      })
+      .where(eq(postTargets.id, target.id));
+    await db.insert(activityLog).values({
+      id: uuid(),
+      event: "post.skipped_permission",
+      level: "warn",
+      accountId: account.id,
+      detail: { targetId: target.id },
+    });
+    return "skipped";
+  }
+
   const connector = resolveConnector(
     {
       platformId: account.platformId as PlatformId,

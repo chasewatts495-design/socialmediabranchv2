@@ -1,8 +1,9 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import type { Db } from "./client";
 import {
   accounts,
   activityLog,
+  brands,
   mediaAssets,
   metricSnapshots,
   platforms,
@@ -25,8 +26,10 @@ import {
   profileFor,
 } from "@/lib/connectors/demo/profiles";
 
-export const SEED_VERSION = "1";
+export const SEED_VERSION = "2";
 const HISTORY_DAYS = 90;
+
+export const DEMO_BRAND_ID = "brand-demo";
 
 const uuid = () => crypto.randomUUID();
 
@@ -210,6 +213,18 @@ export async function runSeed(db: Db): Promise<void> {
   // Platforms (idempotent).
   await db.insert(platforms).values(PLATFORM_ROWS).onConflictDoNothing();
 
+  // The demo brand every seeded account belongs to (idempotent).
+  await db
+    .insert(brands)
+    .values({
+      id: DEMO_BRAND_ID,
+      name: "Demo Brand",
+      color: "#b08a2e",
+      isDemo: true,
+      sortOrder: 0,
+    })
+    .onConflictDoNothing();
+
   // Demo media assets.
   const assetIds: string[] = [];
   const assetRows = GRADIENTS.map(([label, from, to], i) => {
@@ -243,6 +258,7 @@ export async function runSeed(db: Db): Promise<void> {
     await db.insert(accounts).values({
       id: accountId,
       platformId: def.platformId,
+      brandId: DEMO_BRAND_ID,
       handle: def.handle,
       displayName: def.displayName,
       avatarColor: def.avatarColor,
@@ -406,12 +422,19 @@ export async function runSeed(db: Db): Promise<void> {
   await db
     .insert(settings)
     .values([
-      { key: "seed.version", value: SEED_VERSION },
       { key: "ai.model", value: "claude-sonnet-5" },
       { key: "demo.simulateFailures", value: "false" },
       { key: "app.timezone", value: "UTC" },
     ])
     .onConflictDoNothing();
+  // The version row must reflect THIS seed even after an upgrade re-seed.
+  await db
+    .insert(settings)
+    .values({ key: "seed.version", value: SEED_VERSION })
+    .onConflictDoUpdate({
+      target: settings.key,
+      set: { value: SEED_VERSION, updatedAt: new Date() },
+    });
 }
 
 /** Deletes demo-sourced rows so the seed can run again. */
@@ -421,18 +444,31 @@ export async function clearDemoData(db: Db): Promise<void> {
     .from(accounts)
     .where(inArray(accounts.mode, ["demo", "manual"]));
   const ids = demoAccounts.map((a) => a.id);
+  let postIds: string[] = [];
   if (ids.length) {
     const targets = await db
       .select({ postId: postTargets.postId })
       .from(postTargets)
       .where(inArray(postTargets.accountId, ids));
-    const postIds = [...new Set(targets.map((t) => t.postId))];
+    postIds = [...new Set(targets.map((t) => t.postId))];
     if (postIds.length) {
       await db.delete(posts).where(inArray(posts.id, postIds));
     }
     await db.delete(accounts).where(inArray(accounts.id, ids));
   }
   await db.delete(mediaAssets).where(eq(mediaAssets.source, "demo"));
-  await db.delete(scheduleJobs).where(eq(scheduleJobs.status, "pending"));
+  // Only drop pending jobs that referenced the deleted demo rows — live
+  // accounts keep their scheduled work.
+  const staleRefs = [...ids, ...postIds];
+  if (staleRefs.length) {
+    await db
+      .delete(scheduleJobs)
+      .where(
+        and(
+          eq(scheduleJobs.status, "pending"),
+          inArray(scheduleJobs.refId, staleRefs),
+        ),
+      );
+  }
   await db.delete(settings).where(eq(settings.key, "seed.version"));
 }

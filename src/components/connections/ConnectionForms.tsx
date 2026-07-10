@@ -9,8 +9,99 @@ import {
   testConnectionAction,
 } from "@/server/actions/connections";
 import type { ActionResult } from "@/server/actions/accounts";
+import { setAccountPermissionAction } from "@/server/actions/accounts";
 import { cn } from "@/components/ui/cn";
 import { Spinner } from "@/components/ui/primitives";
+
+function PermissionSwitch({
+  label,
+  enabled,
+  busy,
+  onToggle,
+  testId,
+}: {
+  label: string;
+  enabled: boolean;
+  busy: boolean;
+  onToggle: () => void;
+  testId: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={enabled}
+      aria-label={label}
+      data-testid={testId}
+      disabled={busy}
+      onClick={onToggle}
+      className={cn(
+        "flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition",
+        enabled
+          ? "border-success/40 bg-success-soft text-success"
+          : "border-border bg-surface text-muted",
+        busy && "opacity-60",
+      )}
+    >
+      <span
+        className={cn(
+          "relative h-4 w-7 shrink-0 rounded-full transition-colors",
+          enabled ? "bg-success" : "bg-faint/40",
+        )}
+      >
+        <span
+          className={cn(
+            "absolute top-0.5 left-0.5 h-3 w-3 rounded-full bg-white transition-transform duration-150",
+            enabled && "translate-x-3",
+          )}
+        />
+      </span>
+      {label}
+    </button>
+  );
+}
+
+/** Per-account switches for what Branch is allowed to do. */
+export function AccountPermissionToggles({
+  accountId,
+  postingEnabled,
+  syncEnabled,
+}: {
+  accountId: string;
+  postingEnabled: boolean;
+  syncEnabled: boolean;
+}) {
+  const [pending, start] = useTransition();
+  // Optimistic local state so the switch flips instantly.
+  const [posting, setPosting] = useState(postingEnabled);
+  const [sync, setSync] = useState(syncEnabled);
+
+  const toggle = (kind: "posting" | "sync") => {
+    const next = kind === "posting" ? !posting : !sync;
+    if (kind === "posting") setPosting(next);
+    else setSync(next);
+    start(() => setAccountPermissionAction(accountId, kind, next));
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <PermissionSwitch
+        label="Posting"
+        enabled={posting}
+        busy={pending}
+        onToggle={() => toggle("posting")}
+        testId={`perm-posting-${accountId.slice(0, 4)}`}
+      />
+      <PermissionSwitch
+        label="Stats sync"
+        enabled={sync}
+        busy={pending}
+        onToggle={() => toggle("sync")}
+        testId={`perm-sync-${accountId.slice(0, 4)}`}
+      />
+    </div>
+  );
+}
 
 export function AddAccountForm({ platformId }: { platformId: PlatformId }) {
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(

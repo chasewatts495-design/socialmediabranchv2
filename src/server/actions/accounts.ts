@@ -1,12 +1,36 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/lib/db/client";
-import { activityLog, metricSnapshots } from "@/lib/db/schema";
+import { accounts, activityLog, metricSnapshots } from "@/lib/db/schema";
 import { syncAccount } from "@/lib/scheduler/jobs";
 
 const uuid = () => crypto.randomUUID();
+
+/** Per-account permission switches: what Branch may do with this account. */
+export async function setAccountPermissionAction(
+  accountId: string,
+  permission: "posting" | "sync",
+  enabled: boolean,
+): Promise<void> {
+  const db = await getDb();
+  await db
+    .update(accounts)
+    .set(
+      permission === "posting"
+        ? { postingEnabled: enabled }
+        : { syncEnabled: enabled },
+    )
+    .where(eq(accounts.id, accountId));
+  await db.insert(activityLog).values({
+    id: uuid(),
+    event: `account.permission.${permission}_${enabled ? "on" : "off"}`,
+    accountId,
+  });
+  revalidatePath("/", "layout");
+}
 
 export async function syncNowAction(accountId: string): Promise<void> {
   const db = await getDb();

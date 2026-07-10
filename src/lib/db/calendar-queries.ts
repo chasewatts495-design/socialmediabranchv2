@@ -8,6 +8,7 @@ export interface CalendarPost {
   caption: string;
   status: string;
   at: string; // ISO — scheduledAt or publishedAt
+  recycled: boolean;
   platforms: PlatformId[];
   targetCount: number;
 }
@@ -32,6 +33,7 @@ export interface QueueRow {
 export async function getCalendarPosts(
   monthStart: Date,
   monthEnd: Date,
+  brandId?: string,
 ): Promise<CalendarPost[]> {
   const db = await getDb();
   const rows = await db.query.posts.findMany({
@@ -43,6 +45,12 @@ export async function getCalendarPosts(
     with: { targets: { with: { account: true } } },
   });
   return rows
+    .filter(
+      (p) =>
+        !brandId ||
+        p.targets.length === 0 || // brand-less drafts stay visible
+        p.targets.some((t) => t.account.brandId === brandId),
+    )
     .map((p) => {
       const at = (p.status === "scheduled" ? p.scheduledAt : p.publishedAt) ??
         p.scheduledAt ??
@@ -53,6 +61,7 @@ export async function getCalendarPosts(
         caption: p.caption,
         status: p.status,
         at: at.toISOString(),
+        recycled: Boolean(p.recycledFromPostId),
         platforms: [
           ...new Set(p.targets.map((t) => t.account.platformId as PlatformId)),
         ],
@@ -63,7 +72,7 @@ export async function getCalendarPosts(
     .sort((a, b) => a.at.localeCompare(b.at));
 }
 
-export async function getQueueRows(): Promise<QueueRow[]> {
+export async function getQueueRows(brandId?: string): Promise<QueueRow[]> {
   const db = await getDb();
   const rows = await db
     .select({ target: postTargets, post: posts, account: accounts })
@@ -71,12 +80,15 @@ export async function getQueueRows(): Promise<QueueRow[]> {
     .innerJoin(posts, eq(postTargets.postId, posts.id))
     .innerJoin(accounts, eq(postTargets.accountId, accounts.id))
     .where(
-      or(
-        eq(postTargets.status, "queued"),
-        eq(postTargets.status, "publishing"),
-        eq(postTargets.status, "failed"),
-        eq(postTargets.status, "manual_required"),
-        eq(postTargets.status, "skipped"),
+      and(
+        or(
+          eq(postTargets.status, "queued"),
+          eq(postTargets.status, "publishing"),
+          eq(postTargets.status, "failed"),
+          eq(postTargets.status, "manual_required"),
+          eq(postTargets.status, "skipped"),
+        ),
+        brandId ? eq(accounts.brandId, brandId) : undefined,
       ),
     )
     .orderBy(desc(posts.updatedAt))

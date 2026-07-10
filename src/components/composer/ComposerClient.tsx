@@ -25,6 +25,7 @@ export interface ComposerAccount {
   displayName: string;
   avatarColor: string;
   mode: string;
+  postingEnabled: boolean;
 }
 
 export interface ComposerInitial {
@@ -420,20 +421,24 @@ export function ComposerClient({
           const def = PLATFORM_DEFS[a.platformId];
           const checked = selected.includes(a.id);
           const manual = a.mode === "manual" || !def.capabilities.canPublish;
+          const disabled = !a.postingEnabled;
           const issues = validationByAccount.get(a.id) ?? [];
           const hasError = checked && issues.some((i) => i.level === "error");
           return (
             <button
               key={a.id}
-              onClick={() => toggleAccount(a.id)}
+              onClick={() => !disabled && toggleAccount(a.id)}
+              disabled={disabled}
               data-testid={`account-toggle-${a.platformId}-${a.id.slice(0, 4)}`}
               className={cn(
                 "flex min-h-14 items-center gap-3 rounded-2xl border p-3 text-left transition",
-                checked
-                  ? hasError
-                    ? "border-danger/60 bg-danger-soft/30"
-                    : "border-accent bg-accent-soft/40"
-                  : "border-border bg-surface hover:border-faint",
+                disabled
+                  ? "cursor-not-allowed border-border bg-surface opacity-50"
+                  : checked
+                    ? hasError
+                      ? "border-danger/60 bg-danger-soft/30"
+                      : "border-accent bg-accent-soft/40"
+                    : "border-border bg-surface hover:border-faint",
               )}
             >
               <span
@@ -452,8 +457,16 @@ export function ComposerClient({
                 </span>
                 <span className="mt-0.5 flex items-center gap-2">
                   <PlatformBadge platformId={a.platformId} />
-                  {manual && (
-                    <span className="text-[10px] text-warning">manual checklist</span>
+                  {disabled ? (
+                    <span className="text-[10px] text-warning">
+                      posting off — enable in Connections
+                    </span>
+                  ) : (
+                    manual && (
+                      <span className="text-[10px] text-warning">
+                        manual checklist
+                      </span>
+                    )
                   )}
                 </span>
               </span>

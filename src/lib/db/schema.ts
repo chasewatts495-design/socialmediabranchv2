@@ -25,6 +25,17 @@ export const platforms = pgTable("platforms", {
   sortOrder: integer("sort_order").notNull().default(0),
 });
 
+/* ── Brands ────────────────────────────────────────────────────────────── */
+
+export const brands = pgTable("brands", {
+  id: id().primaryKey(),
+  name: text("name").notNull(),
+  color: text("color").notNull().default("#b08a2e"),
+  isDemo: boolean("is_demo").notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: createdAt(),
+});
+
 /* ── Accounts & credentials ────────────────────────────────────────────── */
 
 export const accounts = pgTable(
@@ -34,18 +45,26 @@ export const accounts = pgTable(
     platformId: text("platform_id")
       .notNull()
       .references(() => platforms.id),
+    brandId: text("brand_id").references(() => brands.id, {
+      onDelete: "set null",
+    }),
     handle: text("handle").notNull(),
     displayName: text("display_name").notNull(),
     avatarColor: text("avatar_color").notNull().default("#7c5cff"),
     mode: text("mode").notNull().default("demo"), // demo | live | manual
     status: text("status").notNull().default("connected"), // connected | error | disconnected
     timezone: text("timezone").notNull().default("UTC"),
+    postingEnabled: boolean("posting_enabled").notNull().default(true),
+    syncEnabled: boolean("sync_enabled").notNull().default(true),
     lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
     syncError: text("sync_error"),
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: createdAt(),
   },
-  (t) => [index("accounts_platform_idx").on(t.platformId)],
+  (t) => [
+    index("accounts_platform_idx").on(t.platformId),
+    index("accounts_brand_idx").on(t.brandId),
+  ],
 );
 
 export const credentials = pgTable("credentials", {
@@ -125,6 +144,7 @@ export const posts = pgTable("posts", {
   publishedAt: timestamp("published_at", { withTimezone: true }),
   aiGenerated: boolean("ai_generated").notNull().default(false),
   sourceReportId: text("source_report_id"),
+  recycledFromPostId: text("recycled_from_post_id"),
   createdAt: createdAt(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
@@ -170,6 +190,8 @@ export const postTargets = pgTable(
       .$type<Record<string, unknown>>()
       .notNull()
       .default(sql`'{}'::jsonb`),
+    /** Per-platform schedule override; null → use the post's scheduledAt. */
+    scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
     // pending | queued | publishing | published | failed | skipped | manual_required
     status: text("status").notNull().default("pending"),
     externalPostId: text("external_post_id"),
@@ -189,13 +211,35 @@ export const postTargets = pgTable(
   ],
 );
 
+/* ── Content recycling ─────────────────────────────────────────────────── */
+
+export const recycleRules = pgTable(
+  "recycle_rules",
+  {
+    id: id().primaryKey(),
+    accountId: text("account_id")
+      .notNull()
+      .unique()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    enabled: boolean("enabled").notNull().default(false),
+    everyHours: integer("every_hours").notNull().default(72),
+    noRepeatDays: integer("no_repeat_days").notNull().default(30),
+    windowStartHour: integer("window_start_hour").notNull().default(9),
+    windowEndHour: integer("window_end_hour").notNull().default(21),
+    freshenCaption: boolean("freshen_caption").notNull().default(false),
+    lastPickedAt: timestamp("last_picked_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("recycle_rules_account_idx").on(t.accountId)],
+);
+
 /* ── Background jobs ───────────────────────────────────────────────────── */
 
 export const scheduleJobs = pgTable(
   "schedule_jobs",
   {
     id: id().primaryKey(),
-    kind: text("kind").notNull(), // publish_post | sync_stats | ai_report
+    kind: text("kind").notNull(), // publish_post | sync_stats | ai_report | recycle_pick
     refId: text("ref_id").notNull(),
     runAt: timestamp("run_at", { withTimezone: true }).notNull(),
     status: text("status").notNull().default("pending"), // pending | running | done | failed | canceled
@@ -284,17 +328,36 @@ export const platformsRelations = relations(platforms, ({ many }) => ({
   accounts: many(accounts),
 }));
 
+export const brandsRelations = relations(brands, ({ many }) => ({
+  accounts: many(accounts),
+}));
+
 export const accountsRelations = relations(accounts, ({ one, many }) => ({
   platform: one(platforms, {
     fields: [accounts.platformId],
     references: [platforms.id],
   }),
+  brand: one(brands, {
+    fields: [accounts.brandId],
+    references: [brands.id],
+  }),
   credential: one(credentials, {
     fields: [accounts.id],
     references: [credentials.accountId],
   }),
+  recycleRule: one(recycleRules, {
+    fields: [accounts.id],
+    references: [recycleRules.accountId],
+  }),
   snapshots: many(metricSnapshots),
   targets: many(postTargets),
+}));
+
+export const recycleRulesRelations = relations(recycleRules, ({ one }) => ({
+  account: one(accounts, {
+    fields: [recycleRules.accountId],
+    references: [accounts.id],
+  }),
 }));
 
 export const credentialsRelations = relations(credentials, ({ one }) => ({

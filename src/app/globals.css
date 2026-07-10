@@ -141,12 +141,27 @@ body {
   animation: branch-step-back 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+@keyframes brand-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.brand-pop {
+  animation: brand-pop 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .branch-stream,
   .branch-stream-slow,
   .branch-node-active,
   .branch-step-fwd,
-  .branch-step-back {
+  .branch-step-back,
+  .brand-pop {
     animation: none;
   }
 }

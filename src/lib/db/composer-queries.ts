@@ -5,9 +5,12 @@ import type {
 } from "@/components/composer/ComposerClient";
 import type { PlatformId } from "@/lib/connectors/types";
 
-export async function getComposerAccounts(): Promise<ComposerAccount[]> {
+export async function getComposerAccounts(
+  brandId?: string,
+): Promise<ComposerAccount[]> {
   const db = await getDb();
   const rows = await db.query.accounts.findMany({
+    where: brandId ? (a, { eq }) => eq(a.brandId, brandId) : undefined,
     orderBy: (a, { asc }) => asc(a.sortOrder),
   });
   return rows.map((a) => ({
@@ -17,6 +20,7 @@ export async function getComposerAccounts(): Promise<ComposerAccount[]> {
     displayName: a.displayName,
     avatarColor: a.avatarColor,
     mode: a.mode,
+    postingEnabled: a.postingEnabled,
   }));
 }
 

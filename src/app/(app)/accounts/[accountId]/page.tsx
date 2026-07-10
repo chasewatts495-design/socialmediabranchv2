@@ -10,6 +10,7 @@ import { EngagementBreakdownChart } from "@/components/charts/EngagementBreakdow
 import { AccountPostsTable } from "@/components/account/AccountPostsTable";
 import { ManualStatsForm } from "@/components/account/ManualStatsForm";
 import { CsvImport } from "@/components/account/CsvImport";
+import { AccountPermissionToggles } from "@/components/connections/ConnectionForms";
 import { syncNowAction } from "@/server/actions/accounts";
 import { PLATFORM_CHART_COLORS } from "@/lib/metrics/colors";
 import {
@@ -112,6 +113,17 @@ export default async function AccountPage({
           </div>
         </div>
       </div>
+
+      <Card className="flex flex-wrap items-center justify-between gap-3 p-3 md:p-4">
+        <p className="text-xs text-muted">
+          What Branch may do with this account
+        </p>
+        <AccountPermissionToggles
+          accountId={account.id}
+          postingEnabled={account.postingEnabled}
+          syncEnabled={account.syncEnabled}
+        />
+      </Card>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {kpis.map((k) => (
