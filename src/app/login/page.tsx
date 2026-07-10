@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { AUTH_COOKIE, authToken } from "@/lib/auth-token";
+import { BranchBackdrop } from "@/components/branch/BranchBackdrop";
 
 async function login(formData: FormData) {
   "use server";
@@ -29,8 +30,9 @@ export default async function LoginPage({
   if (!process.env.APP_PASSWORD) redirect("/");
 
   return (
-    <main className="flex min-h-dvh items-center justify-center px-4">
-      <div className="w-full max-w-sm fade-up">
+    <main className="relative flex min-h-dvh items-center justify-center px-4">
+      <BranchBackdrop opacity={0.18} />
+      <div className="relative w-full max-w-sm fade-up">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-2xl font-bold text-white">
             B

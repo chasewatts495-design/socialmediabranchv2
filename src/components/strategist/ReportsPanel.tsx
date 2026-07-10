@@ -15,6 +15,8 @@ import { PLATFORM_IDS } from "@/lib/connectors/types";
 import { applyPlanAction, startReportAction } from "@/server/actions/ai";
 import { PLATFORM_LABELS } from "@/lib/metrics/colors";
 import { Badge, Spinner } from "@/components/ui/primitives";
+import { BranchProgress } from "@/components/branch/BranchProgress";
+import { BranchTransition } from "@/components/branch/BranchTransition";
 import { cn } from "@/components/ui/cn";
 import { relativeTime } from "@/lib/relative-time";
 
@@ -311,6 +313,8 @@ export function ReportsPanel({
   const [pendingType, setPendingType] = useState<ReportType | null>(null);
   const [ideasPlatform, setIdeasPlatform] = useState<PlatformId>("instagram");
   const [adOpen, setAdOpen] = useState(false);
+  const [adStep, setAdStep] = useState(0);
+  const [adDirection, setAdDirection] = useState<1 | -1>(1);
   const [adProduct, setAdProduct] = useState("");
   const [adGoal, setAdGoal] = useState("sales");
   const [adAccounts, setAdAccounts] = useState<string[]>([]);
@@ -382,73 +386,134 @@ export function ReportsPanel({
 
       {adOpen && (
         <div className="rounded-2xl border border-accent/40 bg-surface-2 p-4 fade-up">
-          <p className="mb-3 text-xs text-muted">
-            Describe what you&apos;re promoting — the strategist builds a
-            platform-specific campaign brief with scripts, captions, CTAs, and
-            the psychology behind every element.
-          </p>
-          <div className="space-y-3">
-            <input
-              value={adProduct}
-              onChange={(e) => setAdProduct(e.target.value)}
-              placeholder="Product / offer (e.g. 'Autumn capsule collection — 20% launch discount')"
-              className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm outline-none placeholder:text-faint focus:border-accent"
-              data-testid="ad-product"
-            />
-            <div className="flex flex-wrap gap-2">
-              {["sales", "reach", "followers", "signups"].map((g) => (
+          <BranchProgress
+            steps={[
+              { key: "offer", label: "Offer" },
+              { key: "audience", label: "Audience" },
+              { key: "launch", label: "Build" },
+            ]}
+            current={adStep}
+            direction={adDirection}
+            onStepClick={(i) => {
+              setAdDirection(i >= adStep ? 1 : -1);
+              setAdStep(i);
+            }}
+            className="mb-4"
+          />
+          <BranchTransition step={adStep} direction={adDirection}>
+            {adStep === 0 && (
+              <div className="space-y-3">
+                <p className="text-xs text-muted">
+                  What are you promoting? The strategist builds a
+                  platform-specific campaign brief with scripts, captions,
+                  CTAs, and the psychology behind every element.
+                </p>
+                <input
+                  value={adProduct}
+                  onChange={(e) => setAdProduct(e.target.value)}
+                  placeholder="Product / offer (e.g. 'Autumn capsule collection — 20% launch discount')"
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm outline-none placeholder:text-faint focus:border-accent"
+                  data-testid="ad-product"
+                />
+              </div>
+            )}
+            {adStep === 1 && (
+              <div className="space-y-3">
+                <p className="text-xs text-muted">Campaign goal:</p>
+                <div className="flex flex-wrap gap-2">
+                  {["sales", "reach", "followers", "signups"].map((g) => (
+                    <button
+                      key={g}
+                      onClick={() => setAdGoal(g)}
+                      className={cn(
+                        "rounded-lg px-3 py-1.5 text-xs capitalize transition",
+                        adGoal === g ? "bg-accent text-white" : "bg-surface-3 text-muted",
+                      )}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted">Which accounts run it?</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {accounts.map((a) => (
+                    <button
+                      key={a.id}
+                      onClick={() =>
+                        setAdAccounts((cur) =>
+                          cur.includes(a.id)
+                            ? cur.filter((id) => id !== a.id)
+                            : [...cur, a.id],
+                        )
+                      }
+                      className={cn(
+                        "rounded-lg border px-2.5 py-1.5 text-[11px] transition",
+                        adAccounts.includes(a.id)
+                          ? "border-accent bg-accent-soft text-accent-strong"
+                          : "border-border bg-surface text-muted",
+                      )}
+                    >
+                      {a.handle}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {adStep === 2 && (
+              <div className="space-y-3">
+                <p className="text-xs text-muted">
+                  <span className="font-medium text-ink">{adProduct || "(no offer yet)"}</span>
+                  {" · "}goal: {adGoal}
+                  {" · "}
+                  {adAccounts.length || "all auto"} account
+                  {adAccounts.length === 1 ? "" : "s"}
+                </p>
                 <button
-                  key={g}
-                  onClick={() => setAdGoal(g)}
-                  className={cn(
-                    "rounded-lg px-3 py-1.5 text-xs capitalize transition",
-                    adGoal === g ? "bg-accent text-white" : "bg-surface-3 text-muted",
-                  )}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {accounts.map((a) => (
-                <button
-                  key={a.id}
                   onClick={() =>
-                    setAdAccounts((cur) =>
-                      cur.includes(a.id)
-                        ? cur.filter((id) => id !== a.id)
-                        : [...cur, a.id],
-                    )
+                    run("ad_brief", {
+                      product: adProduct,
+                      goal: adGoal,
+                      accountIds: adAccounts,
+                    })
                   }
-                  className={cn(
-                    "rounded-lg border px-2.5 py-1.5 text-[11px] transition",
-                    adAccounts.includes(a.id)
-                      ? "border-accent bg-accent-soft text-accent-strong"
-                      : "border-border bg-surface text-muted",
-                  )}
+                  disabled={!adProduct.trim() || pendingType !== null}
+                  className="rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-strong disabled:opacity-50"
+                  data-testid="ad-build"
                 >
-                  {a.handle}
+                  {pendingType === "ad_brief" ? (
+                    <Spinner className="border-white/40 border-t-white" />
+                  ) : (
+                    "Build campaign brief"
+                  )}
                 </button>
-              ))}
-            </div>
-            <button
-              onClick={() =>
-                run("ad_brief", {
-                  product: adProduct,
-                  goal: adGoal,
-                  accountIds: adAccounts,
-                })
-              }
-              disabled={!adProduct.trim() || pendingType !== null}
-              className="rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-strong disabled:opacity-50"
-              data-testid="ad-build"
-            >
-              {pendingType === "ad_brief" ? (
-                <Spinner className="border-white/40 border-t-white" />
-              ) : (
-                "Build campaign brief"
-              )}
-            </button>
+              </div>
+            )}
+          </BranchTransition>
+          <div className="mt-4 flex items-center gap-2">
+            {adStep > 0 && (
+              <button
+                onClick={() => {
+                  setAdDirection(-1);
+                  setAdStep(adStep - 1);
+                }}
+                className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted hover:bg-surface-3"
+              >
+                ← Back
+              </button>
+            )}
+            {adStep < 2 && (
+              <button
+                onClick={() => {
+                  setAdDirection(1);
+                  setAdStep(adStep + 1);
+                }}
+                disabled={adStep === 0 && !adProduct.trim()}
+                className="rounded-lg bg-accent px-4 py-1.5 text-xs font-semibold text-white hover:bg-accent-strong disabled:opacity-50"
+                data-testid="ad-next"
+              >
+                Next →
+              </button>
+            )}
           </div>
         </div>
       )}

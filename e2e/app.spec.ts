@@ -40,18 +40,34 @@ test("dashboard shows unified analytics from seeded data", async ({ page }) => {
   await expect(page.locator("text=last 7 days").first()).toBeVisible();
 });
 
-test("composer publishes to multiple accounts through demo connectors", async ({ page }) => {
+test("composer walks the branch stepper and publishes to multiple accounts", async ({ page }) => {
   await login(page);
   await page.goto("/composer");
-  // Pick the first media asset.
-  await page.locator('section:has-text("1 · Media") button').first().click();
+  await expect(page.getByTestId("branch-progress")).toBeVisible();
+
+  const next = () =>
+    page
+      .locator('[data-testid="step-next"]:visible, .fixed button:has-text("Next")')
+      .first()
+      .click();
+
+  // Step 1: Media — pick the first asset.
+  await page.locator('section:has-text("Pick your media") button').first().click();
+  await next();
+  // Step 2: Caption.
   await page
     .getByTestId("master-caption")
     .fill(`E2E multi-post ${Date.now()} — hello from the test suite`);
-  // Instagram + Facebook + TikTok.
+  await next();
+  // Step 3: Accounts — Instagram + Facebook + TikTok.
   for (const p of ["instagram", "facebook", "tiktok"]) {
     await page.locator(`[data-testid^="account-toggle-${p}-"]`).first().click();
   }
+  await next();
+  // Step 4: Fine-tune (auto variants are fine).
+  await expect(page.getByTestId("variant-caption")).toBeVisible();
+  await next();
+  // Step 5: Launch.
   const publish = page.locator('[data-testid="publish-now"]:visible').first();
   await expect(publish).toBeEnabled();
   await publish.click();

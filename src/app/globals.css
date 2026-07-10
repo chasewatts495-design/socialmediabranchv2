@@ -70,3 +70,83 @@ body {
 .fade-up {
   animation: fade-up 0.25s ease-out both;
 }
+
+/* ── Branch system: glowing streams + node transitions ─────────────────── */
+
+@keyframes branch-flow {
+  to {
+    stroke-dashoffset: -160;
+  }
+}
+.branch-stream {
+  stroke-dasharray: 10 14;
+  animation: branch-flow 3.5s linear infinite;
+}
+.branch-stream-slow {
+  stroke-dasharray: 5 13;
+  animation: branch-flow 16s linear infinite;
+}
+
+@keyframes branch-node-pulse {
+  0%,
+  100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.branch-node-active {
+  animation: branch-node-pulse 2.2s ease-in-out infinite;
+}
+
+.branch-glow {
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.85));
+}
+.branch-glow-soft {
+  filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.4));
+}
+.branch-glow-magenta {
+  filter: drop-shadow(0 0 5px rgba(192, 38, 211, 0.7));
+}
+
+@keyframes branch-step-fwd {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+@keyframes branch-step-back {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+.branch-step-fwd {
+  animation: branch-step-fwd 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.branch-step-back {
+  animation: branch-step-back 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .branch-stream,
+  .branch-stream-slow,
+  .branch-node-active,
+  .branch-step-fwd,
+  .branch-step-back {
+    animation: none;
+  }
+}
