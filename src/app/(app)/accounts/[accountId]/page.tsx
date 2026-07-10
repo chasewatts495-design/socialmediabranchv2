@@ -12,6 +12,7 @@ import { EngagementBreakdownChart } from "@/components/charts/EngagementBreakdow
 import { AccountPostsTable } from "@/components/account/AccountPostsTable";
 import { ManualStatsForm } from "@/components/account/ManualStatsForm";
 import { CsvImport } from "@/components/account/CsvImport";
+import { HourHeatmap } from "@/components/account/HourHeatmap";
 import { AccountPermissionToggles } from "@/components/connections/ConnectionForms";
 import { syncNowAction } from "@/server/actions/accounts";
 import { PLATFORM_CHART_COLORS } from "@/lib/metrics/colors";
@@ -106,6 +107,13 @@ export default async function AccountPage({
                 </button>
               </form>
             )}
+            <a
+              href={`/api/accounts/${account.id}/export`}
+              download
+              className="rounded-xl border border-border bg-surface-2 px-4 py-2 text-sm font-medium transition hover:bg-surface-3"
+            >
+              Export CSV
+            </a>
             <Link
               href={`/connections/${account.platformId}`}
               className="rounded-xl border border-border bg-surface-2 px-4 py-2 text-sm font-medium transition hover:bg-surface-3"
@@ -189,6 +197,14 @@ export default async function AccountPage({
         <div className="p-4 md:p-5">
           <EngagementBreakdownChart data={series} />
         </div>
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="When this account hits hardest"
+          subtitle="Average engagement rate by publish hour (UTC)"
+        />
+        <HourHeatmap posts={posts} />
       </Card>
 
       <Card>

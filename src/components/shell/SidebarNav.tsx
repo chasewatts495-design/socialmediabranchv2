@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "./nav";
 import { BrandSwitcher, type BrandOption } from "./BrandSwitcher";
+import { NotificationsBell } from "./NotificationsBell";
+import type { NotificationsData } from "@/lib/notifications";
 import { cn } from "@/components/ui/cn";
 import {
   IconCalendar,
@@ -28,9 +30,11 @@ const ICONS = {
 export function SidebarNav({
   brands,
   activeBrandId,
+  notifications,
 }: {
   brands: BrandOption[];
   activeBrandId: string;
+  notifications: NotificationsData;
 }) {
   const pathname = usePathname();
 
@@ -43,10 +47,14 @@ export function SidebarNav({
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-lg font-bold text-white">
           B
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold leading-tight">Branch</p>
           <p className="text-[11px] text-faint">Social command center</p>
         </div>
+        <NotificationsBell
+          items={notifications.items}
+          unreadCount={notifications.unreadCount}
+        />
       </div>
 
       <div className="px-3 pb-1">

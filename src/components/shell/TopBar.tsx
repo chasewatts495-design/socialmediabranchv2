@@ -3,14 +3,18 @@
 import Link from "next/link";
 import { IconPlug, IconSettings } from "@/components/ui/icons";
 import { BrandSwitcher, type BrandOption } from "./BrandSwitcher";
+import { NotificationsBell } from "./NotificationsBell";
+import type { NotificationsData } from "@/lib/notifications";
 
 /** Mobile-only top bar: brand switcher + shortcuts that don't fit the tab bar. */
 export function TopBar({
   brands,
   activeBrandId,
+  notifications,
 }: {
   brands: BrandOption[];
   activeBrandId: string;
+  notifications: NotificationsData;
 }) {
   return (
     <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-border bg-bg/90 px-4 py-3 backdrop-blur md:hidden">
@@ -22,7 +26,12 @@ export function TopBar({
       <div className="min-w-0 flex-1 max-w-56">
         <BrandSwitcher brands={brands} activeBrandId={activeBrandId} compact />
       </div>
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="flex shrink-0 items-center gap-0.5">
+        <NotificationsBell
+          items={notifications.items}
+          unreadCount={notifications.unreadCount}
+          compact
+        />
         <Link
           href="/connections"
           aria-label="Connections"

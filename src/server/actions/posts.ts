@@ -205,6 +205,38 @@ export async function retryTargetAction(targetId: string): Promise<void> {
   revalidatePath("/");
 }
 
+/** Queue bulk action: retry every currently-failed target (bounded). */
+export async function retryAllFailedAction(): Promise<{ retried: number }> {
+  const db = await getDb();
+  const failed = await db
+    .select({ id: postTargets.id })
+    .from(postTargets)
+    .where(eq(postTargets.status, "failed"))
+    .limit(50);
+  for (const t of failed) {
+    await retryTarget(db, t.id);
+  }
+  revalidatePath("/calendar");
+  revalidatePath("/");
+  return { retried: failed.length };
+}
+
+/** Queue bulk action: mark every manual-checklist item as posted. */
+export async function markAllManualDoneAction(): Promise<{ marked: number }> {
+  const db = await getDb();
+  const manual = await db
+    .select({ id: postTargets.id })
+    .from(postTargets)
+    .where(eq(postTargets.status, "manual_required"))
+    .limit(100);
+  for (const t of manual) {
+    await markManualPublished(db, t.id);
+  }
+  revalidatePath("/calendar");
+  revalidatePath("/");
+  return { marked: manual.length };
+}
+
 export async function skipTargetAction(targetId: string): Promise<void> {
   const db = await getDb();
   await skipTarget(db, targetId);

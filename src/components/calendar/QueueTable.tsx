@@ -3,7 +3,9 @@
 import { useState, useTransition } from "react";
 import type { QueueRow } from "@/lib/db/calendar-queries";
 import {
+  markAllManualDoneAction,
   markManualPublishedAction,
+  retryAllFailedAction,
   retryTargetAction,
   skipTargetAction,
 } from "@/server/actions/posts";
@@ -85,6 +87,53 @@ function RowActions({ row }: { row: QueueRow }) {
   );
 }
 
+function BulkActions({ rows }: { rows: QueueRow[] }) {
+  const [pending, start] = useTransition();
+  const [message, setMessage] = useState<string | null>(null);
+  const failedCount = rows.filter((r) => r.status === "failed").length;
+  const manualCount = rows.filter((r) => r.status === "manual_required").length;
+  if (failedCount < 2 && manualCount < 2) return null;
+
+  return (
+    <div className="mb-1 flex flex-wrap items-center gap-2">
+      {failedCount >= 2 && (
+        <button
+          type="button"
+          disabled={pending}
+          data-testid="retry-all-failed"
+          onClick={() =>
+            start(async () => {
+              const res = await retryAllFailedAction();
+              setMessage(`Retried ${res.retried} failed post${res.retried === 1 ? "" : "s"}.`);
+            })
+          }
+          className="rounded-lg border border-danger/40 px-3 py-1.5 text-xs font-medium text-danger hover:bg-danger-soft disabled:opacity-50"
+        >
+          Retry all failed ({failedCount})
+        </button>
+      )}
+      {manualCount >= 2 && (
+        <button
+          type="button"
+          disabled={pending}
+          data-testid="mark-all-manual"
+          onClick={() =>
+            start(async () => {
+              const res = await markAllManualDoneAction();
+              setMessage(`Marked ${res.marked} manual post${res.marked === 1 ? "" : "s"} as published.`);
+            })
+          }
+          className="rounded-lg border border-warning/40 px-3 py-1.5 text-xs font-medium text-warning hover:bg-warning-soft disabled:opacity-50"
+        >
+          Mark all manual as posted ({manualCount})
+        </button>
+      )}
+      {pending && <Spinner />}
+      {message && <span className="text-[11px] text-muted">{message}</span>}
+    </div>
+  );
+}
+
 export function QueueTable({ rows }: { rows: QueueRow[] }) {
   if (rows.length === 0) {
     return (
@@ -95,6 +144,8 @@ export function QueueTable({ rows }: { rows: QueueRow[] }) {
   }
 
   return (
+    <>
+    <BulkActions rows={rows} />
     <ul className="space-y-2" data-testid="queue-list">
       {rows.map((row) => (
         <li
@@ -136,5 +187,6 @@ export function QueueTable({ rows }: { rows: QueueRow[] }) {
         </li>
       ))}
     </ul>
+    </>
   );
 }

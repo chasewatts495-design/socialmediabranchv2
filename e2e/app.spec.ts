@@ -143,6 +143,19 @@ test("brands: create, scope the dashboard, switch back", async ({ page }) => {
   await expect(page.locator(`text=${name}`)).toHaveCount(0, { timeout: 15_000 });
 });
 
+test("notifications bell lists activity and marks it read", async ({ page }) => {
+  await login(page);
+  // Two bells exist (sidebar + mobile top bar) — drive the visible one.
+  await page.locator('[data-testid="notifications-bell"]:visible').first().click();
+  const panel = page.locator('[data-testid="notifications-panel"]:visible');
+  await expect(panel).toBeVisible();
+  expect(await panel.locator("li").count()).toBeGreaterThan(0);
+  await panel.locator("button:has-text('Mark all read')").click();
+  await expect(page.getByTestId("notifications-badge")).toHaveCount(0, {
+    timeout: 15_000,
+  });
+});
+
 test("recycling tab toggles a rule per account", async ({ page }) => {
   await login(page);
   await page.goto("/calendar?tab=recycle");
