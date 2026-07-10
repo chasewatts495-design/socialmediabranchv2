@@ -19,20 +19,7 @@ export const instagramDef: PlatformDefinition = {
     },
     auth: {
       kind: "oauth2",
-      credentialFields: [
-        {
-          key: "accessToken",
-          label: "Long-lived access token",
-          secret: true,
-          help: "Generated in Meta for Developers → your app → Instagram Graph API.",
-        },
-        {
-          key: "igUserId",
-          label: "Instagram Business account ID",
-          secret: false,
-          help: "Numeric ID of the IG professional account linked to your Facebook Page.",
-        },
-      ],
+      credentialFields: [],
     },
     access: {
       costTier: "free",
@@ -46,32 +33,20 @@ export const instagramDef: PlatformDefinition = {
     },
     wizardSteps: [
       {
-        title: "Convert to a professional account",
-        body: "In the Instagram app: Settings → Account type and tools → Switch to professional account. Choose Business or Creator.",
-      },
-      {
-        title: "Link a Facebook Page",
-        body: "Instagram Settings → Business tools and controls → Connect a Facebook Page. Create one if you don't have it — the API only works through a linked Page.",
+        title: "Make Instagram professional + link a Facebook Page",
+        body: "Instagram → Settings → Account type → switch to Business or Creator (free), then link it to a Facebook Page you manage — the API requires both.",
       },
       {
         title: "Create a Meta app",
-        body: "Go to developers.facebook.com → My Apps → Create App → type 'Business'. No review is needed to use it with accounts you own.",
+        body: "developers.facebook.com → My apps → Create app → type Business. In app settings, add the Redirect URI shown below under Facebook Login → Settings → Valid OAuth Redirect URIs.",
       },
       {
-        title: "Add the Instagram product",
-        body: "In the app dashboard, click 'Add product' → Instagram → API setup with Facebook login. Follow the setup to connect your Page + IG account.",
+        title: "Save the App ID + secret in Branch",
+        body: "Both are on the app's Settings → Basic page. Development mode is fine — your own accounts work without App Review.",
       },
       {
-        title: "Generate a long-lived token",
-        body: "In Instagram API setup, generate an access token for your account with instagram_basic, instagram_content_publish, instagram_manage_insights, pages_read_engagement scopes. Exchange it for a long-lived token (60 days) in the same screen.",
-      },
-      {
-        title: "Find your IG user ID",
-        body: "The API setup page displays your Instagram Business account ID (a long number). Copy it.",
-      },
-      {
-        title: "Paste credentials below",
-        body: "Enter the long-lived token and the IG user ID, then hit 'Test connection'.",
+        title: "Hit Connect and pick your accounts",
+        body: "You log in on facebook.com itself; Branch then lists your Pages and linked Instagram profiles so you choose which to connect. Publishing needs publicly-hosted media — the deployed app (Vercel Blob) qualifies.",
       },
     ],
   },

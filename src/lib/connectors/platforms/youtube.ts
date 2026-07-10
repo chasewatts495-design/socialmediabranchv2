@@ -19,16 +19,7 @@ export const youtubeDef: PlatformDefinition = {
     },
     auth: {
       kind: "oauth2",
-      credentialFields: [
-        { key: "clientId", label: "OAuth client ID", secret: false },
-        { key: "clientSecret", label: "OAuth client secret", secret: true },
-        {
-          key: "refreshToken",
-          label: "Refresh token",
-          secret: true,
-          help: "Obtained once via the OAuth consent flow for your Google account.",
-        },
-      ],
+      credentialFields: [],
     },
     access: {
       costTier: "free",
@@ -43,23 +34,23 @@ export const youtubeDef: PlatformDefinition = {
     wizardSteps: [
       {
         title: "Create a Google Cloud project",
-        body: "Go to console.cloud.google.com → New project. Enable 'YouTube Data API v3' and 'YouTube Analytics API' under APIs & Services.",
+        body: "console.cloud.google.com → New project. Enable 'YouTube Data API v3' and 'YouTube Analytics API' under APIs & Services.",
       },
       {
         title: "Configure the OAuth consent screen",
-        body: "APIs & Services → OAuth consent screen. External type, add yourself as a test user. (Verification is only needed later for public uploads.)",
+        body: "APIs & Services → OAuth consent screen → External → add yourself as a test user. Then push it to 'In production' (personal use needs no verification) so your connection doesn't expire weekly.",
       },
       {
-        title: "Create OAuth credentials",
-        body: "APIs & Services → Credentials → Create credentials → OAuth client ID → Desktop app. Copy the client ID and secret.",
+        title: "Create a Web OAuth client",
+        body: "APIs & Services → Credentials → Create credentials → OAuth client ID → Web application. Add the Redirect URI shown below, then copy the client ID and secret into Branch.",
       },
       {
-        title: "Authorize once to get a refresh token",
-        body: "Run the OAuth flow with scopes youtube.upload, youtube.readonly, yt-analytics.readonly and capture the refresh token (Google's OAuth Playground works: developers.google.com/oauthplayground with your own credentials).",
+        title: "Hit Connect",
+        body: "A Google login window opens — you approve the read-only YouTube scopes there. Branch pulls subscribers, daily views, watch time, and per-video stats immediately.",
       },
       {
-        title: "Paste credentials below",
-        body: "Enter client ID, client secret, and refresh token, then hit 'Test connection'. Start with analytics — uploads unlock after Google's audit.",
+        title: "Uploads stay in YouTube Studio (for now)",
+        body: "API uploads are forced private until Google audits an app, so Branch doesn't pretend to publish — upload in Studio and the video plus its stats sync here.",
       },
     ],
   },

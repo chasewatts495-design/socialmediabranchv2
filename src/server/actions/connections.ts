@@ -5,7 +5,12 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/lib/db/client";
 import { accounts, activityLog, credentials, scheduleJobs } from "@/lib/db/schema";
-import { capabilitiesFor, resolveConnector } from "@/lib/connectors/registry";
+import {
+  PLATFORM_DEFS,
+  capabilitiesFor,
+  resolveConnector,
+} from "@/lib/connectors/registry";
+import "@/lib/connectors/live/register";
 import { PLATFORM_IDS, type PlatformId } from "@/lib/connectors/types";
 import { encryptSecret } from "@/lib/crypto/secretbox";
 import { PLATFORM_BADGE_COLORS } from "@/lib/metrics/colors";
@@ -133,11 +138,49 @@ export async function saveCredentialsAction(
     detail: { fields: Object.keys(payload).length },
   });
 
+  // If a live connector exists (Reddit script apps), verify the keys right
+  // now and flip the account live on success.
+  const def = PLATFORM_DEFS[account.platformId as PlatformId];
+  if (def.buildLiveConnector) {
+    const liveTest = await def
+      .buildLiveConnector()
+      .testConnection(
+        contextFor(db, { ...account, mode: "live" }),
+      )
+      .catch((err) => ({
+        ok: false as const,
+        message: err instanceof Error ? err.message : "Connection failed.",
+      }));
+    if (liveTest.ok) {
+      await db
+        .update(accounts)
+        .set({ mode: "live", status: "connected", syncError: null })
+        .where(eq(accounts.id, accountId));
+      await db.insert(scheduleJobs).values({
+        id: uuid(),
+        kind: "sync_stats",
+        refId: accountId,
+        runAt: new Date(),
+      });
+      revalidatePath(`/connections/${account.platformId}`);
+      revalidatePath("/");
+      return {
+        ok: true,
+        message: `LIVE ✓ ${liveTest.message ?? "Connection verified."} Posts from Branch now publish for real.`,
+      };
+    }
+    revalidatePath(`/connections/${account.platformId}`);
+    return {
+      ok: false,
+      message: `Credentials stored (encrypted), but the live check failed: ${liveTest.message ?? "unknown error"} The account stays in demo mode until it passes.`,
+    };
+  }
+
   revalidatePath(`/connections/${account.platformId}`);
   return {
     ok: true,
     message:
-      "Credentials stored (AES-256 encrypted). Live publishing for this platform ships in the next phase — the moment it does, this account flips to live automatically. Demo mode keeps working meanwhile.",
+      "Credentials stored (AES-256 encrypted). This platform connects with the Connect button (or ships live in a later phase) — demo mode keeps working meanwhile.",
   };
 }
 

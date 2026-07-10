@@ -2,6 +2,7 @@ import { eq, inArray } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
 import { activityLog, posts, postTargets } from "@/lib/db/schema";
 import { resolveConnector } from "@/lib/connectors/registry";
+import "@/lib/connectors/live/register";
 import type {
   PlatformId,
   PublishMedia,

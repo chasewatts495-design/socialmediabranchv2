@@ -18,19 +18,7 @@ export const facebookDef: PlatformDefinition = {
     },
     auth: {
       kind: "oauth2",
-      credentialFields: [
-        {
-          key: "pageAccessToken",
-          label: "Page access token",
-          secret: true,
-          help: "A long-lived Page token from your Meta app (Graph API Explorer or API setup).",
-        },
-        {
-          key: "pageId",
-          label: "Facebook Page ID",
-          secret: false,
-        },
-      ],
+      credentialFields: [],
     },
     access: {
       costTier: "free",
@@ -44,28 +32,16 @@ export const facebookDef: PlatformDefinition = {
     },
     wizardSteps: [
       {
-        title: "Have a Facebook Page",
-        body: "Posting targets a Page (not your profile). Create one at facebook.com/pages/create if needed.",
+        title: "Create a Meta app (shared with Instagram)",
+        body: "developers.facebook.com → My apps → Create app → type Business. One app covers Facebook Pages AND Instagram. Add the Redirect URI shown below under Facebook Login → Settings.",
       },
       {
-        title: "Use your Meta app",
-        body: "The same app created for Instagram works here. In developers.facebook.com open your app (or create a Business-type app).",
+        title: "Save the App ID + secret in Branch",
+        body: "From the app's Settings → Basic page. Development mode works for every Page you have a role on — no App Review needed.",
       },
       {
-        title: "Grant Page permissions",
-        body: "Using Graph API Explorer (Tools → Graph API Explorer), select your app, click 'Get Page access token', and grant pages_manage_posts, pages_read_engagement, read_insights.",
-      },
-      {
-        title: "Make the token long-lived",
-        body: "Exchange the short token for a long-lived one (Meta docs: 'Long-Lived Page Access Tokens' — one API call, or use the Access Token Debugger's 'Extend' button).",
-      },
-      {
-        title: "Find your Page ID",
-        body: "On your Page → About → Page transparency, or from the Graph API Explorer response. It's a long number.",
-      },
-      {
-        title: "Paste credentials below",
-        body: "Enter the Page token and Page ID, then hit 'Test connection'.",
+        title: "Hit Connect and pick your Pages",
+        body: "You log in on facebook.com itself and grant Page permissions; Branch lists your Pages so you choose which to connect. Page tokens don't expire.",
       },
     ],
   },

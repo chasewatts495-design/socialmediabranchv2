@@ -48,7 +48,7 @@ export const redditDef: PlatformDefinition = {
       },
       {
         title: "Paste credentials below",
-        body: "Enter client ID, secret, and your Reddit login, then hit 'Test connection'. This is the easiest platform to go live on — no review, no cost.",
+        body: "Enter client ID, secret, and your Reddit login — the password goes only to reddit.com's token endpoint (the sanctioned 'script app' flow) and is stored encrypted. Saving runs a live check and flips the account to LIVE on the spot.",
       },
     ],
   },

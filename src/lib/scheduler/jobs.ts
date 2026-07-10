@@ -1,13 +1,19 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
 import {
   accounts,
   activityLog,
   credentials,
   metricSnapshots,
+  postTargets,
 } from "@/lib/db/schema";
 import { resolveConnector } from "@/lib/connectors/registry";
-import type { ConnectorContext, PlatformId } from "@/lib/connectors/types";
+import "@/lib/connectors/live/register";
+import type {
+  Connector,
+  ConnectorContext,
+  PlatformId,
+} from "@/lib/connectors/types";
 import { daysAgo } from "@/lib/connectors/demo/generators";
 import { decryptSecret, encryptSecret } from "@/lib/crypto/secretbox";
 
@@ -89,6 +95,29 @@ export async function syncAccount(
   });
 
   if (!connector.capabilities.canFetchAccountStats && account.mode !== "demo") {
+    // Live platforms without account-level stats (Reddit) still sync
+    // per-post metrics; manual accounts record stats by hand.
+    if (account.mode === "live" && connector.capabilities.canFetchPostStats) {
+      try {
+        const updated = await syncPostMetricsForAccount(db, account, connector);
+        await db
+          .update(accounts)
+          .set({ lastSyncAt: new Date(), syncError: null, status: "connected" })
+          .where(eq(accounts.id, accountId));
+        return {
+          ok: true,
+          upserted: updated,
+          message: `No account-level stats API here — refreshed per-post stats on ${updated} post${updated === 1 ? "" : "s"} instead.`,
+        };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        await db
+          .update(accounts)
+          .set({ syncError: message, status: "error" })
+          .where(eq(accounts.id, accountId));
+        return { ok: false, upserted: 0, message };
+      }
+    }
     await db
       .update(accounts)
       .set({ lastSyncAt: new Date(), syncError: null })
@@ -146,6 +175,15 @@ export async function syncAccount(
           },
         });
     }
+    // Live accounts also refresh per-post metrics (matched by external id).
+    if (account.mode === "live" && connector.capabilities.canFetchPostStats) {
+      try {
+        await syncPostMetricsForAccount(db, account, connector);
+      } catch {
+        // Post metrics are best-effort — account stats already landed.
+      }
+    }
+
     await db
       .update(accounts)
       .set({ lastSyncAt: new Date(), syncError: null, status: "connected" })
@@ -172,4 +210,52 @@ export async function syncAccount(
     });
     return { ok: false, upserted: 0, message };
   }
+}
+
+/**
+ * Pulls the platform's own numbers for recent posts and writes them onto
+ * matching post_targets (matched by externalPostId). Returns how many
+ * targets got fresh metrics.
+ */
+async function syncPostMetricsForAccount(
+  db: Db,
+  account: { id: string; platformId: string; handle: string; mode: string },
+  connector: Connector,
+): Promise<number> {
+  const recent = await connector.fetchRecentPosts(contextFor(db, account), {
+    limit: 25,
+  });
+  let updated = 0;
+  for (const post of recent) {
+    const m = post.metrics;
+    const interactions =
+      (m.likes ?? 0) + (m.comments ?? 0) + (m.shares ?? 0) + (m.saves ?? 0);
+    const engagementRate =
+      m.impressions && m.impressions > 0
+        ? Math.round((interactions / m.impressions) * 1000) / 10
+        : undefined;
+    const rows = await db
+      .update(postTargets)
+      .set({
+        metrics: {
+          impressions: m.impressions,
+          likes: m.likes,
+          comments: m.comments,
+          shares: m.shares,
+          saves: m.saves,
+          videoViews: m.videoViews,
+          engagementRate,
+        },
+        metricsSyncedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(postTargets.accountId, account.id),
+          eq(postTargets.externalPostId, post.externalId),
+        ),
+      )
+      .returning({ id: postTargets.id });
+    updated += rows.length;
+  }
+  return updated;
 }

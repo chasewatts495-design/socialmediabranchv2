@@ -73,5 +73,12 @@ export const META_FIELDS: Partial<
     { key: "title", label: "Post title" },
     { key: "subreddit", label: "Subreddit", placeholder: "yourbrand (without r/)" },
   ],
-  pinterest: [{ key: "title", label: "Pin title" }],
+  pinterest: [
+    { key: "title", label: "Pin title" },
+    {
+      key: "boardId",
+      label: "Board ID",
+      placeholder: "the number in the board's URL",
+    },
+  ],
 };

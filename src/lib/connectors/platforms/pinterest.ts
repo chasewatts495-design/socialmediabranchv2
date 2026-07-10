@@ -1,4 +1,5 @@
 import type { PlatformDefinition } from "./def";
+import type { PublishPayload, ValidationIssue } from "../types";
 
 export const pinterestDef: PlatformDefinition = {
   capabilities: {
@@ -19,18 +20,9 @@ export const pinterestDef: PlatformDefinition = {
       image: { maxBytes: 20_000_000, formats: ["jpeg", "png"] },
     },
     auth: {
+      // Connect flow: log in on Pinterest's own page — no pasted tokens.
       kind: "oauth2",
-      credentialFields: [
-        { key: "appId", label: "App ID", secret: false },
-        { key: "appSecret", label: "App secret", secret: true },
-        { key: "accessToken", label: "Access token", secret: true },
-        {
-          key: "boardId",
-          label: "Default board ID",
-          secret: false,
-          help: "Pins need a board; Branch uses this one unless a post specifies another.",
-        },
-      ],
+      credentialFields: [],
     },
     access: {
       costTier: "free",
@@ -49,20 +41,37 @@ export const pinterestDef: PlatformDefinition = {
       },
       {
         title: "Create a Pinterest app",
-        body: "developers.pinterest.com → My apps → Create app. Trial access is granted instantly.",
+        body: "developers.pinterest.com → My apps → Create app. Trial access is granted instantly. In the app's settings, paste the Redirect URI shown below.",
       },
       {
-        title: "Generate an access token",
-        body: "In the app console, use the token generator with scopes boards:read, pins:read, pins:write, user_accounts:read.",
+        title: "Save the app keys in Branch",
+        body: "Copy the App ID and App secret key from the app console into the 'Connect with Pinterest' card below.",
       },
       {
-        title: "Pick a default board",
-        body: "Create or choose the board Branch should pin to by default; its ID is in the board URL or via the API explorer.",
+        title: "Hit Connect",
+        body: "A Pinterest login window opens — you sign in on pinterest.com itself. Branch receives only revocable access tokens, never your password.",
       },
       {
-        title: "Paste credentials below",
-        body: "Enter app ID, secret, token, and board ID, then hit 'Test connection'. Apply for Standard access when you're ready to scale.",
+        title: "Pick a board per pin",
+        body: "Pins need a board — the composer's Fine-tune step has a Board ID field per Pinterest post (the ID is the number in the board's URL).",
       },
     ],
   },
+  extraValidation: (payload: PublishPayload): ValidationIssue[] => {
+    const issues: ValidationIssue[] = [];
+    const boardId =
+      typeof payload.meta.boardId === "string" ? payload.meta.boardId : "";
+    if (!boardId.trim()) {
+      issues.push({
+        level: "warning",
+        field: "meta",
+        code: "BOARD_RECOMMENDED",
+        message:
+          "Live Pinterest publishing needs a Board ID (from the board's URL) — demo mode works without one.",
+      });
+    }
+    return issues;
+  },
+  // buildLiveConnector is attached server-side by connectors/live/register
+  // so client bundles (composer validation) never pull in the live layer.
 };
