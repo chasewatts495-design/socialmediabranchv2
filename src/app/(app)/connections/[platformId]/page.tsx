@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import { getDb } from "@/lib/db/client";
 import { PLATFORM_DEFS } from "@/lib/connectors/registry";
 import { PLATFORM_IDS, type PlatformId } from "@/lib/connectors/types";
+import { PROVIDER_FOR_PLATFORM, providerFor } from "@/lib/oauth";
+import { getOAuthAppCreds } from "@/lib/oauth/app-credentials";
+import { redirectUriFor } from "@/lib/oauth/redirect-uri";
 import { Badge, Card, CardHeader } from "@/components/ui/primitives";
 import { AccountAvatar } from "@/components/dashboard/AccountAvatar";
 import { ModeChip } from "@/components/dashboard/PlatformBadge";
@@ -12,18 +15,36 @@ import {
   AddAccountForm,
   CredentialForm,
 } from "@/components/connections/ConnectionForms";
+import { OAuthConnectCard } from "@/components/connections/OAuthConnectCard";
 
 export const dynamic = "force-dynamic";
 
+const CONNECT_HINTS: Partial<Record<PlatformId, string>> = {
+  youtube:
+    "Google note: while your consent screen is in Testing mode, connections expire after 7 days — push it to 'In production' (no verification needed for personal use) for a durable connection.",
+  instagram:
+    "Works immediately for your own accounts while the Meta app is in Development mode — your Instagram must be a professional account linked to a Facebook Page.",
+  facebook:
+    "Works immediately for Pages you manage while the Meta app is in Development mode.",
+};
+
 export default async function PlatformWizardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ platformId: string }>;
+  searchParams: Promise<{ connected?: string; oauth_error?: string }>;
 }) {
   const { platformId } = await params;
+  const { connected, oauth_error } = await searchParams;
   if (!PLATFORM_IDS.includes(platformId as PlatformId)) notFound();
   const pid = platformId as PlatformId;
   const caps = PLATFORM_DEFS[pid].capabilities;
+
+  const providerKey = PROVIDER_FOR_PLATFORM[pid] ?? null;
+  const provider = providerKey ? providerFor(providerKey) : null;
+  const appCreds = providerKey ? await getOAuthAppCreds(providerKey) : null;
+  const redirectUri = providerKey ? await redirectUriFor(providerKey) : null;
 
   const db = await getDb();
   const accounts = await db.query.accounts.findMany({
@@ -66,6 +87,26 @@ export default async function PlatformWizardPage({
         </div>
       </div>
 
+      {connected && (
+        <Card className="border-success/40 bg-success-soft/40 p-4">
+          <p className="text-sm font-medium text-success">
+            Connected! A 90-day stats backfill is queued — it lands on the
+            dashboard within a few minutes (or hit Sync now on the account).
+          </p>
+        </Card>
+      )}
+      {oauth_error && (
+        <Card className="border-danger/40 bg-danger-soft/40 p-4">
+          <p className="text-sm font-medium text-danger">
+            {oauth_error === "missing-app"
+              ? "Save your developer-app keys below first, then hit Connect."
+              : oauth_error === "bad-state"
+                ? "That login link expired — hit Connect again."
+                : `Connection failed: ${decodeURIComponent(oauth_error)}`}
+          </p>
+        </Card>
+      )}
+
       <Card className="p-4 md:p-5">
         <h2 className="text-sm font-semibold">The honest version</h2>
         <p className="mt-1 text-xs text-muted">{caps.access.approval}</p>
@@ -75,6 +116,24 @@ export default async function PlatformWizardPage({
           ))}
         </ul>
       </Card>
+
+      {provider && redirectUri && (
+        <Card>
+          <CardHeader
+            title={`Connect with ${provider.displayName}`}
+            subtitle="You log in on the platform's own page — Branch only stores revocable access tokens, never your password"
+          />
+          <div className="p-4 md:p-5">
+            <OAuthConnectCard
+              provider={provider.key}
+              providerName={provider.displayName}
+              credsSource={appCreds?.source ?? null}
+              redirectUri={redirectUri}
+              connectHint={CONNECT_HINTS[pid]}
+            />
+          </div>
+        </Card>
+      )}
 
       <Card>
         <CardHeader

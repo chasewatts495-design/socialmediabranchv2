@@ -133,6 +133,15 @@ export interface ConnectorContext {
     mode: AccountMode;
   };
   getCredentials<T = Record<string, string>>(): Promise<T | null>;
+  /**
+   * Persists a refreshed credential payload (re-encrypted). Live
+   * connectors call this after rotating OAuth tokens; demo/manual
+   * connectors never need it, so it's optional on the context.
+   */
+  saveCredentials?(
+    payload: Record<string, unknown>,
+    opts?: { expiresAt?: Date | null },
+  ): Promise<void>;
   log(event: string, detail?: Record<string, unknown>): Promise<void>;
 }
 

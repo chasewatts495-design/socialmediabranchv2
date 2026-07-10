@@ -1,10 +1,15 @@
 import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
-import { accounts, activityLog, metricSnapshots } from "@/lib/db/schema";
+import {
+  accounts,
+  activityLog,
+  credentials,
+  metricSnapshots,
+} from "@/lib/db/schema";
 import { resolveConnector } from "@/lib/connectors/registry";
 import type { ConnectorContext, PlatformId } from "@/lib/connectors/types";
 import { daysAgo } from "@/lib/connectors/demo/generators";
-import { decryptSecret } from "@/lib/crypto/secretbox";
+import { decryptSecret, encryptSecret } from "@/lib/crypto/secretbox";
 
 const uuid = () => crypto.randomUUID();
 
@@ -34,6 +39,16 @@ export function contextFor(
       } catch {
         return null;
       }
+    },
+    async saveCredentials(payload, opts) {
+      await db
+        .update(credentials)
+        .set({
+          encryptedPayload: encryptSecret(JSON.stringify(payload)),
+          ...(opts && "expiresAt" in opts ? { expiresAt: opts.expiresAt } : {}),
+          updatedAt: new Date(),
+        })
+        .where(eq(credentials.accountId, account.id));
     },
     async log(event, detail) {
       await db.insert(activityLog).values({
