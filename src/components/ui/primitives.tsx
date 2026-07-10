@@ -5,14 +5,17 @@ export function Card({
   children,
   className,
   id,
+  "data-testid": testId,
 }: {
   children: ReactNode;
   className?: string;
   id?: string;
+  "data-testid"?: string;
 }) {
   return (
     <div
       id={id}
+      data-testid={testId}
       className={cn(
         // min-w-0 lets cards shrink inside grid/flex tracks (charts overflow otherwise)
         // hud-hairline etches the gold circuit line along each card's top edge

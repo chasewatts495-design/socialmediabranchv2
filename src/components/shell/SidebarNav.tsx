@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "./nav";
 import { BrandSwitcher, type BrandOption } from "./BrandSwitcher";
 import { NotificationsBell } from "./NotificationsBell";
+import { PaletteButton } from "./CommandPalette";
 import type { NotificationsData } from "@/lib/notifications";
 import { cn } from "@/components/ui/cn";
 import {
@@ -51,6 +52,7 @@ export function SidebarNav({
           <p className="text-sm font-semibold leading-tight">Branch</p>
           <p className="text-[11px] text-faint">Social command center</p>
         </div>
+        <PaletteButton />
         <NotificationsBell
           items={notifications.items}
           unreadCount={notifications.unreadCount}

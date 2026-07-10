@@ -8,6 +8,7 @@ import { PLATFORM_DEFS } from "@/lib/connectors/registry";
 import { validateAgainstCapabilities } from "@/lib/connectors/validate";
 import { adaptCaption, META_FIELDS } from "@/lib/posts/variants";
 import { savePostAction, type SavePostResult } from "@/server/actions/posts";
+import { generateCaptionAction } from "@/server/actions/ai-captions";
 import type { LibraryAsset } from "@/components/library/AssetGrid";
 import { PlatformPreview } from "./PlatformPreview";
 import { AccountAvatar } from "@/components/dashboard/AccountAvatar";
@@ -109,6 +110,34 @@ export function ComposerClient({
   const [busy, setBusy] = useState<"draft" | "now" | "schedule" | null>(null);
   const [result, setResult] = useState<SavePostResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiBrief, setAiBrief] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiOptions, setAiOptions] = useState<string[]>([]);
+  const [aiGeneratedBy, setAiGeneratedBy] = useState<"claude" | "demo">("demo");
+  const [aiMessage, setAiMessage] = useState<string | null>(null);
+
+  async function runAiCaptions() {
+    if (aiBusy || aiBrief.trim().length < 3) return;
+    setAiBusy(true);
+    setAiMessage(null);
+    setAiOptions([]);
+    try {
+      const res = await generateCaptionAction({
+        brief: aiBrief,
+        platformIds: selected
+          .map((id) => accountById.get(id)?.platformId)
+          .filter((p): p is PlatformId => Boolean(p)),
+      });
+      setAiOptions(res.options);
+      setAiGeneratedBy(res.generatedBy);
+      if (res.message) setAiMessage(res.message);
+    } catch {
+      setAiMessage("The writer hit a snag — try again.");
+    } finally {
+      setAiBusy(false);
+    }
+  }
 
   function goTo(next: number) {
     const clamped = Math.max(0, Math.min(STEPS.length - 1, next));
@@ -435,6 +464,76 @@ export function ComposerClient({
         className="w-full rounded-2xl border border-border bg-surface p-4 text-sm leading-relaxed outline-none placeholder:text-faint focus:border-accent"
         data-testid="master-caption"
       />
+
+      {/* AI caption writer */}
+      <div className="mt-3">
+        {!aiOpen ? (
+          <button
+            type="button"
+            data-testid="ai-caption-button"
+            onClick={() => setAiOpen(true)}
+            className="rounded-xl border border-accent/40 bg-accent-soft/60 px-4 py-2 text-sm font-medium text-accent-strong transition hover:bg-accent-soft"
+          >
+            ✦ Write it for me
+          </button>
+        ) : (
+          <div className="rounded-2xl border border-accent/30 bg-accent-soft/30 p-3">
+            <p className="mb-2 text-xs font-medium text-accent-strong">
+              ✦ Tell the writer what this post is about
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                value={aiBrief}
+                onChange={(e) => setAiBrief(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    runAiCaptions();
+                  }
+                }}
+                placeholder="e.g. restock of the navy hoodie this Friday"
+                data-testid="ai-caption-brief"
+                className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-sm outline-none placeholder:text-faint focus:border-accent"
+              />
+              <button
+                type="button"
+                disabled={aiBusy || aiBrief.trim().length < 3}
+                onClick={runAiCaptions}
+                data-testid="ai-caption-go"
+                className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-strong disabled:opacity-50"
+              >
+                {aiBusy ? <Spinner className="border-white/40 border-t-white" /> : "Draft 3 options"}
+              </button>
+            </div>
+            {aiMessage && <p className="mt-2 text-[11px] text-muted">{aiMessage}</p>}
+            {aiOptions.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {aiOptions.map((opt, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    data-testid="ai-caption-option"
+                    onClick={() => {
+                      onMasterCaptionChange(opt);
+                      setAiOptions([]);
+                      setAiOpen(false);
+                    }}
+                    className="block w-full rounded-xl border border-border bg-surface p-3 text-left text-xs leading-relaxed transition hover:border-accent"
+                  >
+                    {opt}
+                  </button>
+                ))}
+                <p className="text-[10px] text-faint">
+                  {aiGeneratedBy === "claude"
+                    ? "Drafted by Claude from your brief + the selling-psychology playbook."
+                    : "Demo drafts (add your Anthropic key in Settings for the full writer)."}
+                  {" "}Tap one to use it — the Fine-tune step re-adapts it per platform.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </section>
   );
 

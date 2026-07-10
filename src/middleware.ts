@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AUTH_COOKIE, authToken } from "@/lib/auth-token";
 
-const PUBLIC_PATHS = ["/login", "/api/cron/tick"];
+// The PWA manifest is fetched by the browser WITHOUT cookies, so it must
+// bypass the gate (it contains only the app name/colors/icon path).
+const PUBLIC_PATHS = ["/login", "/api/cron/tick", "/manifest.webmanifest"];
 
 export async function middleware(req: NextRequest) {
   // No password configured → gate disabled (local demo use).

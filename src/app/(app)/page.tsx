@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ensureSeeded } from "@/lib/db/ensure-seeded";
 import { getDashboardData } from "@/lib/db/queries";
 import { brandScope, getActiveBrand, getActiveBrandId } from "@/lib/brands";
+import { getGoLiveState } from "@/lib/golive";
+import { GoLiveChecklist } from "@/components/dashboard/GoLiveChecklist";
 import { Card, CardHeader } from "@/components/ui/primitives";
 import { Tilt } from "@/components/ui/Tilt";
 import { HoloSphere } from "@/components/branch/HoloSphere";
@@ -37,6 +39,7 @@ export default async function DashboardPage({
   await ensureSeeded();
   const range = parseRange((await searchParams).range);
   const activeBrand = await getActiveBrand();
+  const goLive = await getGoLiveState();
   const data = await getDashboardData(
     range,
     brandScope(await getActiveBrandId()),
@@ -122,6 +125,8 @@ export default async function DashboardPage({
           </div>
         </div>
       </Card>
+
+      <GoLiveChecklist state={goLive} />
 
       {/* Stat tiles: Jarvis radial readouts */}
       <div className="reveal-group grid grid-cols-2 gap-3 lg:grid-cols-4">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { IconPlug, IconSettings } from "@/components/ui/icons";
 import { BrandSwitcher, type BrandOption } from "./BrandSwitcher";
 import { NotificationsBell } from "./NotificationsBell";
+import { PaletteButton } from "./CommandPalette";
 import type { NotificationsData } from "@/lib/notifications";
 
 /** Mobile-only top bar: brand switcher + shortcuts that don't fit the tab bar. */
@@ -27,6 +28,7 @@ export function TopBar({
         <BrandSwitcher brands={brands} activeBrandId={activeBrandId} compact />
       </div>
       <div className="flex shrink-0 items-center gap-0.5">
+        <PaletteButton compact />
         <NotificationsBell
           items={notifications.items}
           unreadCount={notifications.unreadCount}

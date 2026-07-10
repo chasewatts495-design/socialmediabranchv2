@@ -143,6 +143,49 @@ test("brands: create, scope the dashboard, switch back", async ({ page }) => {
   await expect(page.locator(`text=${name}`)).toHaveCount(0, { timeout: 15_000 });
 });
 
+test("command palette searches and navigates", async ({ page }) => {
+  await login(page);
+  await page.locator('[data-testid="command-palette-button"]:visible').first().click();
+  await expect(page.getByTestId("command-palette")).toBeVisible();
+  await page.getByTestId("command-input").fill("queue");
+  await page.getByTestId("command-input").press("Enter");
+  await page.waitForURL(/calendar\?tab=queue/);
+  // Keyboard shortcut opens it too.
+  await page.keyboard.press("ControlOrMeta+k");
+  await expect(page.getByTestId("command-palette")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("command-palette")).toHaveCount(0);
+});
+
+test("AI caption writer drafts options and fills the caption", async ({ page }) => {
+  await login(page);
+  await page.goto("/composer");
+  const next = () =>
+    page
+      .locator('[data-testid="step-next"]:visible, .fixed button:has-text("Next")')
+      .first()
+      .click();
+  await page.locator('section:has-text("Pick your media") button').first().click();
+  await next();
+  await page.getByTestId("ai-caption-button").click();
+  await page.getByTestId("ai-caption-brief").fill("navy hoodie restock friday");
+  await page.getByTestId("ai-caption-go").click();
+  await expect(page.getByTestId("ai-caption-option").first()).toBeVisible({
+    timeout: 30_000,
+  });
+  await page.getByTestId("ai-caption-option").first().click();
+  const caption = await page.getByTestId("master-caption").inputValue();
+  expect(caption.length).toBeGreaterThan(20);
+});
+
+test("go-live checklist shows real progress on the dashboard", async ({ page }) => {
+  await login(page);
+  const checklist = page.getByTestId("golive-checklist");
+  await expect(checklist).toBeVisible();
+  await expect(checklist.locator("text=/Go fully live — \\d\\/6 done/")).toBeVisible();
+  await expect(checklist.locator("li")).toHaveCount(6);
+});
+
 test("notifications bell lists activity and marks it read", async ({ page }) => {
   await login(page);
   // Two bells exist (sidebar + mobile top bar) — drive the visible one.
