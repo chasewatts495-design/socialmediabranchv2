@@ -113,6 +113,36 @@ test("calendar and queue render", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("brands: create, scope the dashboard, switch back", async ({ page }) => {
+  await login(page);
+  // Create a brand from Settings (switches into it automatically).
+  await page.goto("/settings");
+  const name = `Test Brand ${Date.now() % 100000}`;
+  await page.getByTestId("new-brand-name").fill(name);
+  await page.getByTestId("create-brand").click();
+  await expect(page.locator(`text=Created ${name}`)).toBeVisible({ timeout: 15_000 });
+
+  // Dashboard is now scoped to the empty brand (subtitle shows it).
+  await page.goto("/");
+  await expect(
+    page.locator(`text=/${name} · 0 accounts/`).first(),
+  ).toBeVisible();
+
+  // Switch back to All brands via the switcher.
+  await page.locator('[data-testid="brand-switcher"]:visible').first().click();
+  await page.locator('[data-testid="brand-option-all"]:visible').first().click();
+  await expect(page.locator("text=/All brands · 10 accounts/").first()).toBeVisible({
+    timeout: 15_000,
+  });
+
+  // Clean up: delete the test brand so reruns don't accumulate rows.
+  await page.goto("/settings");
+  const row = page.locator(`div:has(> div > span:text("${name}"))`).first();
+  await row.locator('button:has-text("Delete")').click();
+  await row.locator('button:has-text("Confirm delete")').click();
+  await expect(page.locator(`text=${name}`)).toHaveCount(0, { timeout: 15_000 });
+});
+
 test("recycling tab toggles a rule per account", async ({ page }) => {
   await login(page);
   await page.goto("/calendar?tab=recycle");
