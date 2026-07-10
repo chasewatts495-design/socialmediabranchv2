@@ -1,13 +1,12 @@
 /**
- * Decorative bioluminescent branch-network backdrop (server-safe, pure SVG).
- * Three node clusters joined by slowly flowing braided streams — the visual
- * language of the reference art, dimmed so content stays readable.
+ * Decorative gold branch-network backdrop (server-safe, pure SVG).
+ * Three node clusters joined by slowly flowing champagne-gold streams —
+ * HUD circuitry over the light theme, dimmed so content stays readable.
  */
 
-const CYAN = "#22d3ee";
-const TEAL = "#0e7490";
-const MAGENTA = "#c026d3";
-const LIME = "#a3e635";
+const GOLD_BRIGHT = "#d4b458";
+const GOLD = "#b08a2e";
+const GOLD_DEEP = "#8f6f22";
 
 function Cluster({ cx, cy, r = 1 }: { cx: number; cy: number; r?: number }) {
   const spokes = Array.from({ length: 12 }, (_, i) => (i * Math.PI) / 6);
@@ -22,24 +21,24 @@ function Cluster({ cx, cy, r = 1 }: { cx: number; cy: number; r?: number }) {
         const y2 = cy + Math.sin(a) * outer;
         return (
           <g key={i}>
-            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={CYAN} strokeWidth={1} opacity={0.8} />
+            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={GOLD} strokeWidth={1} opacity={0.8} />
             <circle
               cx={x2}
               cy={y2}
               r={2}
-              fill={i % 4 === 0 ? MAGENTA : i % 5 === 0 ? LIME : CYAN}
+              fill={i % 4 === 0 ? GOLD_DEEP : i % 5 === 0 ? GOLD_BRIGHT : GOLD}
             />
           </g>
         );
       })}
-      <circle cx={cx} cy={cy} r={9 * r} fill="none" stroke={CYAN} strokeWidth={1.2} />
-      <circle cx={cx} cy={cy} r={4 * r} fill={CYAN} opacity={0.9} />
+      <circle cx={cx} cy={cy} r={9 * r} fill="none" stroke={GOLD} strokeWidth={1.2} />
+      <circle cx={cx} cy={cy} r={4 * r} fill={GOLD} opacity={0.9} />
       <circle
         cx={cx + 26 * r}
         cy={cy - 20 * r}
         r={6 * r}
         fill="none"
-        stroke={MAGENTA}
+        stroke={GOLD_DEEP}
         strokeWidth={1.5}
         opacity={0.7}
         className="branch-glow-magenta"
@@ -48,7 +47,7 @@ function Cluster({ cx, cy, r = 1 }: { cx: number; cy: number; r?: number }) {
   );
 }
 
-export function BranchBackdrop({ opacity = 0.14 }: { opacity?: number }) {
+export function BranchBackdrop({ opacity = 0.2 }: { opacity?: number }) {
   const streams = [
     "M110,120 C220,60 300,180 420,150 S620,60 700,95",
     "M118,132 C240,110 310,210 430,165 S610,90 696,108",
@@ -74,7 +73,7 @@ export function BranchBackdrop({ opacity = 0.14 }: { opacity?: number }) {
                 d={d}
                 transform={`translate(0 ${off})`}
                 fill="none"
-                stroke={off === 0 ? CYAN : TEAL}
+                stroke={off === 0 ? GOLD : GOLD_DEEP}
                 strokeWidth={off === 0 ? 1.6 : 1}
                 className="branch-stream-slow"
                 style={{ animationDelay: `${i * -3 + off}s` }}

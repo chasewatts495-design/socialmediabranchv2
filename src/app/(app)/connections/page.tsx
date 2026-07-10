@@ -45,7 +45,7 @@ export default async function ConnectionsPage() {
         </p>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="reveal-group grid gap-3 md:grid-cols-2">
         {PLATFORM_IDS.map((pid) => {
           const caps = PLATFORM_DEFS[pid].capabilities;
           const platformAccounts = accounts.filter((a) => a.platformId === pid);

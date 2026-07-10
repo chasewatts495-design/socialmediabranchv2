@@ -50,7 +50,7 @@ export const accounts = pgTable(
     }),
     handle: text("handle").notNull(),
     displayName: text("display_name").notNull(),
-    avatarColor: text("avatar_color").notNull().default("#7c5cff"),
+    avatarColor: text("avatar_color").notNull().default("#b08a2e"),
     mode: text("mode").notNull().default("demo"), // demo | live | manual
     status: text("status").notNull().default("connected"), // connected | error | disconnected
     timezone: text("timezone").notNull().default("UTC"),

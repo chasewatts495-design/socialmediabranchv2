@@ -56,7 +56,7 @@ export function EngagementBarChart({
           />
           <Tooltip
             {...CHART.tooltip}
-            cursor={{ fill: "#1a213066" }}
+            cursor={{ fill: "#e3e7ee99" }}
             formatter={(value) => [`${value}%`, "Engagement rate"]}
           />
           <Bar dataKey="er" maxBarSize={18} radius={[0, 4, 4, 0]} isAnimationActive={false}>
@@ -64,7 +64,7 @@ export function EngagementBarChart({
               dataKey="er"
               position="right"
               formatter={(v) => `${String(v)}%`}
-              style={{ fill: "#94a1b8", fontSize: 11 }}
+              style={{ fill: "#5b6472", fontSize: 11 }}
             />
             {rows.map((r) => (
               <Cell

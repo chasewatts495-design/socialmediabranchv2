@@ -15,7 +15,8 @@ export function Card({
       id={id}
       className={cn(
         // min-w-0 lets cards shrink inside grid/flex tracks (charts overflow otherwise)
-        "min-w-0 rounded-2xl border border-border bg-surface",
+        // hud-hairline etches the gold circuit line along each card's top edge
+        "hud-hairline min-w-0 rounded-2xl border border-border bg-surface shadow-[0_1px_2px_rgba(23,26,32,0.04)]",
         className,
       )}
     >

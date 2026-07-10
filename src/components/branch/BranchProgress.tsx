@@ -2,16 +2,17 @@
 
 /**
  * The "branch system" step rail: dandelion-like glowing nodes joined by
- * braided streams. Completed streams flow; a pulse travels down the stream
- * you just crossed; the active node breathes. Inspired by bioluminescent
- * neural-network art — matches the app's dark navy theme.
+ * braided gold-filament streams. Completed streams flow; a pulse travels
+ * down the stream you just crossed; the active node breathes. The circuitry
+ * look of the Gold HUD theme.
  */
 
 import { cn } from "@/components/ui/cn";
 
-const CYAN = "#22d3ee";
-const TEAL = "#0095b0";
-const MAGENTA = "#c026d3";
+const GOLD_BRIGHT = "#d4b458";
+const GOLD = "#b08a2e";
+const GOLD_DEEP = "#8f6f22";
+const IDLE = "#d8dce4";
 
 export interface BranchStep {
   key: string;
@@ -26,7 +27,7 @@ function Node({
   size?: number;
 }) {
   const lit = state !== "todo";
-  const stroke = state === "active" ? CYAN : state === "done" ? TEAL : "#33405e";
+  const stroke = state === "active" ? GOLD : state === "done" ? GOLD_DEEP : IDLE;
   const spokes = Array.from({ length: 8 }, (_, i) => (i * Math.PI) / 4);
   return (
     <svg
@@ -51,8 +52,8 @@ function Node({
               cx={x2}
               cy={y2}
               r={1.6}
-              fill={lit ? (i % 3 === 0 ? MAGENTA : CYAN) : "#33405e"}
-              opacity={lit ? 0.95 : 0.6}
+              fill={lit ? (i % 3 === 0 ? GOLD_BRIGHT : GOLD) : IDLE}
+              opacity={lit ? 0.95 : 0.7}
             />
           </g>
         );
@@ -61,14 +62,14 @@ function Node({
         cx={24}
         cy={24}
         r={6}
-        fill={state === "active" ? CYAN : state === "done" ? TEAL : "#141a2b"}
+        fill={state === "active" ? GOLD : state === "done" ? GOLD_DEEP : "#ffffff"}
         stroke={stroke}
         strokeWidth={1.5}
       />
       {state === "done" && (
         <path
           d="M20.5 24l2.5 2.5 4.5-5"
-          stroke="#06131f"
+          stroke="#ffffff"
           strokeWidth={2}
           fill="none"
           strokeLinecap="round"
@@ -105,16 +106,16 @@ function Stream({
           key={i}
           d={d}
           fill="none"
-          stroke={lit ? (i === 1 ? TEAL : CYAN) : "#26304a"}
+          stroke={lit ? (i === 1 ? GOLD_DEEP : GOLD) : IDLE}
           strokeWidth={lit ? 1.4 : 1}
-          opacity={lit ? 0.5 + i * 0.18 : 0.7}
+          opacity={lit ? 0.55 + i * 0.16 : 0.8}
           className={lit ? "branch-stream" : undefined}
           style={lit ? { animationDelay: `${i * -1.2}s` } : undefined}
           vectorEffect="non-scaling-stroke"
         />
       ))}
       {pulse && (
-        <circle r={3.2} fill={CYAN} className="branch-glow">
+        <circle r={3.2} fill={GOLD_BRIGHT} className="branch-glow">
           <animateMotion
             dur="0.7s"
             repeatCount="1"

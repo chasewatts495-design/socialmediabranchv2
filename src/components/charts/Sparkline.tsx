@@ -4,7 +4,7 @@ import { Line, LineChart, ResponsiveContainer, YAxis } from "recharts";
 
 export function Sparkline({
   data,
-  color = "#7c5cff",
+  color = "#b08a2e",
 }: {
   data: { value: number }[];
   color?: string;

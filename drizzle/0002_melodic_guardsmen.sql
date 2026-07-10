@@ -1,0 +1,1 @@
+ALTER TABLE "accounts" ALTER COLUMN "avatar_color" SET DEFAULT '#b08a2e';

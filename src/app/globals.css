@@ -1,41 +1,50 @@
 @import "tailwindcss";
 
+/*
+ * Branch — "Gold HUD" theme.
+ * Light gray + white surfaces with gold accents; fine hairlines and
+ * champagne-gold circuitry for the futuristic command-center look.
+ * Functional gold (#8f6f22) is darkened for WCAG contrast on white;
+ * decorative gold gradients use the brighter #d4b458 → #b08a2e range.
+ */
 @theme {
-  --color-bg: #0b0e14;
-  --color-surface: #121722;
-  --color-surface-2: #1a2130;
-  --color-surface-3: #222b3d;
-  --color-border: #26304a;
-  --color-ink: #e7ecf5;
-  --color-muted: #94a1b8;
-  --color-faint: #5c6982;
-  --color-accent: #7c5cff;
-  --color-accent-strong: #9b82ff;
-  --color-accent-soft: #251f47;
-  --color-success: #34d399;
-  --color-success-soft: #0d2b22;
-  --color-warning: #fbbf24;
-  --color-warning-soft: #2e2410;
-  --color-danger: #f87171;
-  --color-danger-soft: #331616;
-  --color-info: #60a5fa;
-  --color-info-soft: #12233b;
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-surface-2: #eef0f4;
+  --color-surface-3: #e3e7ee;
+  --color-border: #e2e5eb;
+  --color-ink: #171a20;
+  --color-muted: #5b6472;
+  --color-faint: #8b93a3;
+  --color-accent: #8f6f22;
+  --color-accent-strong: #6f5518;
+  --color-accent-soft: #f5edd8;
+  --color-gold: #b08a2e;
+  --color-gold-bright: #d4b458;
+  --color-success: #157f4f;
+  --color-success-soft: #e4f5ec;
+  --color-warning: #9a6a00;
+  --color-warning-soft: #fdf3d9;
+  --color-danger: #c0362c;
+  --color-danger-soft: #fde8e6;
+  --color-info: #1c6fc2;
+  --color-info-soft: #e6f0fb;
 
-  --color-p-instagram: #e4405f;
-  --color-p-facebook: #1877f2;
-  --color-p-tiktok: #22d3ee;
-  --color-p-x: #cbd5e1;
-  --color-p-youtube: #ff4d4d;
-  --color-p-reddit: #ff4500;
-  --color-p-pinterest: #e60023;
-  --color-p-snapchat: #fffc00;
+  --color-p-instagram: #c22b5f;
+  --color-p-facebook: #1b64c8;
+  --color-p-tiktok: #0087a3;
+  --color-p-x: #6d3fd4;
+  --color-p-youtube: #d63a2f;
+  --color-p-reddit: #7a3f00;
+  --color-p-pinterest: #a30f3b;
+  --color-p-snapchat: #8a7500;
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
@@ -49,13 +58,15 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-surface-3);
+  background: #cdd3dd;
   border-radius: 6px;
   border: 2px solid var(--color-bg);
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* ── Motion system — compositor-only (transform + opacity), ≤400ms ─────── */
 
 @keyframes fade-up {
   from {
@@ -71,7 +82,62 @@ body {
   animation: fade-up 0.25s ease-out both;
 }
 
-/* ── Branch system: glowing streams + node transitions ─────────────────── */
+/* Staggered card reveal: apply .reveal to children of a .reveal-group. */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.reveal-group > * {
+  animation: reveal-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.reveal-group > *:nth-child(1) { animation-delay: 0ms; }
+.reveal-group > *:nth-child(2) { animation-delay: 40ms; }
+.reveal-group > *:nth-child(3) { animation-delay: 80ms; }
+.reveal-group > *:nth-child(4) { animation-delay: 120ms; }
+.reveal-group > *:nth-child(5) { animation-delay: 160ms; }
+.reveal-group > *:nth-child(6) { animation-delay: 200ms; }
+.reveal-group > *:nth-child(7) { animation-delay: 240ms; }
+.reveal-group > *:nth-child(8) { animation-delay: 280ms; }
+.reveal-group > *:nth-child(n + 9) { animation-delay: 320ms; }
+
+/* Button press feedback — instant, GPU-only, app-wide. */
+button:not(:disabled):active,
+.press:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+/* Page-level slide via the View Transitions API (no-op where unsupported). */
+@view-transition {
+  navigation: auto;
+}
+@supports (view-transition-name: none) {
+  ::view-transition-old(root) {
+    animation: vt-out 0.18s ease-in both;
+  }
+  ::view-transition-new(root) {
+    animation: vt-in 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes vt-out {
+    to {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+  @keyframes vt-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}
+
+/* ── Branch system: gold filament streams + node transitions ───────────── */
 
 @keyframes branch-flow {
   to {
@@ -101,13 +167,13 @@ body {
 }
 
 .branch-glow {
-  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.85));
+  filter: drop-shadow(0 0 6px rgba(176, 138, 46, 0.75));
 }
 .branch-glow-soft {
-  filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.4));
+  filter: drop-shadow(0 0 4px rgba(176, 138, 46, 0.4));
 }
 .branch-glow-magenta {
-  filter: drop-shadow(0 0 5px rgba(192, 38, 211, 0.7));
+  filter: drop-shadow(0 0 5px rgba(143, 111, 34, 0.6));
 }
 
 @keyframes branch-step-fwd {
@@ -155,13 +221,40 @@ body {
   animation: brand-pop 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Gold hairline that reads as HUD circuitry on white cards. */
+.hud-hairline {
+  position: relative;
+}
+.hud-hairline::after {
+  content: "";
+  position: absolute;
+  inset-inline: 12px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(176, 138, 46, 0.55),
+    transparent
+  );
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .branch-stream,
   .branch-stream-slow,
   .branch-node-active,
   .branch-step-fwd,
   .branch-step-back,
-  .brand-pop {
+  .brand-pop,
+  .fade-up,
+  .reveal-group > * {
     animation: none;
+  }
+  @supports (view-transition-name: none) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none;
+    }
   }
 }

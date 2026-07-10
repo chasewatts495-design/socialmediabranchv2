@@ -13,10 +13,10 @@ import { formatCompact } from "@/lib/metrics/engagement";
 import { CHART, shortDate } from "./theme";
 
 const SERIES = [
-  { key: "likes", label: "Likes", color: "#3d87f5" },
-  { key: "comments", label: "Comments", color: "#0095b0" },
-  { key: "shares", label: "Shares", color: "#8b5cf6" },
-  { key: "saves", label: "Saves", color: "#cc2957" },
+  { key: "likes", label: "Likes", color: "#1b64c8" },
+  { key: "comments", label: "Comments", color: "#0087a3" },
+  { key: "shares", label: "Shares", color: "#6d3fd4" },
+  { key: "saves", label: "Saves", color: "#a30f3b" },
 ] as const;
 
 export function EngagementBreakdownChart({
@@ -59,7 +59,7 @@ export function EngagementBreakdownChart({
             />
             <Tooltip
               {...CHART.tooltip}
-              cursor={{ fill: "#1a213066" }}
+              cursor={{ fill: "#e3e7ee99" }}
               labelFormatter={(l) => shortDate(String(l))}
               formatter={(value, name) => [
                 Number(value).toLocaleString(),

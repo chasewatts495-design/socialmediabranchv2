@@ -82,7 +82,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Stat tiles */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="reveal-group grid grid-cols-2 gap-3 lg:grid-cols-4">
         {statCards.map((s) => (
           <Card key={s.label} className="p-4">
             <p className="text-[11px] font-medium tracking-wide text-muted uppercase">
@@ -133,7 +133,7 @@ export default async function DashboardPage({
             Manage connections →
           </Link>
         </div>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="reveal-group grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {data.accounts.map((a) => (
             <Link key={a.id} href={`/accounts/${a.id}`}>
               <Card className="p-4 transition hover:border-accent/50">
