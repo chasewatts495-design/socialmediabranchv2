@@ -1,3 +1,4 @@
+import { ArcRings } from "@/components/hud/ArcRings";
 import Link from "next/link";
 import {
   getCalendarPosts,
@@ -44,13 +45,16 @@ export default async function CalendarPage({
   return (
     <div className="space-y-5 fade-up">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
-            Calendar
-          </h1>
-          <p className="mt-0.5 text-xs text-muted md:text-sm">
-            Scheduled and published posts across every account
-          </p>
+        <div className="flex min-w-0 items-center gap-3">
+          <ArcRings className="h-9 w-9 md:h-10 md:w-10" />
+          <div className="min-w-0">
+            <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
+              Calendar
+            </h1>
+            <p className="mt-0.5 text-xs text-muted md:text-sm">
+              Scheduled and published posts across every account
+            </p>
+          </div>
         </div>
         <Link
           href="/composer"

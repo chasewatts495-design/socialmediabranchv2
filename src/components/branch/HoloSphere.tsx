@@ -53,8 +53,23 @@ function buildGeometry(pointCount: number) {
   return { points, links };
 }
 
-export function HoloSphere({ className }: { className?: string }) {
+function hexToRgb(hex: string): readonly [number, number, number] {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return GOLD;
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255] as const;
+}
+
+export function HoloSphere({
+  className,
+  satellites = [],
+}: {
+  className?: string;
+  /** One orbiting node per connected platform (brand-adjacent hex colors). */
+  satellites?: string[];
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const satKey = satellites.join(",");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -68,6 +83,22 @@ export function HoloSphere({ className }: { className?: string }) {
 
     const { points, links } = buildGeometry(340);
     const proj = new Float32Array(points.length * 3); // sx, sy, depth
+
+    // Orbiting platform satellites: fixed tilted orbits, varied speeds.
+    const satColors = satKey ? satKey.split(",") : [];
+    const sats = satColors.slice(0, 8).map((hex, i) => ({
+      rgb: hexToRgb(hex),
+      orbitR: 1.3 + (i % 3) * 0.16,
+      tilt: 0.45 + (i % 4) * 0.35,
+      speed: (0.0045 + i * 0.0009) * (i % 2 === 0 ? 1 : -1),
+      phase: (i * Math.PI * 2) / Math.max(satColors.length, 1),
+    }));
+    let clock = 0; // frames — advances only while animating
+    // A gold "transmission" beam fires from the globe to a satellite
+    // every couple of seconds (skipped under reduced motion).
+    let beam: { sat: number; startClock: number } | null = null;
+    const BEAM_FRAMES = 45;
+    const BEAM_EVERY = 150;
 
     let yaw = 0.6;
     let pitch = -0.35;
@@ -94,7 +125,10 @@ export function HoloSphere({ className }: { className?: string }) {
     const draw = () => {
       const cx = (width / 2) * dpr;
       const cy = (height / 2) * dpr;
-      const radius = Math.min(width, height) * 0.42 * dpr;
+      // With satellites the widest orbit reaches ~1.6× the globe radius —
+      // shrink the globe so orbits stay inside the canvas at any size.
+      const radius =
+        Math.min(width, height) * (sats.length > 0 ? 0.29 : 0.42) * dpr;
       const f = 3.2; // perspective strength
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -103,6 +137,52 @@ export function HoloSphere({ className }: { className?: string }) {
       const cyw = Math.cos(yaw);
       const sp = Math.sin(pitch);
       const cp = Math.cos(pitch);
+
+      // Camera transform for any world-space point (shared with satellites).
+      const project = (
+        px: number,
+        py: number,
+        pz: number,
+      ): [number, number, number] => {
+        const x1 = px * cyw + pz * sy;
+        const z1 = -px * sy + pz * cyw;
+        const y2 = py * cp - z1 * sp;
+        const z2 = py * sp + z1 * cp;
+        const s = f / (f + z2);
+        return [cx + x1 * radius * s, cy + y2 * radius * s, z2];
+      };
+
+      const satPos = (si: number): [number, number, number] => {
+        const sat = sats[si];
+        const theta = clock * sat.speed + sat.phase;
+        const st = Math.sin(sat.tilt);
+        const ct = Math.cos(sat.tilt);
+        return [
+          Math.cos(theta) * sat.orbitR,
+          -Math.sin(theta) * sat.orbitR * st,
+          Math.sin(theta) * sat.orbitR * ct,
+        ];
+      };
+
+      // Orbit tracks first, so the globe draws over their far side.
+      ctx.lineWidth = 0.8 * dpr;
+      for (const sat of sats) {
+        ctx.strokeStyle = `rgba(${sat.rgb[0]},${sat.rgb[1]},${sat.rgb[2]},0.18)`;
+        ctx.beginPath();
+        for (let k = 0; k <= 48; k++) {
+          const theta = (k / 48) * Math.PI * 2;
+          const st = Math.sin(sat.tilt);
+          const ct = Math.cos(sat.tilt);
+          const [ox, oy] = project(
+            Math.cos(theta) * sat.orbitR,
+            -Math.sin(theta) * sat.orbitR * st,
+            Math.sin(theta) * sat.orbitR * ct,
+          );
+          if (k === 0) ctx.moveTo(ox, oy);
+          else ctx.lineTo(ox, oy);
+        }
+        ctx.stroke();
+      }
 
       for (let i = 0; i < points.length; i++) {
         const p = points[i];
@@ -159,6 +239,51 @@ export function HoloSphere({ className }: { className?: string }) {
         Math.PI * 2,
       );
       ctx.stroke();
+
+      // Transmission beam: globe surface → the satellite, fading as it lands.
+      if (beam && sats.length) {
+        const age = clock - beam.startClock;
+        if (age > BEAM_FRAMES) {
+          beam = null;
+        } else {
+          const [tx, ty, tz] = satPos(beam.sat);
+          const len = Math.hypot(tx, ty, tz) || 1;
+          const pr = age / BEAM_FRAMES;
+          const [sx0, sy0] = project(tx / len, ty / len, tz / len);
+          const [hx, hy] = project(
+            (tx / len) * (1 + (len - 1) * pr),
+            (ty / len) * (1 + (len - 1) * pr),
+            (tz / len) * (1 + (len - 1) * pr),
+          );
+          ctx.strokeStyle = `rgba(${GOLD_BRIGHT[0]},${GOLD_BRIGHT[1]},${GOLD_BRIGHT[2]},${0.7 * (1 - pr)})`;
+          ctx.lineWidth = 1.4 * dpr;
+          ctx.beginPath();
+          ctx.moveTo(sx0, sy0);
+          ctx.lineTo(hx, hy);
+          ctx.stroke();
+          ctx.fillStyle = `rgba(${GOLD_BRIGHT[0]},${GOLD_BRIGHT[1]},${GOLD_BRIGHT[2]},${0.95 * (1 - pr * 0.5)})`;
+          ctx.beginPath();
+          ctx.arc(hx, hy, 2.2 * dpr, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // The satellites themselves — brand-colored nodes with a gold halo.
+      for (let si = 0; si < sats.length; si++) {
+        const [px3, py3, pz3] = satPos(si);
+        const [sx1, sy1, depth] = project(px3, py3, pz3);
+        const alpha = 0.55 + 0.45 * (1 - depth) * 0.5;
+        const { rgb } = sats[si];
+        ctx.strokeStyle = `rgba(${GOLD[0]},${GOLD[1]},${GOLD[2]},${alpha * 0.6})`;
+        ctx.lineWidth = 1 * dpr;
+        ctx.beginPath();
+        ctx.arc(sx1, sy1, 4.6 * dpr, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;
+        ctx.beginPath();
+        ctx.arc(sx1, sy1, 2.6 * dpr, 0, Math.PI * 2);
+        ctx.fill();
+      }
     };
 
     const tick = () => {
@@ -173,6 +298,15 @@ export function HoloSphere({ className }: { className?: string }) {
           velYaw *= 0.95;
         }
         pitch = Math.max(-1.2, Math.min(1.2, pitch));
+      }
+      if (!reduceMotion) {
+        clock++;
+        if (sats.length > 0 && !beam && clock % BEAM_EVERY === 0) {
+          beam = {
+            sat: Math.floor(Math.random() * sats.length),
+            startClock: clock,
+          };
+        }
       }
       draw();
       const idle =
@@ -258,7 +392,7 @@ export function HoloSphere({ className }: { className?: string }) {
       canvas.removeEventListener("pointerup", onPointerUp);
       canvas.removeEventListener("pointercancel", onPointerUp);
     };
-  }, []);
+  }, [satKey]);
 
   return (
     <canvas

@@ -69,7 +69,13 @@ export function Tilt({
   }, [max]);
 
   return (
-    <div ref={ref} className={className} style={{ willChange: "transform" }}>
+    <div
+      ref={ref}
+      className={className}
+      // preserve-3d lets .hud-lift children float above the card plane
+      // while the tilt's perspective is active.
+      style={{ willChange: "transform", transformStyle: "preserve-3d" }}
+    >
       {children}
     </div>
   );

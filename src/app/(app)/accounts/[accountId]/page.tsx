@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAccountDetail } from "@/lib/db/account-queries";
-import { Card, CardHeader, StatDelta } from "@/components/ui/primitives";
+import { Card, CardHeader } from "@/components/ui/primitives";
+import { Tilt } from "@/components/ui/Tilt";
+import { RingGauge } from "@/components/hud/RingGauge";
 import { AccountAvatar } from "@/components/dashboard/AccountAvatar";
 import { ModeChip, PlatformBadge } from "@/components/dashboard/PlatformBadge";
 import { RangeToggle } from "@/components/dashboard/RangeToggle";
@@ -125,17 +127,13 @@ export default async function AccountPage({
         />
       </Card>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="reveal-group grid grid-cols-2 gap-3 lg:grid-cols-4">
         {kpis.map((k) => (
-          <Card key={k.label} className="p-4">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-muted">
-              {k.label}
-            </p>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-lg font-semibold md:text-xl">{k.value}</span>
-              <StatDelta value={k.delta} />
-            </div>
-          </Card>
+          <Tilt key={k.label}>
+            <Card className="p-3 md:p-4">
+              <RingGauge label={k.label} value={k.value} deltaPct={k.delta} />
+            </Card>
+          </Tilt>
         ))}
       </div>
 
@@ -159,7 +157,7 @@ export default async function AccountPage({
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
+        <Card className="scan-sweep">
           <CardHeader title="Followers" />
           <div className="p-4 md:p-5">
             <MetricLineChart
@@ -170,13 +168,13 @@ export default async function AccountPage({
             />
           </div>
         </Card>
-        <Card>
+        <Card className="scan-sweep">
           <CardHeader title="Impressions" />
           <div className="p-4 md:p-5">
             <MetricLineChart
               data={series}
               dataKey="impressions"
-              color="#3d87f5"
+              color="#1b64c8"
               label="Impressions"
             />
           </div>

@@ -1,3 +1,4 @@
+import { ArcRings } from "@/components/hud/ArcRings";
 import { desc } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { activityLog } from "@/lib/db/schema";
@@ -39,7 +40,8 @@ export default async function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-5 fade-up">
-      <div>
+      <div className="flex items-center gap-3">
+        <ArcRings className="h-9 w-9 md:h-10 md:w-10" />
         <h1 className="text-xl font-semibold tracking-tight md:text-2xl">Settings</h1>
       </div>
 

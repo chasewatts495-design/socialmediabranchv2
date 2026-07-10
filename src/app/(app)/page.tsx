@@ -2,9 +2,12 @@ import Link from "next/link";
 import { ensureSeeded } from "@/lib/db/ensure-seeded";
 import { getDashboardData } from "@/lib/db/queries";
 import { brandScope, getActiveBrand, getActiveBrandId } from "@/lib/brands";
-import { Card, CardHeader, StatDelta } from "@/components/ui/primitives";
+import { Card, CardHeader } from "@/components/ui/primitives";
 import { Tilt } from "@/components/ui/Tilt";
 import { HoloSphere } from "@/components/branch/HoloSphere";
+import { RingGauge } from "@/components/hud/RingGauge";
+import { ArcRings } from "@/components/hud/ArcRings";
+import { PLATFORM_CHART_COLORS } from "@/lib/metrics/colors";
 import { FollowerTrendChart } from "@/components/charts/FollowerTrendChart";
 import { EngagementBarChart } from "@/components/charts/EngagementBarChart";
 import { Sparkline } from "@/components/charts/Sparkline";
@@ -70,15 +73,18 @@ export default async function DashboardPage({
   return (
     <div className="space-y-6 fade-up">
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
-            Dashboard
-          </h1>
-          <p className="mt-0.5 text-xs text-muted md:text-sm">
-            {activeBrand ? activeBrand.name : "All brands"} ·{" "}
-            {data.accounts.length} account{data.accounts.length === 1 ? "" : "s"}{" "}
-            · last {range} days
-          </p>
+        <div className="flex min-w-0 items-center gap-3">
+          <ArcRings className="h-9 w-9 md:h-10 md:w-10" />
+          <div className="min-w-0">
+            <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
+              Dashboard
+            </h1>
+            <p className="mt-0.5 truncate text-xs text-muted md:text-sm">
+              {activeBrand ? activeBrand.name : "All brands"} ·{" "}
+              {data.accounts.length} account{data.accounts.length === 1 ? "" : "s"}{" "}
+              · last {range} days
+            </p>
+          </div>
         </div>
         <RangeToggle current={range} />
       </div>
@@ -100,30 +106,29 @@ export default async function DashboardPage({
               {activeBrand
                 ? `${activeBrand.name} command deck`
                 : "Every brand, one command deck"}{" "}
-              — all systems reporting.
+              — <span className="boot-text">all systems reporting.</span>
             </p>
             <p className="mt-4 hidden text-[11px] text-faint md:block">
-              Drag the globe to spin it.
+              Drag the globe to spin it — each orbiting node is a connected
+              platform.
             </p>
           </div>
           <div className="h-44 md:h-56">
-            <HoloSphere />
+            <HoloSphere
+              satellites={data.platformsInTrend.map(
+                (pid) => PLATFORM_CHART_COLORS[pid],
+              )}
+            />
           </div>
         </div>
       </Card>
 
-      {/* Stat tiles */}
+      {/* Stat tiles: Jarvis radial readouts */}
       <div className="reveal-group grid grid-cols-2 gap-3 lg:grid-cols-4">
         {statCards.map((s) => (
           <Tilt key={s.label}>
-            <Card className="p-4">
-              <p className="text-[11px] font-medium tracking-wide text-muted uppercase">
-                {s.label}
-              </p>
-              <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-xl font-semibold md:text-2xl">{s.value}</span>
-                <StatDelta value={s.delta} />
-              </div>
+            <Card className="p-3 md:p-4">
+              <RingGauge label={s.label} value={s.value} deltaPct={s.delta} />
               {s.spark && <Sparkline data={s.spark} />}
             </Card>
           </Tilt>
@@ -132,7 +137,7 @@ export default async function DashboardPage({
 
       {/* Charts */}
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <Card className="scan-sweep lg:col-span-2">
           <CardHeader
             title="Follower growth"
             subtitle="Per platform, accounts combined"
@@ -144,7 +149,7 @@ export default async function DashboardPage({
             />
           </div>
         </Card>
-        <Card>
+        <Card className="scan-sweep">
           <CardHeader
             title="Engagement by platform"
             subtitle="Engagements ÷ reach"

@@ -1,3 +1,4 @@
+import { ArcRings } from "@/components/hud/ArcRings";
 import { getLibraryAssets } from "@/lib/db/library-queries";
 import {
   getBestHours,
@@ -33,13 +34,18 @@ export default async function ComposerPage({
 
   return (
     <div className="fade-up">
-      <h1 className="mb-1 text-xl font-semibold tracking-tight md:text-2xl">
-        Compose
-      </h1>
-      <p className="mb-6 text-xs text-muted md:text-sm">
-        One post, every platform — Branch adapts the caption and checks each
-        network&apos;s rules before anything goes out.
-      </p>
+      <div className="mb-6 flex items-center gap-3">
+        <ArcRings className="h-9 w-9 md:h-10 md:w-10" />
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
+            Compose
+          </h1>
+          <p className="mt-0.5 text-xs text-muted md:text-sm">
+            One post, every platform — Branch adapts the caption and checks
+            each network&apos;s rules before anything goes out.
+          </p>
+        </div>
+      </div>
       <ComposerClient
         accounts={accounts}
         assets={assets}

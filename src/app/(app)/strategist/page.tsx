@@ -1,3 +1,4 @@
+import { ArcRings } from "@/components/hud/ArcRings";
 import { desc } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { brandScope, getActiveBrandId } from "@/lib/brands";
@@ -58,7 +59,9 @@ export default async function StrategistPage() {
   return (
     <div className="fade-up">
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <div className="flex-1">
+        <div className="flex flex-1 items-center gap-3">
+          <ArcRings className="h-9 w-9 shrink-0 md:h-10 md:w-10" />
+          <div className="min-w-0">
           <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
             AI Strategist
           </h1>
@@ -66,6 +69,7 @@ export default async function StrategistPage() {
             Trained on platform algorithms, case studies, influencer playbooks,
             and selling psychology — grounded in your real numbers.
           </p>
+          </div>
         </div>
         <Badge tone={aiEnabled ? "success" : "info"}>
           {aiEnabled ? "Claude connected" : "Demo mode"}

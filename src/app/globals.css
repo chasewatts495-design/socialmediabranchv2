@@ -221,6 +221,93 @@ button:not(:disabled):active,
   animation: brand-pop 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* ── Jarvis HUD: gauges, arc rings, scan sweep, boot text, depth ───────── */
+
+@keyframes ring-sweep {
+  from {
+    stroke-dashoffset: var(--ring-circ);
+  }
+  to {
+    stroke-dashoffset: var(--ring-target);
+  }
+}
+.ring-sweep {
+  animation: ring-sweep 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+@keyframes arc-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes arc-rotate-rev {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+.arc-spin {
+  animation: arc-rotate 9s linear infinite;
+}
+.arc-spin-rev {
+  animation: arc-rotate-rev 6s linear infinite;
+}
+.arc-spin-slow {
+  animation: arc-rotate 14s linear infinite;
+}
+
+/* One-shot gold scanline that wipes a card on mount (transform-only). */
+@keyframes scan-x {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(60rem);
+  }
+}
+.scan-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.scan-sweep::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -6rem;
+  width: 6rem;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 180, 88, 0.22),
+    rgba(176, 138, 46, 0.32),
+    transparent
+  );
+  pointer-events: none;
+  animation: scan-x 0.8s ease-out 0.25s 1 both;
+}
+
+/* HUD boot text: types on with steps(), then the caret blinks out. */
+@keyframes boot-type {
+  from {
+    max-width: 0;
+  }
+  to {
+    max-width: 100%;
+  }
+}
+.boot-text {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+  animation: boot-type 0.6s steps(28, end) both;
+}
+
+/* Content that floats above its card inside a Tilt's perspective. */
+.hud-lift {
+  transform: translateZ(18px);
+}
+
 /* Gold hairline that reads as HUD circuitry on white cards. */
 .hud-hairline {
   position: relative;
@@ -248,8 +335,17 @@ button:not(:disabled):active,
   .branch-step-back,
   .brand-pop,
   .fade-up,
+  .ring-sweep,
+  .arc-spin,
+  .arc-spin-rev,
+  .arc-spin-slow,
+  .boot-text,
   .reveal-group > * {
     animation: none;
+  }
+  .scan-sweep::after {
+    animation: none;
+    opacity: 0;
   }
   @supports (view-transition-name: none) {
     ::view-transition-old(root),
