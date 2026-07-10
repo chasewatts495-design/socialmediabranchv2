@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getDb } from "@/lib/db/client";
 import { brandScope, getActiveBrandId } from "@/lib/brands";
 import { PLATFORM_DEFS } from "@/lib/connectors/registry";
+import "@/lib/connectors/live/register";
 import { PLATFORM_IDS } from "@/lib/connectors/types";
 import { Badge, Card, CardHeader } from "@/components/ui/primitives";
 import { AccountAvatar } from "@/components/dashboard/AccountAvatar";
@@ -100,10 +101,11 @@ export default async function ConnectionsPage() {
           subtitle="What each platform's API actually allows — the honest version"
         />
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-xs">
+          <table className="w-full min-w-[720px] text-xs">
             <thead>
               <tr className="border-b border-border text-left text-[11px] uppercase tracking-wide text-faint">
                 <th className="px-4 py-2 font-medium md:px-5">Platform</th>
+                <th className="px-3 py-2 font-medium">Go live</th>
                 <th className="px-3 py-2 font-medium">Auto-posting</th>
                 <th className="px-3 py-2 font-medium">Analytics</th>
                 <th className="px-3 py-2 font-medium">Cost</th>
@@ -112,11 +114,23 @@ export default async function ConnectionsPage() {
             </thead>
             <tbody className="divide-y divide-border">
               {PLATFORM_IDS.map((pid) => {
-                const caps = PLATFORM_DEFS[pid].capabilities;
+                const def = PLATFORM_DEFS[pid];
+                const caps = def.capabilities;
                 return (
                   <tr key={pid}>
                     <td className="px-4 py-2.5 font-medium md:px-5">
                       {caps.displayName}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {def.buildLiveConnector ? (
+                        <span className="font-medium text-success">
+                          Available now
+                        </span>
+                      ) : caps.access.costTier === "unavailable" ? (
+                        <span className="text-muted">Manual only</span>
+                      ) : (
+                        <span className="text-warning">Platform-gated</span>
+                      )}
                     </td>
                     <td className="px-3 py-2.5">
                       {caps.canPublish ? (

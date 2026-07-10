@@ -202,6 +202,38 @@ export async function testConnectionAction(accountId: string): Promise<ActionRes
   }
 }
 
+/**
+ * Revokes Branch's access: deletes the stored tokens and drops the
+ * account back to demo mode (history stays). The owner can also revoke
+ * from the platform's own security settings.
+ */
+export async function disconnectAccountAction(
+  accountId: string,
+): Promise<ActionResult> {
+  const db = await getDb();
+  const account = await db.query.accounts.findFirst({
+    where: (a, { eq: e }) => e(a.id, accountId),
+  });
+  if (!account) return { ok: false, message: "Account not found." };
+  await db.delete(credentials).where(eq(credentials.accountId, accountId));
+  await db
+    .update(accounts)
+    .set({ mode: "demo", status: "connected", syncError: null })
+    .where(eq(accounts.id, accountId));
+  await db.insert(activityLog).values({
+    id: uuid(),
+    event: "account.disconnected",
+    accountId,
+    detail: { platformId: account.platformId, handle: account.handle },
+  });
+  revalidatePath("/connections", "layout");
+  return {
+    ok: true,
+    message:
+      "Disconnected — tokens deleted, account back to demo mode. You can also revoke Branch in the platform's security settings.",
+  };
+}
+
 export async function deleteAccountAction(accountId: string): Promise<void> {
   const db = await getDb();
   const account = await db.query.accounts.findFirst({

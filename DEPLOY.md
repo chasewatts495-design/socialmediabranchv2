@@ -22,6 +22,7 @@ variables, and add a free cron pinger. No credit card required.
    | `APP_PASSWORD` | a strong password — this is your login |
    | `APP_ENCRYPTION_KEY` | random 32+ chars — run `openssl rand -base64 32`, or mash the keyboard |
    | `CRON_SECRET` | another random string — protects the scheduler endpoint |
+   | `APP_BASE_URL` | your production URL (add after the first deploy, e.g. `https://socialmediabranchv2.vercel.app`) — pins the OAuth redirect URIs for live connections |
 
 4. Click **Deploy**. The build runs `npm run db:migrate` against Neon
    automatically (see `vercel.json`), then builds the app.
@@ -53,7 +54,31 @@ minute-accurate scheduled posts, add a free external pinger:
 **Check it works:** Settings → System → "Scheduled work" should say
 *Healthy* a few minutes after the pinger starts.
 
-## 5. Turn on the AI Strategist (optional, pay-as-you-go)
+## 5. Connect your real accounts (free, ~5–15 min per platform)
+
+Open **Connections** in the deployed app. Each platform wizard walks you
+through creating its free developer app and shows the exact **Redirect
+URI** to paste into that app's settings. Then:
+
+1. **Reddit** (fastest, ~2 min): reddit.com/prefs/apps → create a
+   **script** app → paste its client ID/secret + your Reddit login into
+   the wizard. Saving runs a live check and flips the account to LIVE.
+2. **Pinterest**: developers.pinterest.com → create an app (Trial access
+   is instant) → paste the App ID/secret → **Connect with Pinterest**.
+3. **YouTube**: console.cloud.google.com → enable the YouTube Data +
+   Analytics APIs → Web OAuth client → **Connect** (push the consent
+   screen to "In production" so the connection doesn't expire weekly).
+4. **Instagram + Facebook**: developers.facebook.com → Business app →
+   **Connect**, then pick which Pages/IG profiles to link. Instagram
+   publishing needs media on public URLs — uploads via Vercel Blob (step
+   3) qualify automatically.
+
+You always log in on the platform's own page — Branch stores only
+revocable, encrypted tokens, never your passwords. TikTok and X are
+deferred (TikTok forces unaudited apps to post privately; X's API is
+pay-per-use).
+
+## 6. Turn on the AI Strategist (optional, pay-as-you-go)
 
 1. Create an API key at **console.anthropic.com** (Anthropic account).
 2. In Branch: **Settings → AI Strategist** → paste the key → **Test key**.

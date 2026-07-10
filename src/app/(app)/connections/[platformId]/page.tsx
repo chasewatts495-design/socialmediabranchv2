@@ -16,6 +16,7 @@ import {
   CredentialForm,
 } from "@/components/connections/ConnectionForms";
 import { OAuthConnectCard } from "@/components/connections/OAuthConnectCard";
+import { GrantedScopes } from "@/components/connections/GrantedScopes";
 
 export const dynamic = "force-dynamic";
 
@@ -188,6 +189,14 @@ export default async function PlatformWizardPage({
                 />
                 <AccountRowActions accountId={a.id} canDelete />
               </div>
+              <GrantedScopes
+                accountId={a.id}
+                scopes={a.credential?.scopes ?? []}
+                reconnectHref={
+                  providerKey ? `/api/oauth/${providerKey}/start?reauth=${a.id}` : null
+                }
+                isLive={a.mode === "live"}
+              />
               {caps.auth.credentialFields.length > 0 && (
                 <details className="mt-3 border-t border-border pt-3">
                   <summary className="cursor-pointer text-xs font-medium text-muted">

@@ -26,9 +26,25 @@ Works on desktop and phone (one responsive web app).
   reviews, and **Ad Builder** campaign briefs with scripts, CTAs, and the
   psychology behind every element. Runs on your Anthropic API key — or in a
   deterministic demo mode without one.
+- **Brands** — group accounts by brand and switch between them from the
+  sidebar; every page (dashboard, composer, calendar, AI) scopes to the
+  active brand.
+- **Per-account permissions** — toggle posting and stats sync per account;
+  live connections show exactly what they're allowed to do, with
+  reconnect-to-change and one-click disconnect.
+- **Per-platform scheduling** — one time for all platforms, a custom time per
+  platform, or each account's learned best hour (from its own engagement
+  history).
+- **Content recycling** — per-account auto-reposting: Branch picks a random
+  already-published post (outside a no-repeat window), optionally freshens
+  the caption, and schedules the rerun inside your posting hours.
+- **Live connections** — Reddit, Pinterest, YouTube (analytics), and Meta
+  (Instagram + Facebook) connect for real via platform login windows (OAuth)
+  or Reddit's sanctioned script-app flow. Branch never stores social
+  passwords — only revocable, encrypted tokens.
 - **Demo mode first** — the entire app boots with 90 days of realistic sample
-  data. Every platform is a plug-in connector: paste real API credentials in
-  the Connections wizard when you have them.
+  data. Every platform is a plug-in connector that flips to live when
+  connected.
 
 ## Quick start (local)
 
@@ -53,22 +69,23 @@ Vercel Blob (media) + a free cron pinger, all on free tiers, ~15 minutes.
 ## Connecting real platforms
 
 Open **Connections** in the app. Each platform has a wizard with exact
-click-by-click steps to get API credentials, plus an honest capability
-matrix (what's free, what's paid, what's impossible):
+click-by-click steps (create the free developer app, paste its keys, hit
+Connect), plus an honest capability matrix:
 
-| Platform | Auto-post | Analytics | Cost |
-|---|---|---|---|
-| Instagram / Facebook | ✅ (Business acct + FB Page) | ✅ | Free |
-| TikTok | ✅ (private until TikTok audits your app) | Partial | Free |
-| YouTube | ✅ (private until Google audit; ~6/day quota) | ✅ Excellent | Free |
-| Reddit | ✅ (instant self-serve) | Per-post only | Free |
-| Pinterest | ✅ (Business acct) | ✅ | Free |
-| X (Twitter) | ✅ | Paid reads | **Pay-per-use** |
-| Snapchat | ❌ No public API — manual checklist + CSV stats | ❌ | n/a |
+| Platform | Go live | Auto-post | Analytics | Cost |
+|---|---|---|---|---|
+| Reddit | **Live now** (script app, ~2 min) | ✅ | Per-post only | Free |
+| Pinterest | **Live now** (trial access, instant) | ✅ | ✅ | Free |
+| YouTube | **Live now** (analytics; uploads via Studio until Google audit) | Studio | ✅ Excellent | Free |
+| Instagram / Facebook | **Live now** (Meta dev mode; Business acct + FB Page) | ✅ | ✅ | Free |
+| TikTok | Deferred — unaudited apps can only post private | ✅* | Partial | Free |
+| X (Twitter) | Deferred — API is pay-per-use | ✅* | Paid reads | **Pay-per-use** |
+| Snapchat | ❌ No public API — manual checklist + CSV stats | ❌ | ❌ | n/a |
 
-Credentials are AES-256-GCM encrypted at rest. Live connector
-implementations ship platform-by-platform (Reddit first); until then every
-account runs in demo mode and credentials wait, stored and ready.
+You log in on each platform's own page (OAuth) — Branch never sees or
+stores social passwords, only revocable tokens, AES-256-GCM encrypted at
+rest. The one sanctioned exception is Reddit's script-app flow, where the
+password goes directly to reddit.com's token endpoint.
 
 ## Architecture
 
@@ -77,7 +94,8 @@ PGlite in dev, node-postgres for self-hosting) · Recharts · Tailwind v4 ·
 Anthropic SDK (`claude-sonnet-5` default) · zod everywhere.
 
 ```
-src/lib/connectors/   pluggable platform contract + demo/manual connectors
+src/lib/connectors/   pluggable platform contract + demo/manual/live connectors
+src/lib/oauth/        OAuth engine: providers, signed state, app credentials
 src/lib/ai/           strategist: prompts, contracts, knowledge base, demo engine
 src/lib/ai/knowledge/ curated marketing knowledge (editable TS-markdown)
 src/lib/scheduler/    serverless job runner (publish, stats sync, AI reports)

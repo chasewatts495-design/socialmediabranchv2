@@ -47,15 +47,20 @@ beforeEach(() => {
   fetchMock.mockReset();
 });
 
+function asFailure(r: ReturnType<typeof publishFailure>) {
+  if (r.ok) throw new Error("expected a failure result");
+  return r;
+}
+
 describe("error mapping", () => {
   it("classifies platform failures honestly", () => {
-    expect(publishFailure(new LiveHttpError(429, "slow down", "u")).retryable).toBe(true);
-    expect(publishFailure(new LiveHttpError(503, "oops", "u")).retryable).toBe(true);
-    const auth = publishFailure(new LiveHttpError(401, "no", "u"));
+    expect(asFailure(publishFailure(new LiveHttpError(429, "slow down", "u"))).retryable).toBe(true);
+    expect(asFailure(publishFailure(new LiveHttpError(503, "oops", "u"))).retryable).toBe(true);
+    const auth = asFailure(publishFailure(new LiveHttpError(401, "no", "u")));
     expect(auth.retryable).toBe(false);
     expect(auth.errorCode).toBe("AUTH_EXPIRED");
-    expect(publishFailure(new LiveHttpError(400, "bad", "u")).retryable).toBe(false);
-    expect(publishFailure(new TypeError("fetch failed")).retryable).toBe(true);
+    expect(asFailure(publishFailure(new LiveHttpError(400, "bad", "u"))).retryable).toBe(false);
+    expect(asFailure(publishFailure(new TypeError("fetch failed"))).retryable).toBe(true);
   });
 });
 
