@@ -55,14 +55,27 @@ function toLocalInputValue(date: Date): string {
   return new Date(date.getTime() - off * 60_000).toISOString().slice(0, 16);
 }
 
+/** Next occurrence of a UTC hour, at least 15 minutes from now. */
+function nextUtcHour(hour: number): Date {
+  const d = new Date();
+  d.setUTCHours(hour, 0, 0, 0);
+  if (d.getTime() < Date.now() + 15 * 60_000) d.setUTCDate(d.getUTCDate() + 1);
+  return d;
+}
+
+export type ScheduleMode = "same" | "custom" | "best";
+
 export function ComposerClient({
   accounts,
   assets,
   initial,
+  bestHours = {},
 }: {
   accounts: ComposerAccount[];
   assets: LibraryAsset[];
   initial: ComposerInitial;
+  /** Learned best posting hour (UTC) per accountId. */
+  bestHours?: Record<string, number>;
 }) {
   const router = useRouter();
   const accountById = useMemo(
@@ -91,6 +104,8 @@ export function ComposerClient({
       ? toLocalInputValue(new Date(initial.scheduledAt))
       : toLocalInputValue(new Date(Date.now() + 60 * 60 * 1000)),
   );
+  const [scheduleMode, setScheduleMode] = useState<ScheduleMode>("same");
+  const [perTargetTimes, setPerTargetTimes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<"draft" | "now" | "schedule" | null>(null);
   const [result, setResult] = useState<SavePostResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -203,6 +218,18 @@ export function ComposerClient({
     Infinity,
   );
 
+  function targetTimeFor(accountId: string): string | null {
+    if (scheduleMode === "custom") {
+      const v = perTargetTimes[accountId];
+      return v ? new Date(v).toISOString() : null;
+    }
+    if (scheduleMode === "best") {
+      const hour = bestHours[accountId];
+      return hour == null ? null : nextUtcHour(hour).toISOString();
+    }
+    return null; // "same" → every account uses the master time
+  }
+
   async function submit(mode: "draft" | "now" | "schedule") {
     setBusy(mode);
     setError(null);
@@ -216,6 +243,7 @@ export function ComposerClient({
           accountId,
           caption: variants[accountId]?.caption ?? caption,
           meta: variants[accountId]?.meta ?? {},
+          scheduledAt: mode === "schedule" ? targetTimeFor(accountId) : null,
         })),
         mode,
         scheduledAt:
@@ -655,6 +683,98 @@ export function ComposerClient({
             ` · fix ${blockingAccounts.length} account${blockingAccounts.length === 1 ? "" : "s"} in Fine-tune before publishing`}
         </p>
       </div>
+
+      {scheduleOpen && selected.length > 0 && (
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-faint">
+            When each platform posts
+          </p>
+          <div className="flex rounded-xl border border-border bg-surface-2 p-0.5 text-center text-xs font-medium">
+            {(
+              [
+                ["same", "Same time"],
+                ["custom", "Custom per platform"],
+                ["best", "Best time each"],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setScheduleMode(key)}
+                data-testid={`schedule-mode-${key}`}
+                className={cn(
+                  "flex-1 rounded-[10px] px-2 py-2 transition",
+                  scheduleMode === key
+                    ? "bg-accent text-white"
+                    : "text-muted hover:text-ink",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {scheduleMode === "same" && (
+            <p className="mt-3 text-xs text-muted">
+              Every account posts at the time you pick next to Confirm.
+            </p>
+          )}
+
+          {scheduleMode === "custom" && (
+            <div className="mt-3 space-y-2">
+              {selected.map((id) => {
+                const a = accountById.get(id);
+                if (!a) return null;
+                return (
+                  <label key={id} className="flex items-center gap-2 text-xs">
+                    <span className="min-w-0 flex-1 truncate">{a.handle}</span>
+                    <input
+                      type="datetime-local"
+                      data-testid="target-time"
+                      value={perTargetTimes[id] ?? scheduledAt}
+                      onChange={(e) =>
+                        setPerTargetTimes((m) => ({ ...m, [id]: e.target.value }))
+                      }
+                      className="rounded-lg border border-border bg-surface-2 px-2 py-1.5 outline-none focus:border-accent"
+                    />
+                  </label>
+                );
+              })}
+            </div>
+          )}
+
+          {scheduleMode === "best" && (
+            <ul className="mt-3 space-y-1.5 text-xs">
+              {selected.map((id) => {
+                const a = accountById.get(id);
+                if (!a) return null;
+                const hour = bestHours[id];
+                return (
+                  <li key={id} className="flex items-center gap-2">
+                    <span className="min-w-0 flex-1 truncate">{a.handle}</span>
+                    {hour == null ? (
+                      <span className="text-faint">
+                        no history yet — uses the master time
+                      </span>
+                    ) : (
+                      <span className="font-medium text-accent-strong">
+                        {nextUtcHour(hour).toLocaleString(undefined, {
+                          weekday: "short",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+              <li className="pt-1 text-[11px] text-faint">
+                Learned from each account&apos;s own engagement history.
+              </li>
+            </ul>
+          )}
+        </div>
+      )}
 
       {error && (
         <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">{error}</p>

@@ -1,6 +1,7 @@
 import { and, desc, eq, gte, lte, or } from "drizzle-orm";
 import { getDb } from "./client";
 import { accounts, posts, postTargets } from "./schema";
+import { recyclePoolPreview } from "@/lib/recycle";
 import type { PlatformId } from "@/lib/connectors/types";
 
 export interface CalendarPost {
@@ -110,4 +111,63 @@ export async function getQueueRows(brandId?: string): Promise<QueueRow[]> {
     platformId: account.platformId as PlatformId,
     mode: account.mode,
   }));
+}
+
+export interface RecyclingAccountRow {
+  accountId: string;
+  handle: string;
+  displayName: string;
+  avatarColor: string;
+  platformId: PlatformId;
+  mode: string;
+  postingEnabled: boolean;
+  rule: {
+    enabled: boolean;
+    everyHours: number;
+    noRepeatDays: number;
+    windowStartHour: number;
+    windowEndHour: number;
+    freshenCaption: boolean;
+    lastPickedAt: string | null;
+  } | null;
+  pool: { eligibleCount: number; sampleCaptions: string[] };
+}
+
+/** Per-account recycling state for the Recycling tab. */
+export async function getRecyclingOverview(
+  brandId?: string,
+): Promise<RecyclingAccountRow[]> {
+  const db = await getDb();
+  const rows = await db.query.accounts.findMany({
+    where: brandId ? (a, { eq: e }) => e(a.brandId, brandId) : undefined,
+    with: { recycleRule: true },
+    orderBy: (a, { asc }) => asc(a.sortOrder),
+  });
+  return Promise.all(
+    rows.map(async (a) => ({
+      accountId: a.id,
+      handle: a.handle,
+      displayName: a.displayName,
+      avatarColor: a.avatarColor,
+      platformId: a.platformId as PlatformId,
+      mode: a.mode,
+      postingEnabled: a.postingEnabled,
+      rule: a.recycleRule
+        ? {
+            enabled: a.recycleRule.enabled,
+            everyHours: a.recycleRule.everyHours,
+            noRepeatDays: a.recycleRule.noRepeatDays,
+            windowStartHour: a.recycleRule.windowStartHour,
+            windowEndHour: a.recycleRule.windowEndHour,
+            freshenCaption: a.recycleRule.freshenCaption,
+            lastPickedAt: a.recycleRule.lastPickedAt?.toISOString() ?? null,
+          }
+        : null,
+      pool: await recyclePoolPreview(
+        db,
+        a.id,
+        a.recycleRule?.noRepeatDays ?? 30,
+      ),
+    })),
+  );
 }

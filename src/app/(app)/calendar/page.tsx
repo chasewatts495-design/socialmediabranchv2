@@ -2,10 +2,12 @@ import Link from "next/link";
 import {
   getCalendarPosts,
   getQueueRows,
+  getRecyclingOverview,
 } from "@/lib/db/calendar-queries";
 import { brandScope, getActiveBrandId } from "@/lib/brands";
 import { CalendarClient } from "@/components/calendar/CalendarClient";
 import { QueueTable } from "@/components/calendar/QueueTable";
+import { RecyclingPanel } from "@/components/calendar/RecyclingPanel";
 import { cn } from "@/components/ui/cn";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +18,8 @@ export default async function CalendarPage({
   searchParams: Promise<{ tab?: string; month?: string }>;
 }) {
   const { tab: rawTab, month } = await searchParams;
-  const tab = rawTab === "queue" ? "queue" : "calendar";
+  const tab =
+    rawTab === "queue" ? "queue" : rawTab === "recycle" ? "recycle" : "calendar";
 
   const now = new Date();
   const monthISO =
@@ -28,9 +31,10 @@ export default async function CalendarPage({
   monthEnd.setMonth(monthEnd.getMonth() + 1);
 
   const brandId = brandScope(await getActiveBrandId());
-  const [posts, queue] = await Promise.all([
+  const [posts, queue, recycling] = await Promise.all([
     getCalendarPosts(monthStart, monthEnd, brandId),
     getQueueRows(brandId),
+    getRecyclingOverview(brandId),
   ]);
 
   const attention = queue.filter((q) =>
@@ -61,6 +65,7 @@ export default async function CalendarPage({
           [
             ["calendar", "Calendar"],
             ["queue", `Queue${attention ? ` (${attention})` : ""}`],
+            ["recycle", "Recycling"],
           ] as const
         ).map(([key, label]) => (
           <Link
@@ -78,8 +83,10 @@ export default async function CalendarPage({
 
       {tab === "calendar" ? (
         <CalendarClient posts={posts} monthISO={monthISO} />
-      ) : (
+      ) : tab === "queue" ? (
         <QueueTable rows={queue} />
+      ) : (
+        <RecyclingPanel rows={recycling} />
       )}
     </div>
   );

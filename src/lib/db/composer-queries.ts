@@ -1,4 +1,6 @@
+import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import { getDb } from "./client";
+import { postTargets } from "./schema";
 import type {
   ComposerAccount,
   ComposerInitial,
@@ -22,6 +24,63 @@ export async function getComposerAccounts(
     mode: a.mode,
     postingEnabled: a.postingEnabled,
   }));
+}
+
+/**
+ * Best posting hour (UTC) per account, learned from its own history:
+ * the publish hour whose posts average the highest engagement rate.
+ * Accounts without enough data (≥2 posts in some hour) get no entry —
+ * the composer falls back to the master time for them.
+ */
+export async function getBestHours(
+  accountIds: string[],
+): Promise<Record<string, number>> {
+  if (accountIds.length === 0) return {};
+  const db = await getDb();
+  const rows = await db
+    .select({
+      accountId: postTargets.accountId,
+      publishedAt: postTargets.publishedAt,
+      metrics: postTargets.metrics,
+    })
+    .from(postTargets)
+    .where(
+      and(
+        inArray(postTargets.accountId, accountIds),
+        eq(postTargets.status, "published"),
+        isNotNull(postTargets.publishedAt),
+        isNotNull(postTargets.metrics),
+      ),
+    );
+
+  const buckets = new Map<string, Map<number, { sum: number; n: number }>>();
+  for (const r of rows) {
+    const er = r.metrics?.engagementRate;
+    if (er == null || !r.publishedAt) continue;
+    const hour = r.publishedAt.getUTCHours();
+    const perAccount = buckets.get(r.accountId) ?? new Map();
+    const b = perAccount.get(hour) ?? { sum: 0, n: 0 };
+    b.sum += er;
+    b.n += 1;
+    perAccount.set(hour, b);
+    buckets.set(r.accountId, perAccount);
+  }
+
+  const out: Record<string, number> = {};
+  for (const [accountId, perHour] of buckets) {
+    let bestHour = -1;
+    let bestAvg = -1;
+    for (const [hour, { sum, n }] of perHour) {
+      if (n < 2) continue;
+      const avg = sum / n;
+      if (avg > bestAvg) {
+        bestAvg = avg;
+        bestHour = hour;
+      }
+    }
+    if (bestHour >= 0) out[accountId] = bestHour;
+  }
+  return out;
 }
 
 export async function getDraftInitial(

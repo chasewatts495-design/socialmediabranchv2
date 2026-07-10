@@ -25,6 +25,8 @@ const savePayloadSchema = z.object({
         accountId: z.string(),
         caption: z.string().max(65_000),
         meta: z.record(z.string(), z.unknown()).default({}),
+        /** Per-platform time override; null → the post's master time. */
+        scheduledAt: z.iso.datetime().nullish(),
       }),
     )
     .max(30),
@@ -62,14 +64,37 @@ export async function savePostAction(
     if (new Date(data.scheduledAt) <= new Date()) {
       return { ok: false, message: "Scheduled time must be in the future." };
     }
+    for (const t of data.targets) {
+      if (t.scheduledAt && new Date(t.scheduledAt) <= new Date()) {
+        return {
+          ok: false,
+          message: "Every per-platform time must be in the future.",
+        };
+      }
+    }
   }
 
   const db = await getDb();
   const postId = data.postId ?? uuid();
-  const scheduledAt =
+  // The post's own time = the earliest moment anything goes out.
+  const targetTimes =
+    data.mode === "schedule"
+      ? data.targets
+          .map((t) => (t.scheduledAt ? new Date(t.scheduledAt) : null))
+          .filter((d): d is Date => Boolean(d))
+      : [];
+  const masterTime =
     data.mode === "schedule" && data.scheduledAt
       ? new Date(data.scheduledAt)
       : null;
+  const scheduledAt = masterTime
+    ? new Date(
+        Math.min(
+          masterTime.getTime(),
+          ...targetTimes.map((d) => d.getTime()),
+        ),
+      )
+    : null;
   const status = data.mode === "schedule" ? "scheduled" : "draft";
 
   if (data.postId) {
@@ -109,6 +134,14 @@ export async function savePostAction(
         accountId: t.accountId,
         variantCaption: t.caption,
         variantMeta: t.meta as Record<string, unknown>,
+        // Every scheduled target carries its own effective time so the
+        // publish pass can release each platform exactly on cue.
+        scheduledAt:
+          data.mode === "schedule"
+            ? t.scheduledAt
+              ? new Date(t.scheduledAt)
+              : masterTime
+            : null,
         status: data.mode === "draft" ? "pending" : "queued",
       })),
     );
@@ -116,13 +149,22 @@ export async function savePostAction(
 
   if (data.mode === "now") {
     await publishPostNow(db, postId);
-  } else if (data.mode === "schedule" && scheduledAt) {
-    await db.insert(scheduleJobs).values({
-      id: uuid(),
-      kind: "publish_post",
-      refId: postId,
-      runAt: scheduledAt,
-    });
+  } else if (data.mode === "schedule" && masterTime) {
+    // One job per distinct release time — each pass publishes only the
+    // targets that are due.
+    const times = new Set<number>(
+      data.targets.map((t) =>
+        (t.scheduledAt ? new Date(t.scheduledAt) : masterTime).getTime(),
+      ),
+    );
+    await db.insert(scheduleJobs).values(
+      [...times].map((ms) => ({
+        id: uuid(),
+        kind: "publish_post",
+        refId: postId,
+        runAt: new Date(ms),
+      })),
+    );
   }
 
   revalidatePath("/calendar");

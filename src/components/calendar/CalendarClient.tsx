@@ -50,9 +50,12 @@ function PostModal({
       <div className="absolute inset-0 bg-black/60" onClick={onClose} aria-hidden />
       <div className="relative z-10 w-full max-w-md rounded-t-2xl border border-border bg-surface p-5 md:rounded-2xl fade-up">
         <div className="flex items-start justify-between gap-3">
-          <Badge tone="neutral" className={STATUS_COLOR[post.status]}>
-            {post.status.replace("_", " ")}
-          </Badge>
+          <span className="flex items-center gap-1.5">
+            <Badge tone="neutral" className={STATUS_COLOR[post.status]}>
+              {post.status.replace("_", " ")}
+            </Badge>
+            {post.recycled && <Badge tone="accent">↻ recycled</Badge>}
+          </span>
           <button
             onClick={onClose}
             className="rounded-lg p-1.5 text-muted hover:bg-surface-2"
@@ -215,6 +218,7 @@ export function CalendarClient({
                     >
                       <PlatformDots platforms={p.platforms} />
                       <span className="truncate">
+                        {p.recycled && <span title="Recycled post">↻ </span>}
                         {new Date(p.at).toLocaleTimeString(undefined, {
                           hour: "numeric",
                           minute: "2-digit",
@@ -274,6 +278,7 @@ export function CalendarClient({
                             })}
                           </span>
                           <span className="min-w-0 flex-1 truncate text-sm">
+                            {p.recycled && <span title="Recycled post">↻ </span>}
                             {p.caption || "(post)"}
                           </span>
                           <PlatformDots platforms={p.platforms} />

@@ -85,6 +85,24 @@ async function executeJob(db: Db, job: JobRow): Promise<void> {
       await runAiReportJob(db, job.refId);
       return;
     }
+    case "recycle_pick": {
+      const { runRecyclePick } = await import("@/lib/recycle");
+      const result = await runRecyclePick(db, job.refId);
+      if (!result.ok) throw new Error(result.message);
+      // Self-reschedule on the rule's cadence while it stays enabled.
+      const rule = await db.query.recycleRules.findFirst({
+        where: (r, { eq: e }) => e(r.accountId, job.refId),
+      });
+      if (rule?.enabled) {
+        await db.insert(scheduleJobs).values({
+          id: uuid(),
+          kind: "recycle_pick",
+          refId: job.refId,
+          runAt: new Date(Date.now() + rule.everyHours * 3_600_000),
+        });
+      }
+      return;
+    }
     default:
       throw new Error(`Unknown job kind: ${job.kind}`);
   }

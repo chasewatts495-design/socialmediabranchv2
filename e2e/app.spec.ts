@@ -113,6 +113,43 @@ test("calendar and queue render", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("recycling tab toggles a rule per account", async ({ page }) => {
+  await login(page);
+  await page.goto("/calendar?tab=recycle");
+  await expect(page.getByTestId("recycling-list")).toBeVisible();
+  const toggle = page.locator('[data-testid^="recycle-toggle-"]').first();
+  await toggle.click();
+  await expect(page.locator("text=/Recycling (on|off)/").first()).toBeVisible({
+    timeout: 15_000,
+  });
+});
+
+test("composer launch step offers per-platform schedule modes", async ({ page }) => {
+  await login(page);
+  await page.goto("/composer");
+  const next = () =>
+    page
+      .locator('[data-testid="step-next"]:visible, .fixed button:has-text("Next")')
+      .first()
+      .click();
+  await page.locator('section:has-text("Pick your media") button').first().click();
+  await next();
+  await page.getByTestId("master-caption").fill("Schedule modes check");
+  await next();
+  await page.locator('[data-testid^="account-toggle-facebook-"]').first().click();
+  await next();
+  await next();
+  // Open the scheduler and check all three modes exist.
+  await page.locator('button:has-text("Schedule"):visible').first().click();
+  await expect(page.getByTestId("schedule-mode-same")).toBeVisible();
+  await page.getByTestId("schedule-mode-custom").click();
+  await expect(page.getByTestId("target-time").first()).toBeVisible();
+  await page.getByTestId("schedule-mode-best").click();
+  await expect(
+    page.locator("text=/no history yet|Learned from each account/").first(),
+  ).toBeVisible();
+});
+
 test("connections wizard + capability matrix are honest about Snapchat", async ({ page }) => {
   await login(page);
   await page.goto("/connections");

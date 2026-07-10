@@ -1,5 +1,6 @@
 import { getLibraryAssets } from "@/lib/db/library-queries";
 import {
+  getBestHours,
   getComposerAccounts,
   getDraftInitial,
 } from "@/lib/db/composer-queries";
@@ -21,6 +22,7 @@ export default async function ComposerPage({
     getComposerAccounts(brandScope(await getActiveBrandId())),
     getLibraryAssets(),
   ]);
+  const bestHours = await getBestHours(accounts.map((a) => a.id));
 
   let initial: ComposerInitial = {};
   if (draft) {
@@ -38,7 +40,12 @@ export default async function ComposerPage({
         One post, every platform — Branch adapts the caption and checks each
         network&apos;s rules before anything goes out.
       </p>
-      <ComposerClient accounts={accounts} assets={assets} initial={initial} />
+      <ComposerClient
+        accounts={accounts}
+        assets={assets}
+        initial={initial}
+        bestHours={bestHours}
+      />
     </div>
   );
 }

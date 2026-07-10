@@ -178,13 +178,16 @@ async function refreshPostStatus(db: Db, postId: string): Promise<void> {
   ).length;
   const failed = targets.filter((t) => t.status === "failed").length;
   const anyPublished = targets.some((t) => t.status === "published");
+  const anyInFlight = targets.some((t) => t.status === "publishing");
 
   let status: string;
   if (done === targets.length) status = "published";
   else if (failed > 0 && failed + done === targets.length)
     status = anyPublished || done > 0 ? "partially_failed" : "failed";
   else if (failed > 0) status = "partially_failed";
-  else status = "publishing";
+  else if (anyInFlight) status = "publishing";
+  // Remaining targets are queued for a later per-platform release time.
+  else status = anyPublished ? "publishing" : "scheduled";
 
   await db
     .update(posts)
@@ -197,9 +200,11 @@ async function refreshPostStatus(db: Db, postId: string): Promise<void> {
 }
 
 /**
- * Publishes every queued/pending target of a post through its connector.
- * Already-published targets are skipped (idempotent — safe to re-run after
- * partial failures; only the failed targets are retried via retryTarget).
+ * Publishes every DUE queued/pending target of a post through its
+ * connector. A target with its own scheduledAt later than now is left
+ * queued for the publish job that fires at its time (per-platform
+ * scheduling). Already-published targets are skipped (idempotent — safe
+ * to re-run after partial failures; failed targets retry via retryTarget).
  */
 export async function publishPostNow(db: Db, postId: string): Promise<void> {
   const post = await loadPost(db, postId);
@@ -214,8 +219,12 @@ export async function publishPostNow(db: Db, postId: string): Promise<void> {
     (await getSetting("demo.simulateFailures")) === "true";
   const media = mediaPayload(post.media);
 
-  const eligible = post.targets.filter((t) =>
-    ["pending", "queued"].includes(t.status),
+  // 60s grace so a job firing exactly on schedule releases its targets.
+  const dueBy = Date.now() + 60_000;
+  const eligible = post.targets.filter(
+    (t) =>
+      ["pending", "queued"].includes(t.status) &&
+      (!t.scheduledAt || t.scheduledAt.getTime() <= dueBy),
   );
   for (const target of eligible) {
     await publishSingleTarget(db, target, post.caption, media, simulateFailures);
@@ -282,7 +291,7 @@ export async function cancelScheduledPost(db: Db, postId: string): Promise<void>
   const { scheduleJobs } = await import("@/lib/db/schema");
   await db
     .update(postTargets)
-    .set({ status: "pending" })
+    .set({ status: "pending", scheduledAt: null })
     .where(
       inArray(
         postTargets.id,
