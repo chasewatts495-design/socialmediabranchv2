@@ -84,9 +84,28 @@ export async function GET(
       `${base}/connections/select?nonce=${state.nonce}`,
     );
   } catch (err) {
+    // Full detail goes to the server-side activity log; the redirect
+    // carries only a sanitized summary (no URLs, no token material).
     const message = err instanceof Error ? err.message : "connection failed";
+    try {
+      const db = await getDb();
+      const { activityLog } = await import("@/lib/db/schema");
+      await db.insert(activityLog).values({
+        id: crypto.randomUUID(),
+        event: "oauth.callback_failed",
+        level: "error",
+        detail: { provider: key, message: message.slice(0, 500) },
+      });
+    } catch {
+      // logging must never mask the user-facing error path
+    }
+    const safe = message
+      .replace(/https?:\/\/\S+/g, "")
+      .replace(/[?&][^\s]*/g, "")
+      .slice(0, 140)
+      .trim();
     return NextResponse.redirect(
-      `${base}${wizardPath}?oauth_error=${encodeURIComponent(message.slice(0, 180))}`,
+      `${base}${wizardPath}?oauth_error=${encodeURIComponent(safe || "Connection failed — details are in Settings → Activity log.")}`,
     );
   }
 }

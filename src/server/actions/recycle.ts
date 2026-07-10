@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/lib/db/client";
-import { activityLog, recycleRules } from "@/lib/db/schema";
+import { activityLog, recycleRules, scheduleJobs } from "@/lib/db/schema";
 import {
   cancelRecycleJobs,
   ensureRecycleJob,
@@ -41,6 +41,9 @@ export async function saveRecycleRuleAction(
     where: (a, { eq: e }) => e(a.id, accountId),
   });
   if (!account) return { ok: false, message: "Account not found." };
+  const previous = await db.query.recycleRules.findFirst({
+    where: (r, { eq: e }) => e(r.accountId, accountId),
+  });
 
   await db
     .insert(recycleRules)
@@ -51,7 +54,19 @@ export async function saveRecycleRuleAction(
     });
 
   if (d.enabled) {
-    await ensureRecycleJob(db, accountId);
+    if (previous?.enabled && previous.everyHours !== d.everyHours) {
+      // Cadence changed while running: replace the pending pick so the
+      // new rhythm applies now, not after the old (possibly week-long) wait.
+      await cancelRecycleJobs(db, accountId);
+      await db.insert(scheduleJobs).values({
+        id: uuid(),
+        kind: "recycle_pick",
+        refId: accountId,
+        runAt: new Date(Date.now() + d.everyHours * 3_600_000),
+      });
+    } else {
+      await ensureRecycleJob(db, accountId);
+    }
   } else {
     await cancelRecycleJobs(db, accountId);
   }

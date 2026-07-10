@@ -20,7 +20,11 @@ async function readSetting(key: string) {
 async function seedFresh(db: Db) {
   const existing = await readSetting(VERSION_KEY);
   if (existing === SEED_VERSION) return;
-  if (existing !== null) await clearDemoData(db);
+  // Sweep even when no version row exists — a seeder that crashed
+  // mid-run leaves partial demo rows but no version, and re-seeding on
+  // top of them would duplicate everything. clearDemoData only touches
+  // seed-created rows, so this is safe on a genuinely fresh database too.
+  await clearDemoData(db);
   await runSeed(db);
 }
 

@@ -66,7 +66,27 @@ async function executeJob(db: Db, job: JobRow): Promise<void> {
       return;
     }
     case "sync_stats": {
-      const result = await syncAccount(db, job.refId, { sinceDays: 3 });
+      // A live account with no API-sourced history yet is a fresh
+      // connection — its first sync is the promised 90-day backfill.
+      const account = await db.query.accounts.findFirst({
+        where: (a, { eq: e }) => e(a.id, job.refId),
+      });
+      let sinceDays = 3;
+      if (account?.mode === "live") {
+        const { metricSnapshots } = await import("@/lib/db/schema");
+        const apiRows = await db
+          .select({ id: metricSnapshots.id })
+          .from(metricSnapshots)
+          .where(
+            and(
+              eq(metricSnapshots.accountId, job.refId),
+              eq(metricSnapshots.source, "api"),
+            ),
+          )
+          .limit(1);
+        if (apiRows.length === 0) sinceDays = 90;
+      }
+      const result = await syncAccount(db, job.refId, { sinceDays });
       if (!result.ok) throw new Error(result.message ?? "sync failed");
       // Self-reschedule tomorrow 06:00 UTC.
       const next = new Date();

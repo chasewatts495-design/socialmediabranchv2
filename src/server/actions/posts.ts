@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/lib/db/client";
 import { postMedia, posts, postTargets, scheduleJobs } from "@/lib/db/schema";
@@ -108,6 +108,18 @@ export async function savePostAction(
       .where(eq(posts.id, postId));
     await db.delete(postMedia).where(eq(postMedia.postId, postId));
     await db.delete(postTargets).where(eq(postTargets.postId, postId));
+    // Editing supersedes any previously scheduled release — cancel the old
+    // publish jobs or a post pulled back to draft still fires on time.
+    await db
+      .update(scheduleJobs)
+      .set({ status: "canceled" })
+      .where(
+        and(
+          eq(scheduleJobs.kind, "publish_post"),
+          eq(scheduleJobs.refId, postId),
+          eq(scheduleJobs.status, "pending"),
+        ),
+      );
   } else {
     await db.insert(posts).values({
       id: postId,

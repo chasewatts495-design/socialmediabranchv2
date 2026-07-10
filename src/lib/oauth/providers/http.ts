@@ -6,7 +6,9 @@ export class OAuthHttpError extends Error {
     public body: string,
     url: string,
   ) {
-    super(`OAuth HTTP ${status} from ${url}: ${body.slice(0, 300)}`);
+    // Query strings can carry client secrets/codes and this message can
+    // surface in redirect params and UI — strip them.
+    super(`OAuth HTTP ${status} from ${url.split("?")[0]}: ${body.slice(0, 300)}`);
     this.name = "OAuthHttpError";
   }
 }

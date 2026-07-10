@@ -9,7 +9,10 @@ export class LiveHttpError extends Error {
     public bodyText: string,
     public url: string,
   ) {
-    super(`HTTP ${status} from ${url}: ${bodyText.slice(0, 300)}`);
+    // The query string can carry access tokens/app secrets and this
+    // message ends up in sync-error columns and UI banners — never
+    // include it.
+    super(`HTTP ${status} from ${url.split("?")[0]}: ${bodyText.slice(0, 300)}`);
     this.name = "LiveHttpError";
   }
 }

@@ -427,6 +427,21 @@ export async function runSeed(db: Db): Promise<void> {
       { key: "app.timezone", value: "UTC" },
     ])
     .onConflictDoNothing();
+  // Remember exactly which accounts this seed created so an upgrade
+  // re-seed can clear THEM — never accounts the owner added.
+  await db
+    .insert(settings)
+    .values({
+      key: "seed.accountIds",
+      value: JSON.stringify([...accountIdByKey.values()]),
+    })
+    .onConflictDoUpdate({
+      target: settings.key,
+      set: {
+        value: JSON.stringify([...accountIdByKey.values()]),
+        updatedAt: new Date(),
+      },
+    });
   // The version row must reflect THIS seed even after an upgrade re-seed.
   await db
     .insert(settings)
@@ -437,13 +452,40 @@ export async function runSeed(db: Db): Promise<void> {
     });
 }
 
-/** Deletes demo-sourced rows so the seed can run again. */
+/**
+ * Deletes the rows a previous seed created so the seed can run again —
+ * and ONLY those rows. Accounts the owner added (any mode) survive, and
+ * demo media still referenced by surviving posts is detached before the
+ * asset delete so the post_media FK can't abort the sweep.
+ */
 export async function clearDemoData(db: Db): Promise<void> {
-  const demoAccounts = await db
-    .select({ id: accounts.id })
-    .from(accounts)
-    .where(inArray(accounts.mode, ["demo", "manual"]));
-  const ids = demoAccounts.map((a) => a.id);
+  // Prefer the exact id list the seed recorded; fall back (older seeds /
+  // crashed half-seeds) to demo-brand membership, which user accounts
+  // created in other brands never match.
+  const recordedRaw = await db
+    .select({ value: settings.value })
+    .from(settings)
+    .where(eq(settings.key, "seed.accountIds"));
+  let ids: string[] = [];
+  try {
+    const parsed = JSON.parse(recordedRaw[0]?.value ?? "[]") as unknown;
+    if (Array.isArray(parsed)) ids = parsed.filter((v) => typeof v === "string");
+  } catch {
+    ids = [];
+  }
+  if (ids.length === 0) {
+    const fallback = await db
+      .select({ id: accounts.id })
+      .from(accounts)
+      .where(
+        and(
+          inArray(accounts.mode, ["demo", "manual"]),
+          eq(accounts.brandId, DEMO_BRAND_ID),
+        ),
+      );
+    ids = fallback.map((a) => a.id);
+  }
+
   let postIds: string[] = [];
   if (ids.length) {
     const targets = await db
@@ -456,7 +498,23 @@ export async function clearDemoData(db: Db): Promise<void> {
     }
     await db.delete(accounts).where(inArray(accounts.id, ids));
   }
-  await db.delete(mediaAssets).where(eq(mediaAssets.source, "demo"));
+
+  // Detach demo assets from any surviving (owner-authored) posts before
+  // deleting them — post_media has no cascade on the asset side.
+  const demoAssets = await db
+    .select({ id: mediaAssets.id })
+    .from(mediaAssets)
+    .where(eq(mediaAssets.source, "demo"));
+  if (demoAssets.length) {
+    await db.delete(postMedia).where(
+      inArray(
+        postMedia.mediaAssetId,
+        demoAssets.map((a) => a.id),
+      ),
+    );
+    await db.delete(mediaAssets).where(eq(mediaAssets.source, "demo"));
+  }
+
   // Only drop pending jobs that referenced the deleted demo rows — live
   // accounts keep their scheduled work.
   const staleRefs = [...ids, ...postIds];
@@ -470,5 +528,7 @@ export async function clearDemoData(db: Db): Promise<void> {
         ),
       );
   }
-  await db.delete(settings).where(eq(settings.key, "seed.version"));
+  await db
+    .delete(settings)
+    .where(inArray(settings.key, ["seed.version", "seed.accountIds"]));
 }

@@ -1,5 +1,5 @@
 import type { DiscoveredAccount, OAuthProvider, TokenSet } from "../types";
-import { expiresAtFrom, getJson } from "./http";
+import { expiresAtFrom, getJson, postForm } from "./http";
 
 /**
  * Meta (Facebook Pages + Instagram professional accounts) — one Business
@@ -46,24 +46,26 @@ export const metaProvider: OAuthProvider = {
   },
 
   async exchangeCode({ code, redirectUri, creds }) {
-    const short = await getJson<FbTokenResponse>(
-      `${GRAPH}/oauth/access_token?` +
-        new URLSearchParams({
-          client_id: creds.clientId,
-          redirect_uri: redirectUri,
-          client_secret: creds.clientSecret,
-          code,
-        }),
+    // POST form bodies keep the app secret out of URLs (and therefore out
+    // of any error message, log line, or redirect).
+    const short = await postForm<FbTokenResponse>(
+      `${GRAPH}/oauth/access_token`,
+      {
+        client_id: creds.clientId,
+        redirect_uri: redirectUri,
+        client_secret: creds.clientSecret,
+        code,
+      },
     );
     // Upgrade to the ~60-day long-lived user token straight away.
-    const long = await getJson<FbTokenResponse>(
-      `${GRAPH}/oauth/access_token?` +
-        new URLSearchParams({
-          grant_type: "fb_exchange_token",
-          client_id: creds.clientId,
-          client_secret: creds.clientSecret,
-          fb_exchange_token: short.access_token,
-        }),
+    const long = await postForm<FbTokenResponse>(
+      `${GRAPH}/oauth/access_token`,
+      {
+        grant_type: "fb_exchange_token",
+        client_id: creds.clientId,
+        client_secret: creds.clientSecret,
+        fb_exchange_token: short.access_token,
+      },
     );
     return {
       accessToken: long.access_token,
