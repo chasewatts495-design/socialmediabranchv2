@@ -205,6 +205,84 @@ export async function retryTargetAction(targetId: string): Promise<void> {
   revalidatePath("/");
 }
 
+/**
+ * Drag-to-reschedule: move a scheduled post to another calendar day,
+ * keeping its time-of-day and any per-platform stagger (every target
+ * shifts by the same delta). Old publish jobs are canceled and fresh
+ * ones inserted per distinct release time.
+ */
+export async function reschedulePostAction(
+  postId: string,
+  newDateISO: string,
+): Promise<{ ok: boolean; message?: string }> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(newDateISO)) {
+    return { ok: false, message: "Bad date." };
+  }
+  const db = await getDb();
+  const post = await db.query.posts.findFirst({
+    where: (p, { eq: e }) => e(p.id, postId),
+    with: { targets: true },
+  });
+  if (!post || post.status !== "scheduled" || !post.scheduledAt) {
+    return { ok: false, message: "Only scheduled posts can be moved." };
+  }
+
+  const old = post.scheduledAt;
+  const moved = new Date(old);
+  const [y, m, d] = newDateISO.split("-").map(Number);
+  moved.setFullYear(y, m - 1, d);
+  if (moved <= new Date()) {
+    return { ok: false, message: "That time has already passed today — pick a future day." };
+  }
+  const deltaMs = moved.getTime() - old.getTime();
+
+  await db
+    .update(posts)
+    .set({ scheduledAt: moved, updatedAt: new Date() })
+    .where(eq(posts.id, postId));
+  const newTimes = new Set<number>();
+  for (const t of post.targets) {
+    const shifted = t.scheduledAt
+      ? new Date(t.scheduledAt.getTime() + deltaMs)
+      : moved;
+    newTimes.add(shifted.getTime());
+    await db
+      .update(postTargets)
+      .set({ scheduledAt: t.scheduledAt ? shifted : null })
+      .where(eq(postTargets.id, t.id));
+  }
+  await db
+    .update(scheduleJobs)
+    .set({ status: "canceled" })
+    .where(
+      and(
+        eq(scheduleJobs.kind, "publish_post"),
+        eq(scheduleJobs.refId, postId),
+        eq(scheduleJobs.status, "pending"),
+      ),
+    );
+  if (newTimes.size === 0) newTimes.add(moved.getTime());
+  await db.insert(scheduleJobs).values(
+    [...newTimes].map((ms) => ({
+      id: uuid(),
+      kind: "publish_post",
+      refId: postId,
+      runAt: new Date(ms),
+    })),
+  );
+
+  revalidatePath("/calendar");
+  return {
+    ok: true,
+    message: `Moved to ${moved.toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    })}.`,
+  };
+}
+
 /** Queue bulk action: retry every currently-failed target (bounded). */
 export async function retryAllFailedAction(): Promise<{ retried: number }> {
   const db = await getDb();

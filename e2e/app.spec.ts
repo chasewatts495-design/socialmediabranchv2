@@ -106,6 +106,12 @@ test("calendar and queue render", async ({ page }) => {
   await login(page);
   await page.goto("/calendar");
   await expect(page.locator("h1:has-text('Calendar')")).toBeVisible();
+  // Desktop: scheduled chips advertise drag-to-reschedule.
+  if (!isMobile(page)) {
+    await expect(
+      page.locator('button[draggable="true"][title*="Drag to another day"]').first(),
+    ).toBeVisible();
+  }
   await page.goto("/calendar?tab=queue");
   // Queue list or empty-state message.
   await expect(

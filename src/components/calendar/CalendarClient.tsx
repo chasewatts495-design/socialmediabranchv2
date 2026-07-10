@@ -2,10 +2,11 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { CalendarPost } from "@/lib/db/calendar-queries";
 import type { PlatformId } from "@/lib/connectors/types";
 import { PLATFORM_CHART_COLORS } from "@/lib/metrics/colors";
-import { cancelScheduledAction } from "@/server/actions/posts";
+import { cancelScheduledAction, reschedulePostAction } from "@/server/actions/posts";
 import { cn } from "@/components/ui/cn";
 import { Badge, Spinner } from "@/components/ui/primitives";
 import { IconX } from "@/components/ui/icons";
@@ -120,6 +121,10 @@ export function CalendarClient({
   monthISO: string;
 }) {
   const [openPost, setOpenPost] = useState<CalendarPost | null>(null);
+  const [dropDay, setDropDay] = useState<string | null>(null);
+  const [dropMsg, setDropMsg] = useState<string | null>(null);
+  const [dropping, startDrop] = useTransition();
+  const router = useRouter();
 
   const monthStart = useMemo(() => new Date(`${monthISO}T00:00:00`), [monthISO]);
   const year = monthStart.getFullYear();
@@ -184,6 +189,12 @@ export function CalendarClient({
         </div>
       </div>
 
+      {(dropping || dropMsg) && (
+        <p className="mb-2 hidden text-xs text-muted md:block" data-testid="reschedule-status">
+          {dropping ? "Rescheduling…" : dropMsg}
+        </p>
+      )}
+
       {/* Desktop month grid */}
       <div className="hidden md:block">
         <div className="grid grid-cols-7 gap-px overflow-hidden rounded-2xl border border-border bg-border">
@@ -198,9 +209,28 @@ export function CalendarClient({
             ) : (
               <div
                 key={cell.key}
+                onDragOver={(e) => {
+                  if (e.dataTransfer.types.includes("text/branch-post")) {
+                    e.preventDefault();
+                    setDropDay(cell.key);
+                  }
+                }}
+                onDragLeave={() => setDropDay((d) => (d === cell.key ? null : d))}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDropDay(null);
+                  const postId = e.dataTransfer.getData("text/branch-post");
+                  if (!postId) return;
+                  startDrop(async () => {
+                    const res = await reschedulePostAction(postId, cell.key);
+                    setDropMsg(res.message ?? null);
+                    router.refresh();
+                  });
+                }}
                 className={cn(
                   "min-h-24 bg-surface p-1.5",
                   cell.key === todayKey && "bg-accent-soft/30",
+                  dropDay === cell.key && "bg-accent-soft outline-2 outline-accent/60 -outline-offset-2",
                 )}
               >
                 <p className={cn("mb-1 text-[11px]", cell.key === todayKey ? "font-bold text-accent-strong" : "text-faint")}>
@@ -211,9 +241,20 @@ export function CalendarClient({
                     <button
                       key={p.id}
                       onClick={() => setOpenPost(p)}
+                      draggable={p.status === "scheduled"}
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("text/branch-post", p.id);
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      title={
+                        p.status === "scheduled"
+                          ? "Drag to another day to reschedule"
+                          : undefined
+                      }
                       className={cn(
                         "flex w-full items-center gap-1 truncate rounded-md px-1.5 py-1 text-left text-[10px] font-medium",
                         STATUS_COLOR[p.status] ?? "bg-surface-3 text-muted",
+                        p.status === "scheduled" && "cursor-grab active:cursor-grabbing",
                       )}
                     >
                       <PlatformDots platforms={p.platforms} />

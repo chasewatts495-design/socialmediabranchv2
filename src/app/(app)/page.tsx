@@ -3,6 +3,7 @@ import { ensureSeeded } from "@/lib/db/ensure-seeded";
 import { getDashboardData } from "@/lib/db/queries";
 import { brandScope, getActiveBrand, getActiveBrandId } from "@/lib/brands";
 import { getGoLiveState } from "@/lib/golive";
+import { getBestHours } from "@/lib/db/composer-queries";
 import { GoLiveChecklist } from "@/components/dashboard/GoLiveChecklist";
 import { Card, CardHeader } from "@/components/ui/primitives";
 import { Tilt } from "@/components/ui/Tilt";
@@ -45,6 +46,22 @@ export default async function DashboardPage({
     brandScope(await getActiveBrandId()),
   );
   const t = data.totals;
+
+  // Next best posting slots: each account's strongest hour, ranked by how
+  // much it beats the account's overall average (same data the composer's
+  // best-time mode uses).
+  const bestHours = await getBestHours(data.accounts.map((a) => a.id));
+  const bestSlots = data.accounts
+    .filter((a) => bestHours[a.id] !== undefined)
+    .map((a) => ({
+      accountId: a.id,
+      handle: a.handle,
+      platformId: a.platformId as PlatformId,
+      hour: bestHours[a.id],
+      er: a.engagementRate,
+    }))
+    .sort((a, b) => (b.er ?? 0) - (a.er ?? 0))
+    .slice(0, 3);
 
   const statCards = [
     {
@@ -127,6 +144,30 @@ export default async function DashboardPage({
       </Card>
 
       <GoLiveChecklist state={goLive} />
+
+      {bestSlots.length > 0 && (
+        <Card className="p-4" data-testid="best-slots">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-strong">
+              Next best posting slots
+            </p>
+            {bestSlots.map((s) => (
+              <Link
+                key={s.accountId}
+                href="/composer"
+                className="flex items-center gap-2 text-xs text-muted transition hover:text-ink"
+              >
+                <PlatformBadge platformId={s.platformId} />
+                <span className="font-medium text-ink">{s.handle}</span>
+                <span>→ {s.hour}:00 UTC</span>
+              </Link>
+            ))}
+            <span className="text-[10px] text-faint">
+              from each account&apos;s own engagement history
+            </span>
+          </div>
+        </Card>
+      )}
 
       {/* Stat tiles: Jarvis radial readouts */}
       <div className="reveal-group grid grid-cols-2 gap-3 lg:grid-cols-4">
