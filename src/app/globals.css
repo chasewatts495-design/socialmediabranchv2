@@ -1,0 +1,356 @@
+@import "tailwindcss";
+
+/*
+ * Branch — "Gold HUD" theme.
+ * Light gray + white surfaces with gold accents; fine hairlines and
+ * champagne-gold circuitry for the futuristic command-center look.
+ * Functional gold (#8f6f22) is darkened for WCAG contrast on white;
+ * decorative gold gradients use the brighter #d4b458 → #b08a2e range.
+ */
+@theme {
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-surface-2: #eef0f4;
+  --color-surface-3: #e3e7ee;
+  --color-border: #e2e5eb;
+  --color-ink: #171a20;
+  --color-muted: #5b6472;
+  --color-faint: #8b93a3;
+  --color-accent: #8f6f22;
+  --color-accent-strong: #6f5518;
+  --color-accent-soft: #f5edd8;
+  --color-gold: #b08a2e;
+  --color-gold-bright: #d4b458;
+  --color-success: #157f4f;
+  --color-success-soft: #e4f5ec;
+  --color-warning: #9a6a00;
+  --color-warning-soft: #fdf3d9;
+  --color-danger: #c0362c;
+  --color-danger-soft: #fde8e6;
+  --color-info: #1c6fc2;
+  --color-info-soft: #e6f0fb;
+
+  --color-p-instagram: #c22b5f;
+  --color-p-facebook: #1b64c8;
+  --color-p-tiktok: #0087a3;
+  --color-p-x: #6d3fd4;
+  --color-p-youtube: #d63a2f;
+  --color-p-reddit: #7a3f00;
+  --color-p-pinterest: #a30f3b;
+  --color-p-snapchat: #8a7500;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cdd3dd;
+  border-radius: 6px;
+  border: 2px solid var(--color-bg);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── Motion system — compositor-only (transform + opacity), ≤400ms ─────── */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-up {
+  animation: fade-up 0.25s ease-out both;
+}
+
+/* Staggered card reveal: apply .reveal to children of a .reveal-group. */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.reveal-group > * {
+  animation: reveal-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.reveal-group > *:nth-child(1) { animation-delay: 0ms; }
+.reveal-group > *:nth-child(2) { animation-delay: 40ms; }
+.reveal-group > *:nth-child(3) { animation-delay: 80ms; }
+.reveal-group > *:nth-child(4) { animation-delay: 120ms; }
+.reveal-group > *:nth-child(5) { animation-delay: 160ms; }
+.reveal-group > *:nth-child(6) { animation-delay: 200ms; }
+.reveal-group > *:nth-child(7) { animation-delay: 240ms; }
+.reveal-group > *:nth-child(8) { animation-delay: 280ms; }
+.reveal-group > *:nth-child(n + 9) { animation-delay: 320ms; }
+
+/* Button press feedback — instant, GPU-only, app-wide. */
+button:not(:disabled):active,
+.press:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+/* Page-level slide via the View Transitions API (no-op where unsupported). */
+@view-transition {
+  navigation: auto;
+}
+@supports (view-transition-name: none) {
+  ::view-transition-old(root) {
+    animation: vt-out 0.18s ease-in both;
+  }
+  ::view-transition-new(root) {
+    animation: vt-in 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes vt-out {
+    to {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+  @keyframes vt-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}
+
+/* ── Branch system: gold filament streams + node transitions ───────────── */
+
+@keyframes branch-flow {
+  to {
+    stroke-dashoffset: -160;
+  }
+}
+.branch-stream {
+  stroke-dasharray: 10 14;
+  animation: branch-flow 3.5s linear infinite;
+}
+.branch-stream-slow {
+  stroke-dasharray: 5 13;
+  animation: branch-flow 16s linear infinite;
+}
+
+@keyframes branch-node-pulse {
+  0%,
+  100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.branch-node-active {
+  animation: branch-node-pulse 2.2s ease-in-out infinite;
+}
+
+.branch-glow {
+  filter: drop-shadow(0 0 6px rgba(176, 138, 46, 0.75));
+}
+.branch-glow-soft {
+  filter: drop-shadow(0 0 4px rgba(176, 138, 46, 0.4));
+}
+.branch-glow-magenta {
+  filter: drop-shadow(0 0 5px rgba(143, 111, 34, 0.6));
+}
+
+@keyframes branch-step-fwd {
+  from {
+    opacity: 0;
+    transform: perspective(1000px) translateX(28px) rotateY(-7deg);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1000px) translateX(0) rotateY(0deg);
+    filter: blur(0);
+  }
+}
+@keyframes branch-step-back {
+  from {
+    opacity: 0;
+    transform: perspective(1000px) translateX(-28px) rotateY(7deg);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1000px) translateX(0) rotateY(0deg);
+    filter: blur(0);
+  }
+}
+.branch-step-fwd {
+  animation: branch-step-fwd 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.branch-step-back {
+  animation: branch-step-back 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes brand-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.brand-pop {
+  animation: brand-pop 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Jarvis HUD: gauges, arc rings, scan sweep, boot text, depth ───────── */
+
+@keyframes ring-sweep {
+  from {
+    stroke-dashoffset: var(--ring-circ);
+  }
+  to {
+    stroke-dashoffset: var(--ring-target);
+  }
+}
+.ring-sweep {
+  animation: ring-sweep 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+@keyframes arc-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes arc-rotate-rev {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+.arc-spin {
+  animation: arc-rotate 9s linear infinite;
+}
+.arc-spin-rev {
+  animation: arc-rotate-rev 6s linear infinite;
+}
+.arc-spin-slow {
+  animation: arc-rotate 14s linear infinite;
+}
+
+/* One-shot gold scanline that wipes a card on mount (transform-only). */
+@keyframes scan-x {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(60rem);
+  }
+}
+.scan-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.scan-sweep::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -6rem;
+  width: 6rem;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 180, 88, 0.22),
+    rgba(176, 138, 46, 0.32),
+    transparent
+  );
+  pointer-events: none;
+  animation: scan-x 0.8s ease-out 0.25s 1 both;
+}
+
+/* HUD boot text: types on with steps(), then the caret blinks out. */
+@keyframes boot-type {
+  from {
+    max-width: 0;
+  }
+  to {
+    max-width: 100%;
+  }
+}
+.boot-text {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+  animation: boot-type 0.6s steps(28, end) both;
+}
+
+/* Content that floats above its card inside a Tilt's perspective. */
+.hud-lift {
+  transform: translateZ(18px);
+}
+
+/* Gold hairline that reads as HUD circuitry on white cards. */
+.hud-hairline {
+  position: relative;
+}
+.hud-hairline::after {
+  content: "";
+  position: absolute;
+  inset-inline: 12px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(176, 138, 46, 0.55),
+    transparent
+  );
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .branch-stream,
+  .branch-stream-slow,
+  .branch-node-active,
+  .branch-step-fwd,
+  .branch-step-back,
+  .brand-pop,
+  .fade-up,
+  .ring-sweep,
+  .arc-spin,
+  .arc-spin-rev,
+  .arc-spin-slow,
+  .boot-text,
+  .reveal-group > * {
+    animation: none;
+  }
+  .scan-sweep::after {
+    animation: none;
+    opacity: 0;
+  }
+  @supports (view-transition-name: none) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none;
+    }
+  }
+}

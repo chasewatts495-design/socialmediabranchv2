@@ -1,0 +1,322 @@
+import { eq, inArray } from "drizzle-orm";
+import type { Db } from "@/lib/db/client";
+import { activityLog, posts, postTargets } from "@/lib/db/schema";
+import { resolveConnector } from "@/lib/connectors/registry";
+import "@/lib/connectors/live/register";
+import type {
+  PlatformId,
+  PublishMedia,
+  PublishPayload,
+} from "@/lib/connectors/types";
+import { contextFor } from "@/lib/scheduler/jobs";
+import { getSetting } from "@/lib/settings";
+
+const uuid = () => crypto.randomUUID();
+
+async function loadPost(db: Db, postId: string) {
+  return db.query.posts.findFirst({
+    where: (p, { eq: e }) => e(p.id, postId),
+    with: {
+      targets: { with: { account: true } },
+      media: { with: { asset: true } },
+    },
+  });
+}
+
+function mediaPayload(
+  media: NonNullable<Awaited<ReturnType<typeof loadPost>>>["media"],
+): PublishMedia[] {
+  return [...media]
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((m) => ({
+      url: m.asset.url,
+      mimeType: m.asset.mimeType,
+      sizeBytes: m.asset.sizeBytes,
+      width: m.asset.width,
+      height: m.asset.height,
+      durationSec: m.asset.durationSec,
+    }));
+}
+
+async function publishSingleTarget(
+  db: Db,
+  target: {
+    id: string;
+    variantCaption: string;
+    variantMeta: Record<string, unknown>;
+    attemptCount: number;
+    account: {
+      id: string;
+      platformId: string;
+      handle: string;
+      mode: string;
+      postingEnabled: boolean;
+    };
+  },
+  fallbackCaption: string,
+  media: PublishMedia[],
+  simulateFailures: boolean,
+): Promise<"published" | "failed" | "manual_required" | "skipped"> {
+  const account = target.account;
+
+  // Permission gate — catches scheduled posts whose account was switched off
+  // after scheduling, and anything that slipped past the composer UI.
+  if (!account.postingEnabled) {
+    await db
+      .update(postTargets)
+      .set({
+        status: "skipped",
+        errorCode: "POSTING_DISABLED",
+        errorMessage:
+          "Posting is turned off for this account — enable it in Connections.",
+        lastAttemptAt: new Date(),
+      })
+      .where(eq(postTargets.id, target.id));
+    await db.insert(activityLog).values({
+      id: uuid(),
+      event: "post.skipped_permission",
+      level: "warn",
+      accountId: account.id,
+      detail: { targetId: target.id },
+    });
+    return "skipped";
+  }
+
+  const connector = resolveConnector(
+    {
+      platformId: account.platformId as PlatformId,
+      mode: account.mode as "demo" | "live" | "manual",
+    },
+    { demo: { simulateFailures } },
+  );
+
+  if (!connector.capabilities.canPublish) {
+    await db
+      .update(postTargets)
+      .set({
+        status: "manual_required",
+        errorCode: null,
+        errorMessage:
+          "Post this manually in the app, then hit 'Mark published'.",
+        lastAttemptAt: new Date(),
+      })
+      .where(eq(postTargets.id, target.id));
+    await db.insert(activityLog).values({
+      id: uuid(),
+      event: "post.manual_required",
+      accountId: account.id,
+      postId: undefined,
+      detail: { targetId: target.id },
+    });
+    return "manual_required";
+  }
+
+  await db
+    .update(postTargets)
+    .set({
+      status: "publishing",
+      attemptCount: target.attemptCount + 1,
+      lastAttemptAt: new Date(),
+    })
+    .where(eq(postTargets.id, target.id));
+
+  const payload: PublishPayload = {
+    caption: target.variantCaption || fallbackCaption,
+    media,
+    meta: target.variantMeta ?? {},
+  };
+
+  const result = await connector.publishPost(contextFor(db, account), payload);
+
+  if (result.ok) {
+    await db
+      .update(postTargets)
+      .set({
+        status: "published",
+        externalPostId: result.externalPostId,
+        externalUrl: result.url ?? null,
+        errorCode: null,
+        errorMessage: null,
+        publishedAt: new Date(),
+      })
+      .where(eq(postTargets.id, target.id));
+    await db.insert(activityLog).values({
+      id: uuid(),
+      event: "post.published",
+      accountId: account.id,
+      detail: { targetId: target.id, url: result.url },
+    });
+    return "published";
+  }
+
+  await db
+    .update(postTargets)
+    .set({
+      status: "failed",
+      errorCode: result.errorCode,
+      errorMessage: result.errorMessage,
+    })
+    .where(eq(postTargets.id, target.id));
+  await db.insert(activityLog).values({
+    id: uuid(),
+    event: "post.failed",
+    level: "error",
+    accountId: account.id,
+    detail: { targetId: target.id, code: result.errorCode, message: result.errorMessage },
+  });
+  return "failed";
+}
+
+async function refreshPostStatus(db: Db, postId: string): Promise<void> {
+  const targets = await db
+    .select({ status: postTargets.status, publishedAt: postTargets.publishedAt })
+    .from(postTargets)
+    .where(eq(postTargets.postId, postId));
+  if (targets.length === 0) return;
+
+  const done = targets.filter((t) =>
+    ["published", "manual_required", "skipped"].includes(t.status),
+  ).length;
+  const failed = targets.filter((t) => t.status === "failed").length;
+  const anyPublished = targets.some((t) => t.status === "published");
+  const anyInFlight = targets.some((t) => t.status === "publishing");
+
+  let status: string;
+  if (done === targets.length) status = "published";
+  else if (failed > 0 && failed + done === targets.length)
+    status = anyPublished || done > 0 ? "partially_failed" : "failed";
+  else if (failed > 0) status = "partially_failed";
+  else if (anyInFlight) status = "publishing";
+  // Remaining targets are queued for a later per-platform release time.
+  else status = anyPublished ? "publishing" : "scheduled";
+
+  await db
+    .update(posts)
+    .set({
+      status,
+      publishedAt: anyPublished ? new Date() : undefined,
+      updatedAt: new Date(),
+    })
+    .where(eq(posts.id, postId));
+}
+
+/**
+ * Publishes every DUE queued/pending target of a post through its
+ * connector. A target with its own scheduledAt later than now is left
+ * queued for the publish job that fires at its time (per-platform
+ * scheduling). Already-published targets are skipped (idempotent — safe
+ * to re-run after partial failures; failed targets retry via retryTarget).
+ */
+export async function publishPostNow(db: Db, postId: string): Promise<void> {
+  const post = await loadPost(db, postId);
+  if (!post) return;
+
+  await db
+    .update(posts)
+    .set({ status: "publishing", updatedAt: new Date() })
+    .where(eq(posts.id, postId));
+
+  const simulateFailures =
+    (await getSetting("demo.simulateFailures")) === "true";
+  const media = mediaPayload(post.media);
+
+  // 60s grace so a job firing exactly on schedule releases its targets.
+  const dueBy = Date.now() + 60_000;
+  const eligible = post.targets.filter(
+    (t) =>
+      ["pending", "queued"].includes(t.status) &&
+      (!t.scheduledAt || t.scheduledAt.getTime() <= dueBy),
+  );
+  for (const target of eligible) {
+    await publishSingleTarget(db, target, post.caption, media, simulateFailures);
+  }
+  await refreshPostStatus(db, postId);
+}
+
+/** Retries one failed/manual target. */
+export async function retryTarget(db: Db, targetId: string): Promise<void> {
+  const target = await db.query.postTargets.findFirst({
+    where: (t, { eq: e }) => e(t.id, targetId),
+    with: { account: true, post: { with: { media: { with: { asset: true } } } } },
+  });
+  if (!target || target.status === "published") return;
+
+  const simulateFailures =
+    (await getSetting("demo.simulateFailures")) === "true";
+  await publishSingleTarget(
+    db,
+    target,
+    target.post.caption,
+    mediaPayload(target.post.media),
+    simulateFailures,
+  );
+  await refreshPostStatus(db, target.postId);
+}
+
+/** Marks a manual_required target as done (posted by hand). */
+export async function markManualPublished(
+  db: Db,
+  targetId: string,
+  externalUrl?: string,
+): Promise<void> {
+  const target = await db.query.postTargets.findFirst({
+    where: (t, { eq: e }) => e(t.id, targetId),
+  });
+  if (!target) return;
+  await db
+    .update(postTargets)
+    .set({
+      status: "published",
+      externalUrl: externalUrl || target.externalUrl,
+      errorMessage: null,
+      publishedAt: new Date(),
+    })
+    .where(eq(postTargets.id, targetId));
+  await refreshPostStatus(db, target.postId);
+}
+
+export async function skipTarget(db: Db, targetId: string): Promise<void> {
+  const target = await db.query.postTargets.findFirst({
+    where: (t, { eq: e }) => e(t.id, targetId),
+  });
+  if (!target || target.status === "published") return;
+  await db
+    .update(postTargets)
+    .set({ status: "skipped" })
+    .where(eq(postTargets.id, targetId));
+  await refreshPostStatus(db, target.postId);
+}
+
+/** Cancels a scheduled post (post + its queued targets + pending job). */
+export async function cancelScheduledPost(db: Db, postId: string): Promise<void> {
+  const { scheduleJobs } = await import("@/lib/db/schema");
+  await db
+    .update(postTargets)
+    .set({ status: "pending", scheduledAt: null })
+    .where(
+      inArray(
+        postTargets.id,
+        (
+          await db
+            .select({ id: postTargets.id })
+            .from(postTargets)
+            .where(eq(postTargets.postId, postId))
+        ).map((r) => r.id),
+      ),
+    );
+  await db
+    .update(posts)
+    .set({ status: "draft", scheduledAt: null, updatedAt: new Date() })
+    .where(eq(posts.id, postId));
+  const { and, eq: e } = await import("drizzle-orm");
+  await db
+    .update(scheduleJobs)
+    .set({ status: "canceled" })
+    .where(
+      and(
+        e(scheduleJobs.kind, "publish_post"),
+        e(scheduleJobs.refId, postId),
+        e(scheduleJobs.status, "pending"),
+      ),
+    );
+}
