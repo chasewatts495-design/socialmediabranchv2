@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { AUTH_COOKIE, authToken } from "@/lib/auth-token";
 import { BranchBackdrop } from "@/components/branch/BranchBackdrop";
+import { HoloSphere } from "@/components/branch/HoloSphere";
 
 async function login(formData: FormData) {
   "use server";
@@ -33,11 +34,11 @@ export default async function LoginPage({
     <main className="relative flex min-h-dvh items-center justify-center px-4">
       <BranchBackdrop opacity={0.18} />
       <div className="relative w-full max-w-sm fade-up">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-2xl font-bold text-white">
-            B
+        <div className="mb-6 text-center">
+          <div className="mx-auto h-36 w-36">
+            <HoloSphere />
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Branch</h1>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">Branch</h1>
           <p className="mt-1 text-sm text-muted">
             Your social media command center
           </p>

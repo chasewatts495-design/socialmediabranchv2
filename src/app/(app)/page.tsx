@@ -3,6 +3,8 @@ import { ensureSeeded } from "@/lib/db/ensure-seeded";
 import { getDashboardData } from "@/lib/db/queries";
 import { brandScope, getActiveBrand, getActiveBrandId } from "@/lib/brands";
 import { Card, CardHeader, StatDelta } from "@/components/ui/primitives";
+import { Tilt } from "@/components/ui/Tilt";
+import { HoloSphere } from "@/components/branch/HoloSphere";
 import { FollowerTrendChart } from "@/components/charts/FollowerTrendChart";
 import { EngagementBarChart } from "@/components/charts/EngagementBarChart";
 import { Sparkline } from "@/components/charts/Sparkline";
@@ -81,19 +83,50 @@ export default async function DashboardPage({
         <RangeToggle current={range} />
       </div>
 
+      {/* Command deck: the interactive network globe */}
+      <Card className="relative overflow-hidden">
+        <div className="grid items-center md:grid-cols-[1fr_minmax(260px,420px)]">
+          <div className="relative z-10 p-5 md:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent-strong">
+              Branch network
+            </p>
+            <p className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
+              {data.accounts.length} account
+              {data.accounts.length === 1 ? "" : "s"} ·{" "}
+              {data.platformsInTrend.length} platform
+              {data.platformsInTrend.length === 1 ? "" : "s"}
+            </p>
+            <p className="mt-1 text-xs text-muted md:text-sm">
+              {activeBrand
+                ? `${activeBrand.name} command deck`
+                : "Every brand, one command deck"}{" "}
+              — all systems reporting.
+            </p>
+            <p className="mt-4 hidden text-[11px] text-faint md:block">
+              Drag the globe to spin it.
+            </p>
+          </div>
+          <div className="h-44 md:h-56">
+            <HoloSphere />
+          </div>
+        </div>
+      </Card>
+
       {/* Stat tiles */}
       <div className="reveal-group grid grid-cols-2 gap-3 lg:grid-cols-4">
         {statCards.map((s) => (
-          <Card key={s.label} className="p-4">
-            <p className="text-[11px] font-medium tracking-wide text-muted uppercase">
-              {s.label}
-            </p>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-xl font-semibold md:text-2xl">{s.value}</span>
-              <StatDelta value={s.delta} />
-            </div>
-            {s.spark && <Sparkline data={s.spark} />}
-          </Card>
+          <Tilt key={s.label}>
+            <Card className="p-4">
+              <p className="text-[11px] font-medium tracking-wide text-muted uppercase">
+                {s.label}
+              </p>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-xl font-semibold md:text-2xl">{s.value}</span>
+                <StatDelta value={s.delta} />
+              </div>
+              {s.spark && <Sparkline data={s.spark} />}
+            </Card>
+          </Tilt>
         ))}
       </div>
 
@@ -136,6 +169,7 @@ export default async function DashboardPage({
         <div className="reveal-group grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {data.accounts.map((a) => (
             <Link key={a.id} href={`/accounts/${a.id}`}>
+              <Tilt max={4}>
               <Card className="p-4 transition hover:border-accent/50">
                 <div className="flex items-center gap-3">
                   <AccountAvatar name={a.displayName} color={a.avatarColor} />
@@ -159,6 +193,7 @@ export default async function DashboardPage({
                   </div>
                 </div>
               </Card>
+              </Tilt>
             </Link>
           ))}
         </div>
