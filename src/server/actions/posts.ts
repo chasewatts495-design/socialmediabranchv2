@@ -213,10 +213,12 @@ export async function retryTargetAction(targetId: string): Promise<void> {
  */
 export async function reschedulePostAction(
   postId: string,
-  newDateISO: string,
+  /** Whole days to shift by — computed by the CLIENT from its own
+   * calendar cells, so wall-clock time is preserved in every timezone. */
+  deltaDays: number,
 ): Promise<{ ok: boolean; message?: string }> {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(newDateISO)) {
-    return { ok: false, message: "Bad date." };
+  if (!Number.isInteger(deltaDays) || deltaDays === 0 || Math.abs(deltaDays) > 366) {
+    return { ok: false, message: "Bad move." };
   }
   const db = await getDb();
   const post = await db.query.posts.findFirst({
@@ -228,13 +230,11 @@ export async function reschedulePostAction(
   }
 
   const old = post.scheduledAt;
-  const moved = new Date(old);
-  const [y, m, d] = newDateISO.split("-").map(Number);
-  moved.setFullYear(y, m - 1, d);
+  const deltaMs = deltaDays * 86_400_000;
+  const moved = new Date(old.getTime() + deltaMs);
   if (moved <= new Date()) {
-    return { ok: false, message: "That time has already passed today — pick a future day." };
+    return { ok: false, message: "That lands in the past — pick a later day." };
   }
-  const deltaMs = moved.getTime() - old.getTime();
 
   await db
     .update(posts)

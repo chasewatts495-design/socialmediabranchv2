@@ -220,9 +220,17 @@ export function CalendarClient({
                   e.preventDefault();
                   setDropDay(null);
                   const postId = e.dataTransfer.getData("text/branch-post");
-                  if (!postId) return;
+                  const srcDay = e.dataTransfer.getData("text/branch-src-day");
+                  if (!postId || !srcDay || srcDay === cell.key) return;
+                  // Day delta from the calendar the user is looking at —
+                  // exact in every timezone.
+                  const deltaDays = Math.round(
+                    (new Date(`${cell.key}T12:00:00`).getTime() -
+                      new Date(`${srcDay}T12:00:00`).getTime()) /
+                      86_400_000,
+                  );
                   startDrop(async () => {
-                    const res = await reschedulePostAction(postId, cell.key);
+                    const res = await reschedulePostAction(postId, deltaDays);
                     setDropMsg(res.message ?? null);
                     router.refresh();
                   });
@@ -244,6 +252,7 @@ export function CalendarClient({
                       draggable={p.status === "scheduled"}
                       onDragStart={(e) => {
                         e.dataTransfer.setData("text/branch-post", p.id);
+                        e.dataTransfer.setData("text/branch-src-day", cell.key);
                         e.dataTransfer.effectAllowed = "move";
                       }}
                       title={

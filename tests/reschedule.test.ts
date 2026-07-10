@@ -52,11 +52,10 @@ describe("drag-to-reschedule", () => {
     });
     const postId = saved.postId!;
 
-    const target = new Date(Date.now() + 5 * 86_400_000);
-    const targetISO = `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, "0")}-${String(target.getDate()).padStart(2, "0")}`;
-    const res = await reschedulePostAction(postId, targetISO);
+    const res = await reschedulePostAction(postId, 4); // +4 days
     expect(res.ok).toBe(true);
 
+    const target = new Date(at.getTime() + 4 * 86_400_000);
     const post = await db.query.posts.findFirst({
       where: (p, { eq: e }) => e(p.id, postId),
     });
@@ -77,10 +76,11 @@ describe("drag-to-reschedule", () => {
     expect(pending[0].runAt.getDate()).toBe(target.getDate());
   });
 
-  it("refuses non-scheduled posts and past days", async () => {
+  it("refuses non-scheduled posts, zero moves, and past landings", async () => {
     const draftId = uuid();
     await db.insert(schema.posts).values({ id: draftId, caption: "draft" });
-    expect((await reschedulePostAction(draftId, "2030-01-01")).ok).toBe(false);
-    expect((await reschedulePostAction(draftId, "not-a-date")).ok).toBe(false);
+    expect((await reschedulePostAction(draftId, 3)).ok).toBe(false); // draft
+    expect((await reschedulePostAction(draftId, 0)).ok).toBe(false); // no-op
+    expect((await reschedulePostAction(draftId, 1.5 as number)).ok).toBe(false);
   });
 });
