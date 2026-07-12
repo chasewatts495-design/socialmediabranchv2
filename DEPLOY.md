@@ -37,11 +37,12 @@ variables, and add a free cron pinger. No credit card required.
 
 Uploads now go straight from your browser to Blob storage (no size issues).
 
-## 4. Scheduled posting — the pinger (free)
+## 4. Scheduled posting — the pinger (free, optional)
 
-Vercel's free plan runs the built-in cron **once per day** (already
-configured in `vercel.json` — it handles daily stats syncs). For
-minute-accurate scheduled posts, add a free external pinger:
+Branch ticks its own scheduler **whenever the app is open in a browser**
+(in-app auto-tick), and Vercel's free cron runs **once per day** as a
+backstop (already configured in `vercel.json`). For posts that must go
+out **while nobody has the app open**, add a free external pinger:
 
 1. Go to **cron-job.org** → sign up (free).
 2. Create a cron job:

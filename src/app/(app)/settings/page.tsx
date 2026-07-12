@@ -114,7 +114,7 @@ export default async function SettingsPage() {
         <div className="divide-y divide-border text-sm">
           <div className="flex items-center justify-between gap-3 px-4 py-3 md:px-5">
             <div>
-              <p className="font-medium">Scheduled work (cron)</p>
+              <p className="font-medium">Scheduled work</p>
               <p className="text-xs text-muted">
                 {lastTick
                   ? `Last tick ${relativeTime(lastTick)}`
@@ -122,7 +122,7 @@ export default async function SettingsPage() {
               </p>
             </div>
             <Badge tone={tickStale ? "warning" : "success"}>
-              {tickStale ? "Stale — check cron/pinger" : "Healthy"}
+              {tickStale ? "Waking on next visit" : "Healthy"}
             </Badge>
           </div>
           <div className="flex items-center justify-between gap-3 px-4 py-3 md:px-5">
