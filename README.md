@@ -42,6 +42,14 @@ Works on desktop and phone (one responsive web app).
   (Instagram + Facebook) connect for real via platform login windows (OAuth)
   or Reddit's sanctioned script-app flow. Branch never stores social
   passwords — only revocable, encrypted tokens.
+- **Trend Radar** — scan your niche by keyword: live viral signals (Reddit
+  works with zero setup; YouTube/Instagram once connected) heat-ranked
+  across platforms, AI pattern analysis, and creative briefs aimed at your
+  own accounts, one tap from the composer. Pin keywords to rescan daily;
+  the AI Strategist reads the latest scans too.
+- **Self-sufficient scheduling** — an in-app auto-tick runs due work
+  whenever the app is open; the daily cron and an optional free pinger
+  cover publish-while-away.
 - **Demo mode first** — the entire app boots with 90 days of realistic sample
   data. Every platform is a plug-in connector that flips to live when
   connected.
