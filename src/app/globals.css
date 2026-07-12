@@ -71,30 +71,31 @@ body {
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: perspective(1200px) translateY(10px) rotateX(3deg);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: perspective(1200px) translateY(0) rotateX(0);
   }
 }
 .fade-up {
-  animation: fade-up 0.25s ease-out both;
+  animation: fade-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-style: preserve-3d;
 }
 
-/* Staggered card reveal: apply .reveal to children of a .reveal-group. */
+/* Staggered card reveal: every child rises out of the page in 3D. */
 @keyframes reveal-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: perspective(900px) translateY(14px) rotateX(7deg) scale(0.985);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: perspective(900px) translateY(0) rotateX(0) scale(1);
   }
 }
 .reveal-group > * {
-  animation: reveal-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: reveal-up 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .reveal-group > *:nth-child(1) { animation-delay: 0ms; }
 .reveal-group > *:nth-child(2) { animation-delay: 40ms; }
@@ -106,10 +107,25 @@ body {
 .reveal-group > *:nth-child(8) { animation-delay: 280ms; }
 .reveal-group > *:nth-child(n + 9) { animation-delay: 320ms; }
 
-/* Button press feedback — instant, GPU-only, app-wide. */
+/* Button press feedback — a flat shrink. (Never translateZ(-n) here: inside
+   a preserve-3d ancestor a pressed button would sink BEHIND its card's
+   plane and the browser would hit-test the release onto the card instead,
+   eating the click.) */
 button:not(:disabled):active,
 .press:not(:disabled):active {
-  transform: scale(0.97);
+  transform: scale(0.96);
+}
+
+/* Inputs float toward the viewer while focused. */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  transform: perspective(900px) translateZ(5px);
+}
+input,
+textarea,
+select {
+  transition: transform 0.16s ease-out;
 }
 
 /* Page-level slide via the View Transitions API (no-op where unsupported). */
@@ -126,13 +142,13 @@ button:not(:disabled):active,
   @keyframes vt-out {
     to {
       opacity: 0;
-      transform: translateY(-4px);
+      transform: perspective(1400px) translateY(-6px) rotateX(-2deg) scale(0.995);
     }
   }
   @keyframes vt-in {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      transform: perspective(1400px) translateY(12px) rotateX(3deg) scale(0.995);
     }
   }
 }
@@ -327,6 +343,160 @@ button:not(:disabled):active,
   pointer-events: none;
 }
 
+/* ── EVERYTHING-3D layer ────────────────────────────────────────────────── */
+
+/* Every card rests with depth; hover deepens the shadow (shadow-only so
+   click targets never move under the pointer — geometry 3D comes from the
+   reveal animations, Tilt, and the float on non-interactive surfaces). */
+.hud-card3d {
+  transition:
+    box-shadow 0.22s ease,
+    border-color 0.15s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .hud-card3d:hover {
+    box-shadow:
+      0 12px 28px -14px rgba(31, 41, 55, 0.26),
+      0 2px 6px -2px rgba(31, 41, 55, 0.1);
+  }
+}
+
+/* Slow levitation for hero surfaces (charts, the radar console). */
+@keyframes hud-float {
+  0%,
+  100% {
+    transform: perspective(1200px) translateZ(0) rotateX(0);
+  }
+  50% {
+    transform: perspective(1200px) translateZ(6px) rotateX(0.5deg);
+  }
+}
+.hud-float {
+  animation: hud-float 7s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
+
+/* Gyroscope ring — a second axis spinning around the ring gauges. */
+@keyframes gyro-spin {
+  from {
+    transform: rotate3d(1, 0.45, 0.12, 0deg);
+  }
+  to {
+    transform: rotate3d(1, 0.45, 0.12, 360deg);
+  }
+}
+.gyro-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  border: 1px solid rgba(176, 138, 46, 0.5);
+  border-left-color: transparent;
+  border-right-color: transparent;
+  animation: gyro-spin 6.5s linear infinite;
+  pointer-events: none;
+}
+
+/* Stat digits roll in like a 3D odometer. */
+@keyframes digit-roll {
+  from {
+    opacity: 0;
+    transform: perspective(400px) rotateX(72deg) translateY(0.25em);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(400px) rotateX(0) translateY(0);
+  }
+}
+.digit-roll > span {
+  display: inline-block;
+  animation: digit-roll 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: 50% 100%;
+}
+
+/* Sidebar nav items tilt out of the rail on hover. */
+.nav-3d {
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .nav-3d:hover {
+    transform: perspective(700px) translateZ(6px) translateX(2px) rotateY(-2deg);
+  }
+}
+
+/* Command palette flips down from above; panels unfold on a hinge. */
+@keyframes palette-drop {
+  from {
+    opacity: 0;
+    transform: perspective(1100px) rotateX(-9deg) translateY(-14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1100px) rotateX(0) translateY(0) scale(1);
+  }
+}
+.palette-drop {
+  animation: palette-drop 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: 50% 0%;
+}
+@keyframes panel-unfold {
+  from {
+    opacity: 0;
+    transform: perspective(900px) rotateX(-12deg) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(900px) rotateX(0) translateY(0);
+  }
+}
+.panel-unfold {
+  animation: panel-unfold 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: 50% 0%;
+}
+
+/* Dragged calendar chips physically lift off the grid. */
+[draggable="true"]:active {
+  transform: perspective(600px) translateZ(12px) scale(1.04) rotate(0.8deg);
+}
+
+/* Completed stepper nodes flip in 3D once. */
+@keyframes node-flip {
+  from {
+    transform: perspective(400px) rotateY(80deg);
+  }
+  to {
+    transform: perspective(400px) rotateY(0);
+  }
+}
+.node-flip {
+  animation: node-flip 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Holographic floor grid drifting beneath the whole app. */
+@keyframes floor-drift {
+  from {
+    transform: perspective(900px) rotateX(62deg) translateY(0);
+  }
+  to {
+    transform: perspective(900px) rotateX(62deg) translateY(44px);
+  }
+}
+.holo-floor {
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  bottom: -12%;
+  height: 55%;
+  background-image:
+    linear-gradient(rgba(176, 138, 46, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(176, 138, 46, 0.14) 1px, transparent 1px);
+  background-size: 44px 44px;
+  transform-origin: 50% 100%;
+  animation: floor-drift 6s linear infinite;
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent 82%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent 82%);
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .branch-stream,
   .branch-stream-slow,
@@ -340,8 +510,32 @@ button:not(:disabled):active,
   .arc-spin-rev,
   .arc-spin-slow,
   .boot-text,
+  .hud-float,
+  .gyro-ring,
+  .digit-roll > span,
+  .palette-drop,
+  .panel-unfold,
+  .node-flip,
+  .holo-floor,
   .reveal-group > * {
     animation: none;
+  }
+  .hud-card3d,
+  .nav-3d,
+  input,
+  textarea,
+  select {
+    transition: none;
+  }
+  .hud-card3d:hover,
+  .nav-3d:hover,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  button:not(:disabled):active,
+  .press:not(:disabled):active,
+  [draggable="true"]:active {
+    transform: none;
   }
   .scan-sweep::after {
     animation: none;

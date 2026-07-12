@@ -42,6 +42,8 @@ export default defineConfig({
       APP_PASSWORD: "test-password",
       APP_ENCRYPTION_KEY: "e2e-test-encryption-key-not-secret",
       ENABLE_DEV_TICKER: "false",
+      // Deterministic, offline Trend Radar scans.
+      TRENDS_FORCE_DEMO: "1",
     },
   },
 });

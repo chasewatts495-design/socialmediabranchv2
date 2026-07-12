@@ -36,7 +36,7 @@ function Node({
       viewBox="0 0 48 48"
       className={cn(
         state === "active" && "branch-glow branch-node-active",
-        state === "done" && "branch-glow-soft",
+        state === "done" && "branch-glow-soft node-flip",
       )}
       aria-hidden
     >

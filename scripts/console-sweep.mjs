@@ -13,6 +13,7 @@ const BASE = process.env.BASE || "http://localhost:3100";
 const PAGES = [
   "/",
   "/composer",
+  "/trends",
   "/calendar",
   "/calendar?tab=queue",
   "/calendar?tab=recycle",

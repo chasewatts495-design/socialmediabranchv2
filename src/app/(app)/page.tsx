@@ -1,5 +1,9 @@
 import Link from "next/link";
+import { desc } from "drizzle-orm";
 import { ensureSeeded } from "@/lib/db/ensure-seeded";
+import { getDb } from "@/lib/db/client";
+import { trendScans } from "@/lib/db/schema";
+import type { TrendReport } from "@/lib/trends/types";
 import { getDashboardData } from "@/lib/db/queries";
 import { brandScope, getActiveBrand, getActiveBrandId } from "@/lib/brands";
 import { getGoLiveState } from "@/lib/golive";
@@ -46,6 +50,17 @@ export default async function DashboardPage({
     brandScope(await getActiveBrandId()),
   );
   const t = data.totals;
+
+  // Latest Trend Radar read-out for the teaser strip.
+  const db = await getDb();
+  const latestScan = await db.query.trendScans.findFirst({
+    where: (t2, { eq: e }) => e(t2.status, "done"),
+    orderBy: [desc(trendScans.createdAt)],
+  });
+  const latestPattern = latestScan
+    ? ((latestScan.analysis as unknown as TrendReport | null)?.patterns[0] ??
+      null)
+    : null;
 
   // Next best posting slots: each account's strongest hour, ranked by how
   // much it beats the account's overall average (same data the composer's
@@ -110,7 +125,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Command deck: the interactive network globe */}
-      <Card className="relative overflow-hidden">
+      <Card className="hud-float relative overflow-hidden">
         <div className="grid items-center md:grid-cols-[1fr_minmax(260px,420px)]">
           <div className="relative z-10 p-5 md:p-6">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent-strong">
@@ -144,6 +159,26 @@ export default async function DashboardPage({
       </Card>
 
       <GoLiveChecklist state={goLive} />
+
+      {latestScan && latestPattern && (
+        <Card className="p-4" data-testid="trend-teaser">
+          <Link
+            href={`/trends?scan=${latestScan.id}`}
+            className="flex flex-wrap items-center gap-x-4 gap-y-1"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-strong">
+              Trend Radar — “{latestScan.keyword}”
+            </p>
+            <span className="text-xs text-muted">
+              <span className="font-medium text-ink">{latestPattern.name}:</span>{" "}
+              {latestPattern.playbook}
+            </span>
+            <span className="ml-auto text-xs font-medium text-accent-strong">
+              Full read-out →
+            </span>
+          </Link>
+        </Card>
+      )}
 
       {bestSlots.length > 0 && (
         <Card className="p-4" data-testid="best-slots">
@@ -183,7 +218,7 @@ export default async function DashboardPage({
 
       {/* Charts */}
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="scan-sweep lg:col-span-2">
+        <Card className="scan-sweep hud-float lg:col-span-2">
           <CardHeader
             title="Follower growth"
             subtitle="Per platform, accounts combined"

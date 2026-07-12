@@ -123,6 +123,37 @@ async function executeJob(db: Db, job: JobRow): Promise<void> {
       }
       return;
     }
+    case "trend_scan": {
+      // refId = "<brandId|all>:<keyword>" — a pinned keyword's daily rescan.
+      const sep = job.refId.indexOf(":");
+      const brandId = job.refId.slice(0, sep);
+      const keyword = job.refId.slice(sep + 1);
+      if (!keyword) return;
+      await import("@/lib/trends/sources/register");
+      const { runTrendScan } = await import("@/lib/trends/run");
+      const { trendScans } = await import("@/lib/db/schema");
+      const scanId = uuid();
+      await db.insert(trendScans).values({
+        id: scanId,
+        brandId: brandId === "all" ? null : brandId,
+        keyword,
+        platforms: [],
+      });
+      await runTrendScan(db, scanId);
+      // Keep scanning daily while the keyword stays pinned.
+      const { getSetting } = await import("@/lib/settings");
+      const raw = await getSetting(`trends.keywords.${brandId}`);
+      const pinned: string[] = raw ? JSON.parse(raw) : [];
+      if (pinned.includes(keyword)) {
+        await db.insert(scheduleJobs).values({
+          id: uuid(),
+          kind: "trend_scan",
+          refId: job.refId,
+          runAt: new Date(Date.now() + 24 * 3_600_000),
+        });
+      }
+      return;
+    }
     default:
       throw new Error(`Unknown job kind: ${job.kind}`);
   }

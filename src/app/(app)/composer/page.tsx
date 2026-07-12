@@ -16,9 +16,9 @@ export const dynamic = "force-dynamic";
 export default async function ComposerPage({
   searchParams,
 }: {
-  searchParams: Promise<{ draft?: string; media?: string }>;
+  searchParams: Promise<{ draft?: string; media?: string; brief?: string }>;
 }) {
-  const { draft, media } = await searchParams;
+  const { draft, media, brief } = await searchParams;
   const [accounts, assets] = await Promise.all([
     getComposerAccounts(brandScope(await getActiveBrandId())),
     getLibraryAssets(),
@@ -30,6 +30,10 @@ export default async function ComposerPage({
     initial = (await getDraftInitial(draft)) ?? {};
   } else if (media) {
     initial = { mediaIds: assets.some((a) => a.id === media) ? [media] : [] };
+  }
+  if (brief) {
+    // Trend Radar hands a creative brief straight to the AI caption writer.
+    initial = { ...initial, brief: brief.slice(0, 500) };
   }
 
   return (

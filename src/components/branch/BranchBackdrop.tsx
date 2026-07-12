@@ -60,6 +60,8 @@ export function BranchBackdrop({ opacity = 0.2 }: { opacity?: number }) {
       style={{ opacity }}
       aria-hidden
     >
+      {/* Holographic floor: a perspective grid drifting under the network. */}
+      <div className="holo-floor" />
       <svg
         viewBox="0 0 800 400"
         preserveAspectRatio="xMidYMid slice"

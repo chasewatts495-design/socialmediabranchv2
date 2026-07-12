@@ -211,7 +211,7 @@ export function CommandPalette({
       <div className="absolute inset-0 bg-black/40" onClick={close} aria-hidden />
       <div
         data-testid="command-palette"
-        className="brand-pop relative z-10 w-full max-w-xl rounded-t-2xl border border-border bg-surface shadow-2xl md:mx-4 md:rounded-2xl"
+        className="palette-drop relative z-10 w-full max-w-xl rounded-t-2xl border border-border bg-surface shadow-2xl md:mx-4 md:rounded-2xl"
       >
         <div className="hud-hairline flex items-center gap-2 border-b border-border px-4 py-3">
           <span className="text-accent-strong">✦</span>

@@ -60,6 +60,16 @@ export const IconPlug = (p: P) => (
   </svg>
 );
 
+export const IconRadar = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="12" r="4.5" />
+    <path d="M12 12l6.5-6.5" />
+    <circle cx="15.5" cy="14.5" r="0.9" fill="currentColor" stroke="none" />
+    <circle cx="8.5" cy="9.5" r="0.9" fill="currentColor" stroke="none" />
+  </svg>
+);
+
 export const IconSettings = (p: P) => (
   <svg {...base(p)}>
     <circle cx="12" cy="12" r="3" />

@@ -18,8 +18,8 @@ export function Card({
       data-testid={testId}
       className={cn(
         // min-w-0 lets cards shrink inside grid/flex tracks (charts overflow otherwise)
-        // hud-hairline etches the gold circuit line along each card's top edge
-        "hud-hairline min-w-0 rounded-2xl border border-border bg-surface shadow-[0_1px_2px_rgba(23,26,32,0.04)]",
+        // hud-hairline etches the gold circuit line; hud-card3d lifts on hover
+        "hud-hairline hud-card3d min-w-0 rounded-2xl border border-border bg-surface shadow-[0_1px_2px_rgba(23,26,32,0.04)]",
         className,
       )}
     >

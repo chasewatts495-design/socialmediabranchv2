@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { IconPlug, IconSettings } from "@/components/ui/icons";
+import { IconPlug, IconRadar, IconSettings } from "@/components/ui/icons";
 import { BrandSwitcher, type BrandOption } from "./BrandSwitcher";
 import { NotificationsBell } from "./NotificationsBell";
 import { PaletteButton } from "./CommandPalette";
@@ -34,6 +34,13 @@ export function TopBar({
           unreadCount={notifications.unreadCount}
           compact
         />
+        <Link
+          href="/trends"
+          aria-label="Trend Radar"
+          className="rounded-lg p-2 text-muted hover:bg-surface-2 hover:text-ink"
+        >
+          <IconRadar width={20} height={20} />
+        </Link>
         <Link
           href="/connections"
           aria-label="Connections"

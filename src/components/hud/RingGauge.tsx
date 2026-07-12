@@ -31,9 +31,15 @@ export function RingGauge({
 
   return (
     <div className={cn("flex min-w-0 items-center gap-3", className)}>
+      <span
+        className="relative inline-block h-14 w-14 shrink-0 md:h-16 md:w-16"
+        style={{ transformStyle: "preserve-3d" }}
+      >
+        {/* Gyroscope: a second ring spinning on a tilted 3D axis. */}
+        <span className="gyro-ring" aria-hidden />
       <svg
         viewBox="0 0 64 64"
-        className="h-14 w-14 shrink-0 md:h-16 md:w-16"
+        className="h-full w-full"
         aria-hidden
         style={
           {
@@ -102,13 +108,25 @@ export function RingGauge({
               })}%`}
         </text>
       </svg>
+      </span>
       <div className="min-w-0">
         <p className="truncate text-[11px] font-medium tracking-wide text-muted uppercase">
           {label}
         </p>
-        {/* Lifts toward the viewer inside a Tilt's perspective. */}
-        <p className="hud-lift mt-0.5 text-lg font-semibold md:text-2xl">
-          {value}
+        {/* Digits roll in like a 3D odometer, lifted inside the Tilt. */}
+        <p
+          className="hud-lift digit-roll mt-0.5 text-lg font-semibold md:text-2xl"
+          aria-label={value}
+        >
+          {value.split("").map((ch, i) => (
+            <span
+              key={i}
+              aria-hidden
+              style={{ animationDelay: `${i * 45}ms` }}
+            >
+              {ch === " " ? " " : ch}
+            </span>
+          ))}
         </p>
       </div>
     </div>

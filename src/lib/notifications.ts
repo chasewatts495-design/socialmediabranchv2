@@ -27,6 +27,7 @@ const INTERESTING = [
   "brand.created",
   "brand.deleted",
   "credentials.saved",
+  "trend.scan.completed",
 ] as const;
 
 const LABELS: Record<string, string> = {
@@ -47,6 +48,7 @@ const LABELS: Record<string, string> = {
   "brand.created": "Brand created",
   "brand.deleted": "Brand deleted",
   "credentials.saved": "Credentials saved (encrypted)",
+  "trend.scan.completed": "Trend Radar found fresh signals",
 };
 
 export interface NotificationItem {
@@ -107,11 +109,14 @@ export async function getNotifications(limit = 20): Promise<NotificationsData> {
       level: r.level,
       title: LABELS[r.event] ?? r.event,
       detail: detailText(r.detail),
-      href: r.postId
-        ? "/calendar?tab=queue"
-        : r.accountId
-          ? `/accounts/${r.accountId}`
-          : null,
+      href:
+        r.event === "trend.scan.completed"
+          ? "/trends"
+          : r.postId
+            ? "/calendar?tab=queue"
+            : r.accountId
+              ? `/accounts/${r.accountId}`
+              : null,
       unread: r.ts > readAt,
     })),
     unreadCount,
