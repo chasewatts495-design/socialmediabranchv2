@@ -7,10 +7,13 @@ import { getActiveBrandId, listBrands } from "@/lib/brands";
 import { getNotifications } from "@/lib/notifications";
 import { getDb } from "@/lib/db/client";
 import { ensureSeeded } from "@/lib/db/ensure-seeded";
+import { opportunisticTick } from "@/lib/scheduler/lazy-tick";
 import type { PlatformId } from "@/lib/connectors/types";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   await ensureSeeded();
+  // Scheduled work runs whenever the app is open — no pinger required.
+  await opportunisticTick();
   const db = await getDb();
   const [brands, activeBrandId, notifications, paletteAccounts] =
     await Promise.all([
