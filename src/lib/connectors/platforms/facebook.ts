@@ -40,6 +40,10 @@ export const facebookDef: PlatformDefinition = {
         body: "From the app's Settings → Basic page. Development mode works for every Page you have a role on — no App Review needed.",
       },
       {
+        title: "Business login? Add a Configuration ID",
+        body: "If Connect fails with \"Invalid Scopes\": in your Meta app open Facebook Login for Business → Configurations → Create, pick User access token, tick the pages_*, instagram_* and read_insights permissions, save, then paste the configuration's ID into Branch above.",
+      },
+      {
         title: "Hit Connect and pick your Pages",
         body: "You log in on facebook.com itself and grant Page permissions; Branch lists your Pages so you choose which to connect. Page tokens don't expire.",
       },

@@ -7,6 +7,7 @@ import { activityLog } from "@/lib/db/schema";
 import { providerFor } from "@/lib/oauth";
 import {
   deleteOAuthAppCreds,
+  getOAuthAppCreds,
   saveOAuthAppCreds,
 } from "@/lib/oauth/app-credentials";
 import { linkDiscoveredAccount } from "@/lib/oauth/link-account";
@@ -19,6 +20,7 @@ const uuid = () => crypto.randomUUID();
 const credsSchema = z.object({
   clientId: z.string().trim().min(3).max(300),
   clientSecret: z.string().trim().min(3).max(500),
+  configId: z.string().trim().max(120).optional(),
 });
 
 export async function saveOAuthAppAction(
@@ -29,9 +31,15 @@ export async function saveOAuthAppAction(
   if (!providerFor(provider)) {
     return { ok: false, message: "Unknown provider." };
   }
+  // Blank fields keep their saved value, so the owner can add one piece
+  // (say, a Meta configuration id) without re-pasting the whole set.
+  const existing = (await getOAuthAppCreds(provider))?.creds;
+  const field = (name: string) =>
+    String(formData.get(name) ?? "").trim() || undefined;
   const parsed = credsSchema.safeParse({
-    clientId: formData.get("clientId"),
-    clientSecret: formData.get("clientSecret"),
+    clientId: field("clientId") ?? existing?.clientId,
+    clientSecret: field("clientSecret") ?? existing?.clientSecret,
+    configId: field("configId") ?? existing?.configId,
   });
   if (!parsed.success) {
     return { ok: false, message: "Paste both the Client ID and the Secret." };

@@ -38,11 +38,15 @@ export const instagramDef: PlatformDefinition = {
       },
       {
         title: "Create a Meta app",
-        body: "developers.facebook.com → My apps → Create app → type Business. In app settings, add the Redirect URI shown below under Facebook Login → Settings → Valid OAuth Redirect URIs.",
+        body: "developers.facebook.com → My apps → Create app → type Business. In Settings → Basic add your app's domain under App Domains; under Facebook Login → Settings paste the Redirect URI shown below into Valid OAuth Redirect URIs.",
       },
       {
         title: "Save the App ID + secret in Branch",
         body: "Both are on the app's Settings → Basic page. Development mode is fine — your own accounts work without App Review.",
+      },
+      {
+        title: "Business login? Add a Configuration ID",
+        body: "If Connect fails with \"Invalid Scopes\": in your Meta app open Facebook Login for Business → Configurations → Create, pick User access token, tick the pages_*, instagram_* and read_insights permissions, save, then paste the configuration's ID into Branch above.",
       },
       {
         title: "Hit Connect and pick your accounts",

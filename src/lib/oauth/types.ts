@@ -17,6 +17,10 @@ export interface TokenSet {
 export interface OAuthAppCreds {
   clientId: string;
   clientSecret: string;
+  /** Meta "Facebook Login for Business" configuration id. Business-type
+   * apps reject a raw scope list at the dialog; the configuration carries
+   * the permission set instead. */
+  configId?: string;
 }
 
 /**
