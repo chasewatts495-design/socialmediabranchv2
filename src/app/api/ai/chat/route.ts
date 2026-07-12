@@ -109,7 +109,9 @@ export async function POST(req: NextRequest) {
     accountIds: accountIds ?? undefined,
     rangeDays: 90,
   });
-  const system = buildSystemPrompt("chat", summary);
+  const { latestTrendDigest } = await import("@/lib/trends/digest");
+  const trends = await latestTrendDigest(db);
+  const system = buildSystemPrompt("chat", summary, { trends });
   const client = await getAnthropicClient();
 
   const stream = new ReadableStream({

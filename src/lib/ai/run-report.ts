@@ -74,11 +74,13 @@ export async function runAiReportJob(db: Db, reportId: string): Promise<void> {
     const client = await getAnthropicClient();
     if (client) {
       model = await getAiModel();
+      const { latestTrendDigest } = await import("@/lib/trends/digest");
+      const trends = await latestTrendDigest(db);
       const schema = REPORT_TYPES[type].schema;
       const response = await client.messages.parse({
         model,
         max_tokens: 16000,
-        system: buildSystemPrompt(type, summary, { params }),
+        system: buildSystemPrompt(type, summary, { params, trends }),
         messages: [
           {
             role: "user",
