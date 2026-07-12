@@ -252,6 +252,30 @@ export const scheduleJobs = pgTable(
   (t) => [index("schedule_jobs_status_runat_idx").on(t.status, t.runAt)],
 );
 
+/* ── Trend Radar ───────────────────────────────────────────────────────── */
+
+export const trendScans = pgTable(
+  "trend_scans",
+  {
+    id: id().primaryKey(),
+    brandId: text("brand_id").references(() => brands.id, {
+      onDelete: "set null",
+    }),
+    keyword: text("keyword").notNull(),
+    platforms: jsonb("platforms")
+      .$type<string[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    status: text("status").notNull().default("pending"), // pending | running | done | failed
+    signals: jsonb("signals").$type<unknown[]>(),
+    analysis: jsonb("analysis").$type<Record<string, unknown>>(),
+    error: text("error"),
+    createdAt: createdAt(),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+  },
+  (t) => [index("trend_scans_created_idx").on(t.createdAt)],
+);
+
 /* ── AI ────────────────────────────────────────────────────────────────── */
 
 export const aiConversations = pgTable("ai_conversations", {

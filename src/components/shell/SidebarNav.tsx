@@ -14,6 +14,7 @@ import {
   IconHome,
   IconLibrary,
   IconPlug,
+  IconRadar,
   IconSettings,
   IconSparkles,
 } from "@/components/ui/icons";
@@ -22,6 +23,7 @@ const ICONS = {
   home: IconHome,
   calendar: IconCalendar,
   compose: IconCompose,
+  radar: IconRadar,
   library: IconLibrary,
   sparkles: IconSparkles,
   plug: IconPlug,
@@ -75,9 +77,9 @@ export function SidebarNav({
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition",
+                "nav-3d flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm",
                 active
-                  ? "bg-accent-soft font-medium text-accent-strong"
+                  ? "bg-accent-soft font-medium text-accent-strong shadow-[0_4px_14px_-8px_rgba(143,111,34,0.5)]"
                   : "text-muted hover:bg-surface-2 hover:text-ink",
               )}
             >

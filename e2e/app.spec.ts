@@ -250,3 +250,44 @@ test("connections wizard + capability matrix are honest about Snapchat", async (
   await page.goto("/connections/snapchat");
   await expect(page.locator("text=Why Snapchat is manual")).toBeVisible();
 });
+
+test("trend radar scans a keyword and hands a brief to the composer", async ({ page }) => {
+  await login(page);
+  await page.goto("/trends");
+  await expect(page.getByTestId("trend-radar")).toBeVisible();
+  await page.getByTestId("trend-keyword").fill("sourdough baking");
+  await page.getByTestId("trend-scan-button").click();
+  // Demo scan completes inline and the page navigates to ?scan=<id>.
+  await expect(page.getByTestId("trend-report")).toBeVisible({
+    timeout: 60_000,
+  });
+  await expect(page.locator("text=Demo analysis").first()).toBeVisible();
+  await expect(page.getByTestId("trend-signals")).toBeVisible();
+  expect(
+    await page.getByTestId("trend-signals").locator("a").count(),
+  ).toBeGreaterThanOrEqual(6);
+  // A creative brief prefills the composer's AI writer (caption step).
+  await page.getByTestId("trend-brief-0").click();
+  await page.waitForURL(/composer\?brief=/);
+  await page.locator('section:has-text("Pick your media") button').first().click();
+  await page
+    .locator('[data-testid="step-next"]:visible, .fixed button:has-text("Next")')
+    .first()
+    .click();
+  const brief = await page.getByTestId("ai-caption-brief").inputValue();
+  expect(brief.length).toBeGreaterThan(10);
+});
+
+test("trend radar appears in nav and command palette", async ({ page }) => {
+  await login(page);
+  if (!isMobile(page)) {
+    await page.getByTestId("sidebar-nav").locator("text=Trend Radar").click();
+    await page.waitForURL(/trends/);
+    await page.goto("/");
+  }
+  await page.keyboard.press("ControlOrMeta+k");
+  await page.getByTestId("command-input").fill("trend");
+  await page.getByTestId("command-input").press("Enter");
+  await page.waitForURL(/trends/);
+  await expect(page.getByTestId("trend-radar")).toBeVisible();
+});

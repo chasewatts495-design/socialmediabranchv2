@@ -83,7 +83,7 @@ export function NotificationsBell({
       {open && (
         <div
           className={cn(
-            "brand-pop absolute z-50 mt-1.5 w-80 max-w-[calc(100vw-1.5rem)] rounded-xl border border-border bg-surface shadow-xl",
+            "panel-unfold absolute z-50 mt-1.5 w-80 max-w-[calc(100vw-1.5rem)] rounded-xl border border-border bg-surface shadow-xl",
             compact ? "right-0" : "left-0",
           )}
           data-testid="notifications-panel"

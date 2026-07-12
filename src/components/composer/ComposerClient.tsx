@@ -35,6 +35,8 @@ export interface ComposerInitial {
   mediaIds?: string[];
   targets?: { accountId: string; caption: string; meta: Record<string, unknown> }[];
   scheduledAt?: string | null;
+  /** Pre-filled AI brief (e.g. a Trend Radar creative brief). */
+  brief?: string;
 }
 
 interface VariantState {
@@ -110,8 +112,8 @@ export function ComposerClient({
   const [busy, setBusy] = useState<"draft" | "now" | "schedule" | null>(null);
   const [result, setResult] = useState<SavePostResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [aiOpen, setAiOpen] = useState(false);
-  const [aiBrief, setAiBrief] = useState("");
+  const [aiOpen, setAiOpen] = useState(Boolean(initial.brief));
+  const [aiBrief, setAiBrief] = useState(initial.brief ?? "");
   const [aiBusy, setAiBusy] = useState(false);
   const [aiOptions, setAiOptions] = useState<string[]>([]);
   const [aiGeneratedBy, setAiGeneratedBy] = useState<"claude" | "demo">("demo");
