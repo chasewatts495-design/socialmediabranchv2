@@ -140,6 +140,33 @@ describe("providers", () => {
     expect(out.refreshToken).toBe("g-rt");
   });
 
+  it("meta: authorize URL uses the scope list without a config id", () => {
+    const url = new URL(
+      metaProvider.authorizeUrl({
+        creds: CREDS,
+        redirectUri: REDIRECT,
+        state: "st4te",
+      }),
+    );
+    expect(url.searchParams.get("scope")).toContain("instagram_content_publish");
+    expect(url.searchParams.get("config_id")).toBeNull();
+  });
+
+  it("meta: authorize URL switches to config_id for Business-login apps", () => {
+    const url = new URL(
+      metaProvider.authorizeUrl({
+        creds: { ...CREDS, configId: "1234567890" },
+        redirectUri: REDIRECT,
+        state: "st4te",
+      }),
+    );
+    expect(url.searchParams.get("config_id")).toBe("1234567890");
+    // A scope list alongside config_id is what triggers "Invalid Scopes".
+    expect(url.searchParams.get("scope")).toBeNull();
+    expect(url.searchParams.get("client_id")).toBe("client-123");
+    expect(url.searchParams.get("state")).toBe("st4te");
+  });
+
   it("meta: exchange upgrades to a long-lived token, discovery yields page + IG", async () => {
     mockFetchJson([
       { access_token: "short", expires_in: 5000 },

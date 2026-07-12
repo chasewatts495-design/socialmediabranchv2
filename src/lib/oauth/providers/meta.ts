@@ -39,9 +39,15 @@ export const metaProvider: OAuthProvider = {
       client_id: creds.clientId,
       redirect_uri: redirectUri,
       response_type: "code",
-      scope: META_SCOPES.join(","),
       state,
     });
+    // "Facebook Login for Business" apps refuse a raw scope list
+    // ("Invalid Scopes") — the saved configuration carries the permissions.
+    if (creds.configId) {
+      q.set("config_id", creds.configId);
+    } else {
+      q.set("scope", META_SCOPES.join(","));
+    }
     return `https://www.facebook.com/${META_GRAPH_VERSION}/dialog/oauth?${q}`;
   },
 

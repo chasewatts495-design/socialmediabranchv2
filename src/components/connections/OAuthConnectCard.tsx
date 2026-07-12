@@ -106,6 +106,25 @@ export function OAuthConnectCard({
             />
           </label>
         </div>
+        {provider === "meta" && (
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-muted">
+              Configuration ID (Facebook Login for Business)
+            </span>
+            <input
+              name="configId"
+              autoComplete="off"
+              placeholder="Long number from Facebook Login for Business → Configurations"
+              className={inputCls}
+              data-testid="oauth-config-id-meta"
+            />
+            <span className="mt-1 block text-[11px] text-faint">
+              Needed if Connect fails with &quot;Invalid Scopes&quot; — create a
+              configuration in your Meta app, tick the permissions, and paste
+              its ID here. Blank fields keep their saved value.
+            </span>
+          </label>
+        )}
         {state && (
           <p className={cn("text-xs", state.ok ? "text-success" : "text-danger")}>
             {state.message}

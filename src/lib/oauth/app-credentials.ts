@@ -14,6 +14,11 @@ const ENV_KEYS: Record<string, [string, string]> = {
   meta: ["META_APP_ID", "META_APP_SECRET"],
 };
 
+/** Optional per-provider extras that ride along with the id/secret pair. */
+const ENV_CONFIG_ID: Record<string, string> = {
+  meta: "META_CONFIG_ID",
+};
+
 export async function getOAuthAppCreds(
   provider: string,
 ): Promise<{ creds: OAuthAppCreds; source: "settings" | "env" } | null> {
@@ -33,7 +38,11 @@ export async function getOAuthAppCreds(
     const clientId = process.env[envPair[0]];
     const clientSecret = process.env[envPair[1]];
     if (clientId && clientSecret) {
-      return { creds: { clientId, clientSecret }, source: "env" };
+      const configId = process.env[ENV_CONFIG_ID[provider] ?? ""];
+      return {
+        creds: { clientId, clientSecret, ...(configId ? { configId } : {}) },
+        source: "env",
+      };
     }
   }
   return null;
