@@ -59,7 +59,11 @@ const TASK_FRAMING: Record<ReportType, string> = {
 export function buildSystemPrompt(
   task: ReportType | "chat",
   summary: MetricSummary,
-  extras: { params?: Record<string, unknown> } = {},
+  extras: {
+    params?: Record<string, unknown>;
+    /** Trend Radar digest — what's hot in the owner's niches right now. */
+    trends?: string | null;
+  } = {},
 ): string {
   const platforms = [...new Set(summary.accounts.map((a) => a.platform))];
   const knowledgeOpts =
@@ -76,6 +80,12 @@ export function buildSystemPrompt(
     `# Marketing knowledge base\n${knowledgeFor(platforms, knowledgeOpts)}`,
     `# Metric summary (${summary.rangeDays} days, generated ${summary.generatedAt})\n<metric_summary>\n${JSON.stringify(summary, null, 1)}\n</metric_summary>`,
   ];
+
+  if (extras.trends) {
+    sections.push(
+      `# Trend Radar — live niche signals\nRecent keyword scans of the owner's niche (real posts + AI patterns). Use these to keep recommendations current; cite a signal or pattern when you lean on it, and say if it came from demo signals.\n${extras.trends}`,
+    );
+  }
 
   if (task !== "chat") {
     sections.push(`# Current task\n${TASK_FRAMING[task]}`);

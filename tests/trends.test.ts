@@ -176,6 +176,55 @@ describe("runTrendScan", () => {
   });
 });
 
+describe("trend digest for the strategist", () => {
+  it("summarizes recent done scans and skips pending ones", async () => {
+    const { latestTrendDigest } = await import("@/lib/trends/digest");
+    const { demoReport } = await import("@/lib/trends/analyze");
+    const signals = rankSignals(demoSignals("vintage sneakers"));
+    const report = demoReport({
+      keyword: "vintage sneakers",
+      signals,
+      accounts: [{ handle: "@kicks", platformId: "instagram" }],
+      bestHours: {},
+    });
+    await db.insert(schema.trendScans).values([
+      {
+        id: uuid(),
+        keyword: "vintage sneakers",
+        platforms: [],
+        status: "done",
+        signals,
+        analysis: report as unknown as Record<string, unknown>,
+      },
+      { id: uuid(), keyword: "unfinished", platforms: [], status: "pending" },
+    ]);
+    const digest = await latestTrendDigest(db);
+    expect(digest).toContain('Keyword "vintage sneakers"');
+    expect(digest).toContain("Pattern —");
+    expect(digest).toContain("Signal [");
+    expect(digest).not.toContain("unfinished");
+
+    // And the strategist prompt embeds it under the Trend Radar section.
+    const { buildSystemPrompt } = await import("@/lib/ai/prompts");
+    const prompt = buildSystemPrompt(
+      "chat",
+      {
+        rangeDays: 90,
+        generatedAt: new Date().toISOString(),
+        accounts: [],
+        crossPlatform: {
+          bestPlatformByER: "",
+          fastestGrowing: "",
+          underperforming: [],
+        },
+      } as never,
+      { trends: digest },
+    );
+    expect(prompt).toContain("Trend Radar — live niche signals");
+    expect(prompt).toContain("vintage sneakers");
+  });
+});
+
 describe("demo analysis", () => {
   it("builds briefs aimed at the owner's own platforms with best hours", () => {
     const report = demoReport({
