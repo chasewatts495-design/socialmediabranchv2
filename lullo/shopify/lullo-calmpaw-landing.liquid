@@ -1,504 +1,411 @@
 {% comment %}
   ============================================================
-  LULLO — CalmPaw Plus Landing Section (lullo-calmpaw-landing)
+  LULLO — CalmPaw Plus Landing (v2, block-based)
   ------------------------------------------------------------
-  Shopify Online Store 2.0 section for the Horizon theme.
-  - Mobile-first: sticky bottom buy bar, full-width tier cards,
-    48px+ tap targets, 17px minimum body text, no accordions,
-    FAQ fully expanded (audience 25–90).
-  - Brand: Fredoka, forest green #1f6b43 + cream palette from
-    the live lullo.us, with schema-adjustable spa/botanical
-    accents (leaf divider, sage wash).
-  - Every visible string, price, color, and font is editable in
-    the Shopify customizer (settings + blocks). No code edits
-    needed to change copy.
-  - Review/testimonial blocks ship HIDDEN by default — populate
-    with real customer reviews, then enable.
-  Install: save as sections/lullo-calmpaw-landing.liquid, then
-  add the section to a template in the customizer.
+  ONE uploadable Shopify OS 2.0 section. Every page part is a
+  reorderable block: drag to reorder, insert "Custom text" /
+  "Custom Liquid" blocks between any two parts.
+  - Backgrounds: white + off-black only. Green = accent only.
+  - Fonts: headings Fredoka, body Open Sans (both font_picker).
+  - No header, no sticky/floating elements, no reviews, no video
+    by default. 30-day guarantee. Lullo CalmPaw Plus naming.
+  Install: paste as sections/lullo-calmpaw-landing.liquid, add
+  "Lullo CalmPaw Landing" to your product/landing template.
+  Then set the two variant IDs in the Hero block settings.
   ============================================================
 {% endcomment %}
 
-{%- assign product = section.settings.product -%}
-
 {%- style -%}
-  .lullo-cp {
-    --cp-green: {{ section.settings.color_primary }};
-    --cp-green-deep: {{ section.settings.color_deep }};
-    --cp-text: {{ section.settings.color_text }};
-    --cp-cream: {{ section.settings.color_cream }};
-    --cp-cream-2: {{ section.settings.color_cream_2 }};
-    --cp-sage: {{ section.settings.color_spa_sage }};
-    --cp-gold: {{ section.settings.color_gold }};
-    --cp-badge: {{ section.settings.color_badge }};
+  #lullo-cp-{{ section.id }} {
+    --cp-accent: {{ section.settings.color_accent }};
+    --cp-ink: {{ section.settings.color_ink }};
+    --cp-line: #e3e3e0;
+    --cp-bad: #b3402f;
     --cp-heading-font: {{ section.settings.font_heading.family }}, {{ section.settings.font_heading.fallback_families }};
     --cp-body-font: {{ section.settings.font_body.family }}, {{ section.settings.font_body.fallback_families }};
-    --cp-body-size: {{ section.settings.body_size }}px;
     font-family: var(--cp-body-font);
-    font-size: var(--cp-body-size);
-    line-height: 1.6;
-    color: var(--cp-text);
+    font-size: {{ section.settings.body_size }}px;
+    line-height: 1.65;
+    color: var(--cp-ink);
     background: #ffffff;
   }
   {{ section.settings.font_heading | font_face }}
   {{ section.settings.font_body | font_face }}
 
-  .lullo-cp * { box-sizing: border-box; }
-  .lullo-cp .cp-wrap { max-width: 1080px; margin: 0 auto; padding: 0 18px; }
-  .lullo-cp h1, .lullo-cp h2, .lullo-cp h3 {
-    font-family: var(--cp-heading-font);
-    color: var(--cp-green-deep);
-    line-height: 1.15;
-    margin: 0 0 14px;
-  }
-  .lullo-cp h1 { font-size: clamp(30px, 6vw, 44px); font-weight: 700; }
-  .lullo-cp h2 { font-size: clamp(25px, 5vw, 34px); font-weight: 600; }
-  .lullo-cp h3 { font-size: clamp(20px, 4vw, 24px); font-weight: 600; }
-  .lullo-cp p { margin: 0 0 14px; }
-  .lullo-cp .cp-lead { font-weight: 700; }
-  .lullo-cp section { padding: 44px 0; }
+  #lullo-cp-{{ section.id }} *, #lullo-cp-{{ section.id }} *::before, #lullo-cp-{{ section.id }} *::after { box-sizing: border-box; }
+  #lullo-cp-{{ section.id }} .cp-band { padding: 56px 0; background: #ffffff; }
+  #lullo-cp-{{ section.id }} .cp-band--dark { background: var(--cp-ink); color: #ffffff; }
+  #lullo-cp-{{ section.id }} .cp-band--dark h2, #lullo-cp-{{ section.id }} .cp-band--dark h3 { color: #ffffff; }
+  #lullo-cp-{{ section.id }} .cp-band--dark .cp-eyebrow { color: #8fd6ae; }
+  #lullo-cp-{{ section.id }} .cp-wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  #lullo-cp-{{ section.id }} .cp-wrap--narrow { max-width: 820px; }
 
-  /* Announcement bar */
-  .lullo-cp .cp-announce {
-    background: var(--cp-green);
-    color: #fff;
-    text-align: center;
-    font-weight: 600;
-    padding: 12px 14px;
-    font-size: calc(var(--cp-body-size) - 1px);
-    letter-spacing: .2px;
+  #lullo-cp-{{ section.id }} h1, #lullo-cp-{{ section.id }} h2 {
+    font-family: var(--cp-heading-font); font-weight: 700;
+    color: var(--cp-ink); line-height: 1.15; margin: 0 0 16px;
   }
+  #lullo-cp-{{ section.id }} h1 { font-size: clamp(30px, 5.4vw, 42px); }
+  #lullo-cp-{{ section.id }} h2 { font-size: clamp(24px, 4.6vw, 32px); }
+  #lullo-cp-{{ section.id }} h3 { font-family: var(--cp-body-font); font-weight: 700; font-size: 1.06em; color: var(--cp-ink); margin: 0 0 8px; }
+  #lullo-cp-{{ section.id }} p { margin: 0 0 14px; }
+  #lullo-cp-{{ section.id }} .cp-eyebrow {
+    display: block; font-weight: 700; font-size: 0.78em; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--cp-accent); margin-bottom: 10px;
+  }
+  #lullo-cp-{{ section.id }} .cp-center { text-align: center; }
+  #lullo-cp-{{ section.id }} .cp-sub { max-width: 640px; margin: 0 auto 8px; }
 
-  /* Spa leaf divider */
-  .lullo-cp .cp-leaf-divider { text-align: center; padding: 6px 0 0; color: var(--cp-sage); }
-  .lullo-cp .cp-leaf-divider svg { width: 84px; height: 22px; opacity: .9; }
+  /* Buttons — in flow only */
+  #lullo-cp-{{ section.id }} .cp-cta {
+    display: block; width: 100%; text-align: center; border: 0; cursor: pointer;
+    background: var(--cp-accent); color: #fff; border-radius: 12px;
+    padding: 17px 32px; font-family: var(--cp-body-font);
+    font-size: 1.06em; font-weight: 700; letter-spacing: .02em; min-height: 56px;
+  }
+  #lullo-cp-{{ section.id }} .cp-cta:hover { filter: brightness(.92); }
 
   /* Hero */
-  .lullo-cp .cp-hero { background: linear-gradient(180deg, var(--cp-cream) 0%, #ffffff 100%); padding-top: 30px; }
-  .lullo-cp .cp-hero-grid { display: grid; gap: 26px; }
-  @media (min-width: 880px) { .lullo-cp .cp-hero-grid { grid-template-columns: 1fr 1fr; align-items: start; } }
-  .lullo-cp .cp-eyebrow {
-    display: inline-block; background: var(--cp-sage); color: var(--cp-green-deep);
-    border-radius: 99px; padding: 8px 18px; font-weight: 600;
-    font-size: calc(var(--cp-body-size) - 2px); margin-bottom: 14px;
+  #lullo-cp-{{ section.id }} .cp-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; align-items: start; }
+  @media (min-width: 900px) { #lullo-cp-{{ section.id }} .cp-hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+  #lullo-cp-{{ section.id }} .cp-hero-media { position: relative; }
+  #lullo-cp-{{ section.id }} .cp-hero-media img { width: 100%; border-radius: 14px; display: block; border: 1px solid var(--cp-line); }
+  #lullo-cp-{{ section.id }} .cp-hero-ph { border: 1px solid var(--cp-line); border-radius: 14px; min-height: 320px; display: flex; align-items: center; justify-content: center; color: #9a9a95; font-size: 0.9em; }
+  #lullo-cp-{{ section.id }} .cp-save-flag {
+    position: absolute; top: 12px; left: 12px; background: var(--cp-bad); color: #fff;
+    border-radius: 8px; padding: 6px 12px; font-weight: 700; font-size: 0.82em;
   }
-  .lullo-cp .cp-hero-media img { width: 100%; border-radius: 16px; display: block; }
-  .lullo-cp .cp-hero-media { position: relative; }
-  .lullo-cp .cp-save-flag {
-    position: absolute; top: 14px; left: 14px; background: var(--cp-badge); color: #fff;
-    border-radius: 99px; padding: 8px 16px; font-weight: 700; font-size: calc(var(--cp-body-size) - 2px);
-  }
-  .lullo-cp .cp-price-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 10px 0 4px; }
-  .lullo-cp .cp-price { font-family: var(--cp-heading-font); font-size: 34px; font-weight: 700; color: var(--cp-green-deep); }
-  .lullo-cp .cp-compare { text-decoration: line-through; opacity: .55; font-size: 21px; }
-  .lullo-cp .cp-save-pill { background: var(--cp-badge); color: #fff; border-radius: 99px; padding: 5px 14px; font-weight: 700; font-size: calc(var(--cp-body-size) - 3px); }
-  .lullo-cp .cp-bullets { list-style: none; padding: 0; margin: 16px 0; }
-  .lullo-cp .cp-bullets li { padding: 7px 0 7px 2px; display: flex; gap: 10px; align-items: flex-start; }
-  .lullo-cp .cp-bullets .cp-bullet-ico { flex: 0 0 auto; font-size: 19px; line-height: 1.4; }
+  #lullo-cp-{{ section.id }} .cp-price-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 4px 0 10px; }
+  #lullo-cp-{{ section.id }} .cp-price { font-family: var(--cp-heading-font); font-size: 1.9em; font-weight: 700; color: var(--cp-accent); }
+  #lullo-cp-{{ section.id }} .cp-compare { text-decoration: line-through; color: #6f6f6a; font-size: 1.15em; }
+  #lullo-cp-{{ section.id }} .cp-save-pill { background: var(--cp-bad); color: #fff; border-radius: 8px; padding: 4px 10px; font-weight: 700; font-size: 0.8em; }
 
-  /* Tier cards */
-  .lullo-cp .cp-tiers { display: grid; gap: 12px; margin: 18px 0; }
-  .lullo-cp .cp-tier {
-    position: relative; width: 100%; text-align: left; cursor: pointer;
-    border: 2px solid var(--cp-cream-2); border-radius: 16px; background: #fff;
-    padding: 16px 16px 14px; min-height: 64px; font: inherit; color: inherit;
-  }
-  .lullo-cp .cp-tier[aria-pressed="true"] { border-color: var(--cp-green); background: var(--cp-cream); box-shadow: 0 0 0 2px var(--cp-green) inset; }
-  .lullo-cp .cp-tier-badge {
-    position: absolute; top: -12px; left: 14px; background: var(--cp-green); color: #fff;
-    border-radius: 99px; padding: 4px 12px; font-size: calc(var(--cp-body-size) - 4px); font-weight: 700;
-  }
-  .lullo-cp .cp-tier-name { font-weight: 700; display: block; padding-right: 90px; }
-  .lullo-cp .cp-tier-save { color: var(--cp-green); font-weight: 600; font-size: calc(var(--cp-body-size) - 2px); }
-  .lullo-cp .cp-tier-prices { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); text-align: right; }
-  .lullo-cp .cp-tier-price { font-family: var(--cp-heading-font); font-weight: 700; font-size: 21px; color: var(--cp-green-deep); display: block; }
-  .lullo-cp .cp-tier-compare { text-decoration: line-through; opacity: .55; font-size: calc(var(--cp-body-size) - 2px); }
-  .lullo-cp .cp-tier-note { font-style: italic; font-size: calc(var(--cp-body-size) - 2px); opacity: .85; margin: 2px 0 0; }
+  #lullo-cp-{{ section.id }} .cp-bullets { list-style: none; padding: 0; margin: 14px 0 18px; }
+  #lullo-cp-{{ section.id }} .cp-bullets li { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; }
+  #lullo-cp-{{ section.id }} .cp-check { flex: 0 0 18px; margin-top: 5px; }
+  #lullo-cp-{{ section.id }} .cp-check svg { display: block; width: 18px; height: 18px; }
 
-  /* CTA */
-  .lullo-cp .cp-cta,
-  .lullo-cp .cp-sticky-cta {
-    display: block; width: 100%; text-align: center; border: 0; cursor: pointer;
-    background: var(--cp-green); color: #fff; border-radius: 14px;
-    padding: 17px 42px; font-family: var(--cp-heading-font);
-    font-size: calc(var(--cp-body-size) + 2px); font-weight: 700; letter-spacing: .3px;
-    min-height: 56px;
+  /* Tier cards — flex rows, nothing absolute */
+  #lullo-cp-{{ section.id }} .cp-tiers { display: grid; gap: 12px; margin: 6px 0 16px; }
+  #lullo-cp-{{ section.id }} .cp-tier {
+    width: 100%; cursor: pointer; text-align: left; font: inherit; color: inherit;
+    border: 2px solid var(--cp-line); border-radius: 12px; background: #fff; padding: 14px 16px;
   }
-  .lullo-cp .cp-cta:hover, .lullo-cp .cp-sticky-cta:hover { filter: brightness(.93); }
-  .lullo-cp .cp-ebook-flag {
-    background: var(--cp-cream-2); border: 1px dashed var(--cp-green);
-    border-radius: 14px; padding: 13px 15px; margin: 14px 0; font-size: calc(var(--cp-body-size) - 1px);
+  #lullo-cp-{{ section.id }} .cp-tier[aria-pressed="true"] { border-color: var(--cp-accent); box-shadow: 0 0 0 1.5px var(--cp-accent) inset; }
+  #lullo-cp-{{ section.id }} .cp-tier-badge {
+    display: inline-block; background: var(--cp-accent); color: #fff;
+    border-radius: 8px; padding: 3px 10px; font-size: 0.74em; font-weight: 700;
+    letter-spacing: .04em; margin-bottom: 8px;
   }
-  .lullo-cp .cp-trust-lines { margin: 14px 0 0; }
-  .lullo-cp .cp-trust-lines p { margin: 0 0 10px; font-size: calc(var(--cp-body-size) - 1px); }
+  #lullo-cp-{{ section.id }} .cp-tier-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
+  #lullo-cp-{{ section.id }} .cp-tier-name { font-weight: 700; }
+  #lullo-cp-{{ section.id }} .cp-tier-price { font-family: var(--cp-heading-font); font-weight: 700; font-size: 1.25em; color: var(--cp-accent); white-space: nowrap; }
+  #lullo-cp-{{ section.id }} .cp-tier-row2 { display: flex; justify-content: space-between; gap: 14px; margin-top: 2px; font-size: 0.9em; }
+  #lullo-cp-{{ section.id }} .cp-tier-save { color: var(--cp-accent); font-weight: 600; }
+  #lullo-cp-{{ section.id }} .cp-tier-compare { text-decoration: line-through; color: #6f6f6a; white-space: nowrap; }
 
-  /* Sticky mobile buy bar */
-  .lullo-cp-sticky {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
-    background: #fff; border-top: 2px solid var(--cp-cream-2);
-    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
-    display: flex; gap: 12px; align-items: center;
-    transform: translateY(110%); transition: transform .25s ease;
+  #lullo-cp-{{ section.id }} .cp-ebook-flag {
+    border: 1.5px dashed var(--cp-accent); border-radius: 12px;
+    padding: 13px 16px; margin: 14px 0; font-size: 0.95em;
   }
-  .lullo-cp-sticky.is-visible { transform: translateY(0); }
-  .lullo-cp-sticky .cp-sticky-price { font-family: var(--cp-heading-font); font-weight: 700; color: var(--cp-green-deep); font-size: 19px; white-space: nowrap; }
-  .lullo-cp-sticky .cp-sticky-compare { text-decoration: line-through; opacity: .55; font-size: 14px; display: block; }
-  .lullo-cp-sticky .cp-sticky-cta { flex: 1; padding: 14px 18px; min-height: 52px; }
+  #lullo-cp-{{ section.id }} .cp-trust { margin: 4px 0 0; }
+  #lullo-cp-{{ section.id }} .cp-trust p { margin: 0 0 8px; font-size: 0.95em; }
 
-  /* Generic tinted sections */
-  .lullo-cp .cp-tint { background: var(--cp-cream); }
-  .lullo-cp .cp-tint-sage { background: linear-gradient(180deg, #fff 0%, var(--cp-sage) 140%); }
-  .lullo-cp .cp-dark { background: var(--cp-green-deep); color: #fff; }
-  .lullo-cp .cp-dark h2, .lullo-cp .cp-dark h3 { color: #fff; }
+  /* Cards / grids */
+  #lullo-cp-{{ section.id }} .cp-cards { display: grid; gap: 16px; margin-top: 26px; }
+  @media (min-width: 760px) { #lullo-cp-{{ section.id }} .cp-cards { grid-template-columns: repeat(3, 1fr); } }
+  #lullo-cp-{{ section.id }} .cp-card { border: 1px solid var(--cp-line); border-radius: 14px; padding: 22px 20px; background: #fff; }
+  #lullo-cp-{{ section.id }} .cp-card p { margin-bottom: 0; font-size: 0.97em; }
 
-  /* Cards */
-  .lullo-cp .cp-cards { display: grid; gap: 16px; margin-top: 22px; }
-  @media (min-width: 760px) { .lullo-cp .cp-cards { grid-template-columns: repeat(3, 1fr); } }
-  .lullo-cp .cp-card { background: #fff; border: 1px solid var(--cp-cream-2); border-radius: 16px; padding: 22px 20px; }
-  .lullo-cp .cp-card h3 { margin-bottom: 8px; }
+  #lullo-cp-{{ section.id }} .cp-icongrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 26px; }
+  @media (min-width: 760px) { #lullo-cp-{{ section.id }} .cp-icongrid { grid-template-columns: repeat(4, 1fr); } }
+  #lullo-cp-{{ section.id }} .cp-iconitem { border: 1px solid var(--cp-line); border-radius: 14px; padding: 18px 14px; text-align: center; font-weight: 600; font-size: 0.95em; }
+  #lullo-cp-{{ section.id }} .cp-iconitem .cp-check { margin: 0 auto 8px; }
 
-  /* Benefit icons */
-  .lullo-cp .cp-icons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 22px; }
-  @media (min-width: 760px) { .lullo-cp .cp-icons { grid-template-columns: repeat(4, 1fr); } }
-  .lullo-cp .cp-icon-item { background: var(--cp-cream); border-radius: 16px; padding: 20px 14px; text-align: center; font-weight: 600; }
-  .lullo-cp .cp-icon-item .cp-ico { font-size: 30px; display: block; margin-bottom: 8px; }
-
-  /* Features */
-  .lullo-cp .cp-feature { display: grid; gap: 18px; align-items: center; padding: 26px 0; border-bottom: 1px solid var(--cp-cream-2); }
-  @media (min-width: 820px) {
-    .lullo-cp .cp-feature { grid-template-columns: 1fr 1fr; }
-    .lullo-cp .cp-feature:nth-child(even) .cp-feature-media { order: 2; }
+  /* Feature rows */
+  #lullo-cp-{{ section.id }} .cp-feature { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: center; padding: 30px 0; border-bottom: 1px solid var(--cp-line); }
+  #lullo-cp-{{ section.id }} .cp-feature:last-of-type { border-bottom: 0; }
+  @media (min-width: 860px) {
+    #lullo-cp-{{ section.id }} .cp-feature { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    #lullo-cp-{{ section.id }} .cp-feature--flip .cp-feature-media { order: 2; }
+    #lullo-cp-{{ section.id }} .cp-feature--noimg { grid-template-columns: 1fr; }
   }
-  .lullo-cp .cp-feature-media img { width: 100%; border-radius: 16px; display: block; }
-  .lullo-cp .cp-feature-media .cp-media-ph {
-    background: var(--cp-sage); border-radius: 16px; min-height: 210px;
-    display: flex; align-items: center; justify-content: center; font-size: 52px;
-  }
-  .lullo-cp .cp-feature-num { color: var(--cp-green); font-weight: 700; letter-spacing: .12em; font-size: calc(var(--cp-body-size) - 3px); }
-
-  /* Reviews */
-  .lullo-cp .cp-reviews { display: grid; gap: 16px; margin-top: 22px; }
-  @media (min-width: 760px) { .lullo-cp .cp-reviews { grid-template-columns: repeat(2, 1fr); } }
-  .lullo-cp .cp-review { background: #fff; border: 1px solid var(--cp-cream-2); border-radius: 16px; padding: 22px 20px; }
-  .lullo-cp .cp-stars { color: var(--cp-gold); letter-spacing: 2px; margin-bottom: 6px; }
-  .lullo-cp .cp-review-name { font-weight: 600; opacity: .8; margin-top: 8px; display: block; }
+  #lullo-cp-{{ section.id }} .cp-feature-media img { width: 100%; border-radius: 14px; display: block; border: 1px solid var(--cp-line); }
+  #lullo-cp-{{ section.id }} .cp-feature-num { font-weight: 700; font-size: 0.78em; letter-spacing: 0.14em; color: var(--cp-accent); text-transform: uppercase; margin-bottom: 8px; }
+  #lullo-cp-{{ section.id }} .cp-feature h3 { font-family: var(--cp-heading-font); font-size: 1.35em; }
+  #lullo-cp-{{ section.id }} .cp-feature p { margin-bottom: 0; }
 
   /* Comparison table */
-  .lullo-cp .cp-table-scroll { overflow-x: auto; margin-top: 22px; }
-  .lullo-cp table.cp-compare-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid var(--cp-cream-2); min-width: 560px; }
-  .lullo-cp .cp-compare-table th, .lullo-cp .cp-compare-table td { padding: 14px 14px; text-align: center; border-bottom: 1px solid var(--cp-cream-2); font-size: calc(var(--cp-body-size) - 1px); }
-  .lullo-cp .cp-compare-table td:first-child { text-align: left; font-weight: 600; }
-  .lullo-cp .cp-compare-table thead th { background: var(--cp-cream); font-family: var(--cp-heading-font); }
-  .lullo-cp .cp-compare-table .cp-col-us { background: var(--cp-cream); color: var(--cp-green-deep); font-weight: 700; }
-  .lullo-cp .cp-yes { color: var(--cp-green); font-weight: 700; }
-  .lullo-cp .cp-no { color: #b3402f; font-weight: 700; }
-
-  /* Video/proof */
-  .lullo-cp .cp-video-frame { border-radius: 16px; overflow: hidden; margin-top: 20px; background: #000; }
-  .lullo-cp .cp-video-frame video, .lullo-cp .cp-video-frame iframe { width: 100%; display: block; aspect-ratio: 16/9; border: 0; }
+  #lullo-cp-{{ section.id }} .cp-table-scroll { overflow-x: auto; margin-top: 26px; }
+  #lullo-cp-{{ section.id }} table.cp-table { width: 100%; min-width: 560px; border-collapse: separate; border-spacing: 0; border: 1px solid var(--cp-line); border-radius: 14px; overflow: hidden; }
+  #lullo-cp-{{ section.id }} .cp-table th, #lullo-cp-{{ section.id }} .cp-table td { padding: 13px 14px; text-align: center; border-bottom: 1px solid var(--cp-line); font-size: 0.95em; background: #fff; }
+  #lullo-cp-{{ section.id }} .cp-table tr:last-child td { border-bottom: 0; }
+  #lullo-cp-{{ section.id }} .cp-table td:first-child { text-align: left; font-weight: 600; }
+  #lullo-cp-{{ section.id }} .cp-table thead th { font-family: var(--cp-heading-font); font-weight: 700; }
+  #lullo-cp-{{ section.id }} .cp-table .cp-us { background: var(--cp-ink); color: #fff; }
+  #lullo-cp-{{ section.id }} .cp-good { color: var(--cp-accent); font-weight: 700; }
+  #lullo-cp-{{ section.id }} .cp-table .cp-us .cp-good { color: #8fd6ae; }
+  #lullo-cp-{{ section.id }} .cp-badmark { color: var(--cp-bad); font-weight: 700; }
 
   /* Guarantee */
-  .lullo-cp .cp-guarantee { border: 2px solid var(--cp-green); border-radius: 16px; background: var(--cp-cream); padding: 26px 22px; text-align: center; }
-  .lullo-cp .cp-guarantee .cp-seal { font-size: 42px; display: block; margin-bottom: 8px; }
+  #lullo-cp-{{ section.id }} .cp-guarantee { border: 2px solid var(--cp-accent); border-radius: 14px; padding: 30px 26px; text-align: center; }
+  #lullo-cp-{{ section.id }} .cp-seal { width: 44px; height: 44px; margin: 0 auto 12px; }
+  #lullo-cp-{{ section.id }} .cp-seal svg { width: 100%; height: 100%; }
 
-  /* FAQ — fully expanded, no accordions */
-  .lullo-cp .cp-faq-item { background: #fff; border: 1px solid var(--cp-cream-2); border-radius: 16px; padding: 22px 20px; margin-top: 14px; }
-  .lullo-cp .cp-faq-item h3 { color: var(--cp-green); }
+  /* FAQ */
+  #lullo-cp-{{ section.id }} .cp-faq { border: 1px solid var(--cp-line); border-radius: 14px; padding: 22px 22px; margin-top: 14px; }
+  #lullo-cp-{{ section.id }} .cp-faq h3 { color: var(--cp-accent); font-size: 1.05em; }
+  #lullo-cp-{{ section.id }} .cp-faq p:last-child { margin-bottom: 0; }
 
   /* Bonus */
-  .lullo-cp .cp-bonus { position: relative; background: #fff; border-radius: 16px; padding: 28px 22px; border: 1px solid var(--cp-cream-2); }
-  .lullo-cp .cp-free-badge { position: absolute; top: -14px; right: 18px; background: var(--cp-badge); color: #fff; border-radius: 99px; padding: 6px 16px; font-weight: 700; }
-  .lullo-cp .cp-bonus ol { padding-left: 22px; }
-  .lullo-cp .cp-bonus li { margin-bottom: 8px; }
-  .lullo-cp .cp-final-sub { text-align: center; margin-top: 12px; font-size: calc(var(--cp-body-size) - 1px); }
+  #lullo-cp-{{ section.id }} .cp-bonus { border: 1px solid var(--cp-line); border-radius: 14px; padding: 30px 26px; position: relative; }
+  #lullo-cp-{{ section.id }} .cp-free-badge { display: inline-block; background: var(--cp-accent); color: #fff; border-radius: 8px; padding: 4px 12px; font-weight: 700; font-size: 0.8em; letter-spacing: .05em; margin-bottom: 12px; }
+  #lullo-cp-{{ section.id }} .cp-bonus ol { padding-left: 22px; margin: 0 0 20px; }
+  #lullo-cp-{{ section.id }} .cp-bonus li { margin-bottom: 8px; }
+  #lullo-cp-{{ section.id }} .cp-final-sub { text-align: center; margin: 12px 0 0; font-size: 0.92em; }
 {%- endstyle -%}
 
-<div class="lullo-cp" id="lullo-cp-{{ section.id }}">
+{%- capture cp_check -%}
+<span class="cp-check" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" fill="{{ section.settings.color_accent }}"/><path d="M6 10.5l2.5 2.5L14 7.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+{%- endcapture -%}
 
-  {% if section.settings.show_announcement %}
-    <div class="cp-announce">{{ section.settings.announcement_text }}</div>
-  {% endif %}
+<div id="lullo-cp-{{ section.id }}">
+  {% for block in section.blocks %}
+    {% case block.type %}
 
-  {%- comment -%} ============ HERO / BUY BOX ============ {%- endcomment -%}
-  <section class="cp-hero">
-    <div class="cp-wrap">
-      <div class="cp-hero-grid">
-        <div class="cp-hero-media">
-          {% if section.settings.hero_image %}
-            <img src="{{ section.settings.hero_image | image_url: width: 1000 }}" alt="{{ section.settings.product_title | escape }}" loading="eager">
-          {% else %}
-            <div class="cp-media-ph" style="min-height:300px;border-radius:16px;background:var(--cp-sage);display:flex;align-items:center;justify-content:center;font-size:64px;">🐾</div>
-          {% endif %}
-          <span class="cp-save-flag">{{ section.settings.save_badge }}</span>
-        </div>
-
-        <div class="cp-buybox">
-          <span class="cp-eyebrow">{{ section.settings.eyebrow }}</span>
-          <h1>{{ section.settings.product_title }}</h1>
-          <p>{{ section.settings.hero_subhead }}</p>
-
-          <div class="cp-price-row">
-            <span class="cp-price" data-cp-price>{{ section.settings.price_single }}</span>
-            <span class="cp-compare" data-cp-compare>{{ section.settings.compare_single }}</span>
-            <span class="cp-save-pill">{{ section.settings.save_badge }}</span>
-          </div>
-
-          <ul class="cp-bullets">
-            {% for block in section.blocks %}
-              {% if block.type == 'bullet' %}
-                <li {{ block.shopify_attributes }}>
-                  <span class="cp-bullet-ico">{{ block.settings.icon }}</span>
-                  <span>{{ block.settings.text }}</span>
-                </li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-
-          <div class="cp-tiers" data-cp-tiers>
-            {% for block in section.blocks %}
-              {% if block.type == 'tier' %}
-                <button type="button" class="cp-tier" {{ block.shopify_attributes }}
-                  aria-pressed="{% if block.settings.preselected %}true{% else %}false{% endif %}"
-                  data-cp-tier
-                  data-variant-id="{{ block.settings.variant_id }}"
-                  data-price="{{ block.settings.price }}"
-                  data-compare="{{ block.settings.compare_at }}">
-                  {% if block.settings.badge != blank %}<span class="cp-tier-badge">{{ block.settings.badge }}</span>{% endif %}
-                  <span class="cp-tier-name">{{ block.settings.name }}</span>
-                  <span class="cp-tier-save">{{ block.settings.save_line }}</span>
-                  <span class="cp-tier-prices">
-                    <span class="cp-tier-price">{{ block.settings.price }}</span>
-                    <span class="cp-tier-compare">{{ block.settings.compare_at }}</span>
-                  </span>
-                </button>
-              {% endif %}
-            {% endfor %}
-          </div>
-          <p class="cp-tier-note">{{ section.settings.tier_note }}</p>
-
-          <button type="button" class="cp-cta" data-cp-atc>{{ section.settings.cta_label }} — <span data-cp-cta-price>{{ section.settings.price_single }}</span></button>
-
-          <div class="cp-ebook-flag">{{ section.settings.ebook_hero_text }}</div>
-
-          <div class="cp-trust-lines">
-            <p>{{ section.settings.shipping_line }}</p>
-            <p>{{ section.settings.guarantee_line }}</p>
-          </div>
-
-          {% if section.settings.show_buybox_review and section.settings.buybox_review_text != blank %}
-            <div class="cp-review" style="margin-top:16px;">
-              <div class="cp-stars">★★★★★</div>
-              <p>{{ section.settings.buybox_review_text }}</p>
-              <span class="cp-review-name">{{ section.settings.buybox_review_name }}</span>
-            </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-    <div class="cp-leaf-divider" aria-hidden="true">
-      <svg viewBox="0 0 120 30" fill="currentColor"><path d="M10 22 C30 6, 50 6, 60 15 C70 6, 90 6, 110 22 C90 16, 70 16, 60 20 C50 16, 30 16, 10 22 Z"/></svg>
-    </div>
-  </section>
-
-  {%- comment -%} ============ AGITATION ============ {%- endcomment -%}
-  <section class="cp-tint">
-    <div class="cp-wrap">
-      <h2>{{ section.settings.agitation_heading }}</h2>
-      <div class="cp-cards">
-        {% for block in section.blocks %}
-          {% if block.type == 'agitation' %}
-            <div class="cp-card" {{ block.shopify_attributes }}>
-              <h3>{{ block.settings.title }}</h3>
-              <p>{{ block.settings.body }}</p>
-            </div>
-          {% endif %}
-        {% endfor %}
-      </div>
-    </div>
-  </section>
-
-  {%- comment -%} ============ SOLUTION + ICONS ============ {%- endcomment -%}
-  <section>
-    <div class="cp-wrap" style="text-align:center;">
-      <h2>{{ section.settings.solution_heading }}</h2>
-      <p style="max-width:640px;margin:0 auto;">{{ section.settings.solution_sub }}</p>
-      <div class="cp-icons">
-        {% for block in section.blocks %}
-          {% if block.type == 'icon' %}
-            <div class="cp-icon-item" {{ block.shopify_attributes }}>
-              <span class="cp-ico">{{ block.settings.icon }}</span>
-              {{ block.settings.label }}
-            </div>
-          {% endif %}
-        {% endfor %}
-      </div>
-    </div>
-  </section>
-
-  {%- comment -%} ============ MECHANISM ============ {%- endcomment -%}
-  <section class="cp-tint-sage">
-    <div class="cp-wrap" style="max-width:760px;">
-      <h2>{{ section.settings.mechanism_heading }}</h2>
-      {{ section.settings.mechanism_body }}
-    </div>
-  </section>
-
-  {%- comment -%} ============ FEATURES ============ {%- endcomment -%}
-  <section>
-    <div class="cp-wrap">
-      <h2 style="text-align:center;">{{ section.settings.features_heading }}</h2>
-      {% for block in section.blocks %}
-        {% if block.type == 'feature' %}
-          <div class="cp-feature" {{ block.shopify_attributes }}>
-            <div class="cp-feature-media">
+      {% when 'hero' %}
+      <div class="cp-band" {{ block.shopify_attributes }}>
+        <div class="cp-wrap">
+          <div class="cp-hero-grid">
+            <div class="cp-hero-media">
               {% if block.settings.image %}
-                <img src="{{ block.settings.image | image_url: width: 900 }}" alt="{{ block.settings.title | escape }}" loading="lazy">
+                {{ block.settings.image | image_url: width: 1000 | image_tag: loading: 'eager', alt: block.settings.title }}
               {% else %}
-                <div class="cp-media-ph">{{ block.settings.icon }}</div>
+                <div class="cp-hero-ph">Product image</div>
               {% endif %}
+              {% if block.settings.save_badge != blank %}<span class="cp-save-flag">{{ block.settings.save_badge }}</span>{% endif %}
             </div>
+            <div>
+              {% if block.settings.eyebrow != blank %}<span class="cp-eyebrow">{{ block.settings.eyebrow }}</span>{% endif %}
+              <h1>{{ block.settings.title }}</h1>
+              <p>{{ block.settings.subhead }}</p>
+              <div class="cp-price-row">
+                <span class="cp-price" data-cp-price>{{ block.settings.tier1_price }}</span>
+                <span class="cp-compare" data-cp-compare>{{ block.settings.tier1_compare }}</span>
+                {% if block.settings.save_badge != blank %}<span class="cp-save-pill">{{ block.settings.save_badge }}</span>{% endif %}
+              </div>
+              <ul class="cp-bullets">
+                {% assign lines = block.settings.bullets | newline_to_br | split: '<br />' %}
+                {% for line in lines %}
+                  {% assign t = line | strip %}
+                  {% if t != blank %}<li>{{ cp_check }}<span>{{ t }}</span></li>{% endif %}
+                {% endfor %}
+              </ul>
+              <div class="cp-tiers" data-cp-tiers>
+                <button type="button" class="cp-tier" aria-pressed="true" data-cp-tier
+                  data-variant-id="{{ block.settings.tier1_variant }}" data-price="{{ block.settings.tier1_price }}" data-compare="{{ block.settings.tier1_compare }}">
+                  <span class="cp-tier-row"><span class="cp-tier-name">{{ block.settings.tier1_name }}</span><span class="cp-tier-price">{{ block.settings.tier1_price }}</span></span>
+                  <span class="cp-tier-row2"><span class="cp-tier-save">{{ block.settings.tier1_save }}</span><span class="cp-tier-compare">{{ block.settings.tier1_compare }}</span></span>
+                </button>
+                <button type="button" class="cp-tier" aria-pressed="false" data-cp-tier
+                  data-variant-id="{{ block.settings.tier2_variant }}" data-price="{{ block.settings.tier2_price }}" data-compare="{{ block.settings.tier2_compare }}">
+                  {% if block.settings.tier2_badge != blank %}<span class="cp-tier-badge">{{ block.settings.tier2_badge }}</span>{% endif %}
+                  <span class="cp-tier-row"><span class="cp-tier-name">{{ block.settings.tier2_name }}</span><span class="cp-tier-price">{{ block.settings.tier2_price }}</span></span>
+                  <span class="cp-tier-row2"><span class="cp-tier-save">{{ block.settings.tier2_save }}</span><span class="cp-tier-compare">{{ block.settings.tier2_compare }}</span></span>
+                </button>
+              </div>
+              <button type="button" class="cp-cta" data-cp-atc>{{ block.settings.cta_label }}</button>
+              {% if block.settings.ebook_text != blank %}<div class="cp-ebook-flag">{{ block.settings.ebook_text }}</div>{% endif %}
+              <div class="cp-trust">
+                <p><strong>Shipping:</strong> {{ block.settings.shipping_line }}</p>
+                <p><strong>{{ block.settings.guarantee_title }}:</strong> {{ block.settings.guarantee_line }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% when 'problem_intro' %}
+      <div class="cp-band" {{ block.shopify_attributes }}>
+        <div class="cp-wrap cp-center">
+          {% if block.settings.eyebrow != blank %}<span class="cp-eyebrow">{{ block.settings.eyebrow }}</span>{% endif %}
+          <h2>{{ block.settings.heading }}</h2>
+          {% if block.settings.subhead != blank %}<p class="cp-sub">{{ block.settings.subhead }}</p>{% endif %}
+          <div class="cp-cards" data-cp-collect="problem"></div>
+        </div>
+      </div>
+
+      {% when 'problem_card' %}
+      <template data-cp-into="problem" {{ block.shopify_attributes }}>
+        <div class="cp-card" style="text-align:left;">
+          <h3>{{ block.settings.title }}</h3>
+          <p>{{ block.settings.body }}</p>
+        </div>
+      </template>
+
+      {% when 'solution' %}
+      <div class="cp-band" {{ block.shopify_attributes }}>
+        <div class="cp-wrap cp-center">
+          {% if block.settings.eyebrow != blank %}<span class="cp-eyebrow">{{ block.settings.eyebrow }}</span>{% endif %}
+          <h2>{{ block.settings.heading }}</h2>
+          <p class="cp-sub">{{ block.settings.subhead }}</p>
+          <div class="cp-icongrid">
+            {% assign items = block.settings.items | newline_to_br | split: '<br />' %}
+            {% for item in items %}
+              {% assign t = item | strip %}
+              {% if t != blank %}<div class="cp-iconitem">{{ cp_check }}{{ t }}</div>{% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      {% when 'mechanism' %}
+      <div class="cp-band cp-band--dark" {{ block.shopify_attributes }}>
+        <div class="cp-wrap cp-wrap--narrow">
+          {% if block.settings.eyebrow != blank %}<span class="cp-eyebrow">{{ block.settings.eyebrow }}</span>{% endif %}
+          <h2>{{ block.settings.heading }}</h2>
+          {{ block.settings.body }}
+        </div>
+      </div>
+
+      {% when 'features_heading' %}
+      <div class="cp-band" style="padding-bottom:0;" {{ block.shopify_attributes }}>
+        <div class="cp-wrap cp-center">
+          {% if block.settings.eyebrow != blank %}<span class="cp-eyebrow">{{ block.settings.eyebrow }}</span>{% endif %}
+          <h2>{{ block.settings.heading }}</h2>
+        </div>
+      </div>
+
+      {% when 'feature' %}
+      <div class="cp-band" style="padding-top:0;padding-bottom:0;" {{ block.shopify_attributes }}>
+        <div class="cp-wrap{% unless block.settings.image %} cp-wrap--narrow{% endunless %}">
+          <div class="cp-feature{% if block.settings.image %}{% cycle ' ', ' cp-feature--flip' %}{% else %} cp-feature--noimg{% endif %}">
+            {% if block.settings.image %}
+              <div class="cp-feature-media">
+                {{ block.settings.image | image_url: width: 900 | image_tag: loading: 'lazy', alt: block.settings.title }}
+              </div>
+            {% endif %}
             <div>
               <div class="cp-feature-num">{{ block.settings.eyebrow }}</div>
               <h3>{{ block.settings.title }}</h3>
               <p>{{ block.settings.body }}</p>
             </div>
           </div>
-        {% endif %}
-      {% endfor %}
-    </div>
-  </section>
-
-  {%- comment -%} ============ REVIEWS (real only; hidden until populated) ============ {%- endcomment -%}
-  {% assign has_reviews = false %}
-  {% for block in section.blocks %}
-    {% if block.type == 'review' and block.settings.enabled and block.settings.body != blank %}{% assign has_reviews = true %}{% endif %}
-  {% endfor %}
-  {% if has_reviews %}
-    <section class="cp-tint">
-      <div class="cp-wrap">
-        <h2 style="text-align:center;">{{ section.settings.reviews_heading }}</h2>
-        <div class="cp-reviews">
-          {% for block in section.blocks %}
-            {% if block.type == 'review' and block.settings.enabled and block.settings.body != blank %}
-              <div class="cp-review" {{ block.shopify_attributes }}>
-                <div class="cp-stars">★★★★★</div>
-                <h3>{{ block.settings.title }}</h3>
-                <p>{{ block.settings.body }}</p>
-                <span class="cp-review-name">{{ block.settings.name }}</span>
-              </div>
-            {% endif %}
-          {% endfor %}
         </div>
       </div>
-    </section>
-  {% endif %}
 
-  {%- comment -%} ============ COMPARISON TABLE ============ {%- endcomment -%}
-  <section>
-    <div class="cp-wrap">
-      <h2 style="text-align:center;">{{ section.settings.compare_heading }}</h2>
-      <p style="text-align:center;">{{ section.settings.compare_sub }}</p>
-      <div class="cp-table-scroll">
-        <table class="cp-compare-table">
-          <thead>
-            <tr>
-              <th></th>
-              <th class="cp-col-us">{{ section.settings.compare_col_us }}</th>
-              <th>{{ section.settings.compare_col_a }}</th>
-              <th>{{ section.settings.compare_col_b }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for block in section.blocks %}
-              {% if block.type == 'comprow' %}
-                <tr {{ block.shopify_attributes }}>
-                  <td>{{ block.settings.label }}</td>
-                  <td class="cp-col-us"><span class="cp-yes">{{ block.settings.us }}</span></td>
-                  <td><span class="{% if block.settings.a contains '✗' %}cp-no{% endif %}">{{ block.settings.a }}</span></td>
-                  <td><span class="{% if block.settings.b contains '✗' %}cp-no{% endif %}">{{ block.settings.b }}</span></td>
+      {% when 'compare' %}
+      <div class="cp-band" {{ block.shopify_attributes }}>
+        <div class="cp-wrap cp-center">
+          {% if block.settings.eyebrow != blank %}<span class="cp-eyebrow">{{ block.settings.eyebrow }}</span>{% endif %}
+          <h2>{{ block.settings.heading }}</h2>
+          {% if block.settings.subhead != blank %}<p class="cp-sub">{{ block.settings.subhead }}</p>{% endif %}
+          <div class="cp-table-scroll">
+            <table class="cp-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th class="cp-us">{{ block.settings.col_us }}</th>
+                  <th>{{ block.settings.col_a }}</th>
+                  <th>{{ block.settings.col_b }}</th>
                 </tr>
-              {% endif %}
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  {%- comment -%} ============ PROOF / DEMO VIDEO ============ {%- endcomment -%}
-  <section class="cp-dark">
-    <div class="cp-wrap" style="max-width:760px;text-align:center;">
-      <h2>{{ section.settings.proof_heading }}</h2>
-      <p>{{ section.settings.proof_sub }}</p>
-      {% if section.settings.proof_video_url != blank %}
-        <div class="cp-video-frame">
-          <iframe src="{{ section.settings.proof_video_url }}" title="{{ section.settings.proof_heading | escape }}" allowfullscreen loading="lazy"></iframe>
-        </div>
-      {% endif %}
-    </div>
-  </section>
-
-  {%- comment -%} ============ GUARANTEE ============ {%- endcomment -%}
-  <section>
-    <div class="cp-wrap" style="max-width:720px;">
-      <div class="cp-guarantee">
-        <span class="cp-seal">🛡️</span>
-        <h2>{{ section.settings.guarantee_heading }}</h2>
-        <p>{{ section.settings.guarantee_body }}</p>
-      </div>
-    </div>
-  </section>
-
-  {%- comment -%} ============ FAQ (fully expanded) ============ {%- endcomment -%}
-  <section class="cp-tint">
-    <div class="cp-wrap" style="max-width:820px;">
-      <h2 style="text-align:center;">{{ section.settings.faq_heading }}</h2>
-      <p style="text-align:center;">{{ section.settings.faq_sub }}</p>
-      {% for block in section.blocks %}
-        {% if block.type == 'faq' %}
-          <div class="cp-faq-item" {{ block.shopify_attributes }}>
-            <h3>{{ block.settings.question }}</h3>
-            <div>{{ block.settings.answer }}</div>
+              </thead>
+              <tbody>
+                {% assign rows = block.settings.rows | newline_to_br | split: '<br />' %}
+                {% for row in rows %}
+                  {% assign cells = row | strip | split: '|' %}
+                  {% if cells.size >= 4 %}
+                    <tr>
+                      <td>{{ cells[0] | strip }}</td>
+                      <td class="cp-us"><span class="cp-good">{{ cells[1] | strip }}</span></td>
+                      <td>{% assign c = cells[2] | strip %}{% if c contains '✗' %}<span class="cp-badmark">{{ c }}</span>{% else %}{{ c }}{% endif %}</td>
+                      <td>{% assign c = cells[3] | strip %}{% if c contains '✗' %}<span class="cp-badmark">{{ c }}</span>{% else %}{{ c }}{% endif %}</td>
+                    </tr>
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
-        {% endif %}
-      {% endfor %}
-    </div>
-  </section>
-
-  {%- comment -%} ============ BONUS / FINAL CTA ============ {%- endcomment -%}
-  <section>
-    <div class="cp-wrap" style="max-width:720px;">
-      <div class="cp-bonus">
-        <span class="cp-free-badge">{{ section.settings.bonus_badge }}</span>
-        <h2>{{ section.settings.bonus_heading }}</h2>
-        <p>{{ section.settings.bonus_sub }}</p>
-        <p class="cp-lead">{{ section.settings.bonus_reveal_label }}</p>
-        <ol>
-          {% for block in section.blocks %}
-            {% if block.type == 'bonus_item' %}
-              <li {{ block.shopify_attributes }}>{{ block.settings.text }}</li>
-            {% endif %}
-          {% endfor %}
-        </ol>
-        <button type="button" class="cp-cta" data-cp-atc>{{ section.settings.cta_label }} — <span data-cp-cta-price>{{ section.settings.price_single }}</span></button>
-        <p class="cp-final-sub">{{ section.settings.final_subline }}</p>
+        </div>
       </div>
-    </div>
-    <div class="cp-leaf-divider" aria-hidden="true">
-      <svg viewBox="0 0 120 30" fill="currentColor"><path d="M10 22 C30 6, 50 6, 60 15 C70 6, 90 6, 110 22 C90 16, 70 16, 60 20 C50 16, 30 16, 10 22 Z"/></svg>
-    </div>
-  </section>
 
-  {%- comment -%} ============ STICKY MOBILE BUY BAR ============ {%- endcomment -%}
-  {% if section.settings.show_sticky_bar %}
-    <div class="lullo-cp-sticky" data-cp-sticky>
-      <div>
-        <span class="cp-sticky-price" data-cp-price>{{ section.settings.price_single }}</span>
-        <span class="cp-sticky-compare" data-cp-compare>{{ section.settings.compare_single }}</span>
+      {% when 'proof' %}
+      <div class="cp-band cp-band--dark" {{ block.shopify_attributes }}>
+        <div class="cp-wrap cp-wrap--narrow cp-center">
+          {% if block.settings.eyebrow != blank %}<span class="cp-eyebrow">{{ block.settings.eyebrow }}</span>{% endif %}
+          <h2>{{ block.settings.heading }}</h2>
+          <p class="cp-sub">{{ block.settings.body }}</p>
+          {% if block.settings.video_url != blank %}
+            <div style="border-radius:14px;overflow:hidden;margin-top:20px;">
+              <iframe src="{{ block.settings.video_url }}" title="{{ block.settings.heading | escape }}" style="width:100%;aspect-ratio:16/9;border:0;display:block;" allowfullscreen loading="lazy"></iframe>
+            </div>
+          {% endif %}
+        </div>
       </div>
-      <button type="button" class="cp-sticky-cta" data-cp-atc>{{ section.settings.cta_label }}</button>
-    </div>
-  {% endif %}
+
+      {% when 'guarantee' %}
+      <div class="cp-band" {{ block.shopify_attributes }}>
+        <div class="cp-wrap cp-wrap--narrow">
+          <div class="cp-guarantee">
+            <div class="cp-seal" aria-hidden="true"><svg viewBox="0 0 44 44" fill="none"><path d="M22 3l15 6v11c0 9.5-6.4 17.4-15 21C13.4 37.4 7 29.5 7 20V9l15-6z" fill="{{ section.settings.color_accent }}"/><path d="M15.5 21.5l4.5 4.5 9-9" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <h2>{{ block.settings.heading }}</h2>
+            <p style="margin-bottom:0;">{{ block.settings.body }}</p>
+          </div>
+        </div>
+      </div>
+
+      {% when 'faq_heading' %}
+      <div class="cp-band" style="padding-bottom:0;" {{ block.shopify_attributes }}>
+        <div class="cp-wrap cp-wrap--narrow cp-center">
+          {% if block.settings.eyebrow != blank %}<span class="cp-eyebrow">{{ block.settings.eyebrow }}</span>{% endif %}
+          <h2>{{ block.settings.heading }}</h2>
+          {% if block.settings.subhead != blank %}<p class="cp-sub">{{ block.settings.subhead }}</p>{% endif %}
+        </div>
+      </div>
+
+      {% when 'faq_item' %}
+      <div class="cp-band" style="padding-top:0;padding-bottom:0;" {{ block.shopify_attributes }}>
+        <div class="cp-wrap cp-wrap--narrow">
+          <div class="cp-faq">
+            <h3>{{ block.settings.question }}</h3>
+            {{ block.settings.answer }}
+          </div>
+        </div>
+      </div>
+
+      {% when 'bonus' %}
+      <div class="cp-band" {{ block.shopify_attributes }}>
+        <div class="cp-wrap cp-wrap--narrow">
+          <div class="cp-bonus">
+            <span class="cp-free-badge">{{ block.settings.badge }}</span>
+            <h2>{{ block.settings.heading }}</h2>
+            <p>{{ block.settings.subhead }}</p>
+            <p><strong>{{ block.settings.reveal_label }}</strong></p>
+            <ol>
+              {% assign items = block.settings.items | newline_to_br | split: '<br />' %}
+              {% for item in items %}
+                {% assign t = item | strip %}
+                {% if t != blank %}<li>{{ t }}</li>{% endif %}
+              {% endfor %}
+            </ol>
+            <button type="button" class="cp-cta" data-cp-atc>{{ block.settings.cta_label }}</button>
+            {% if block.settings.subline != blank %}<p class="cp-final-sub">{{ block.settings.subline }}</p>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      {% when 'custom_text' %}
+      <div class="cp-band" {{ block.shopify_attributes }}>
+        <div class="cp-wrap cp-wrap--narrow{% if block.settings.centered %} cp-center{% endif %}">
+          {% if block.settings.heading != blank %}<h2>{{ block.settings.heading }}</h2>{% endif %}
+          {{ block.settings.body }}
+        </div>
+      </div>
+
+      {% when 'custom_liquid' %}
+      <div {{ block.shopify_attributes }}>{{ block.settings.code }}</div>
+
+    {% endcase %}
+  {% endfor %}
 </div>
 
 <script>
@@ -506,33 +413,30 @@
     var root = document.getElementById('lullo-cp-{{ section.id }}');
     if (!root) return;
 
+    // Move problem cards into their grid (cards are authored as sibling blocks)
+    root.querySelectorAll('[data-cp-into]').forEach(function (tpl) {
+      var target = root.querySelector('[data-cp-collect="' + tpl.getAttribute('data-cp-into') + '"]');
+      if (target) target.appendChild(tpl.content.cloneNode(true));
+    });
+
     var selectedVariant = null;
     var tiers = root.querySelectorAll('[data-cp-tier]');
-    var priceEls = root.querySelectorAll('[data-cp-price]');
-    var compareEls = root.querySelectorAll('[data-cp-compare]');
-    var ctaPriceEls = root.querySelectorAll('[data-cp-cta-price]');
-
     function selectTier(btn) {
       tiers.forEach(function (t) { t.setAttribute('aria-pressed', 'false'); });
       btn.setAttribute('aria-pressed', 'true');
       selectedVariant = btn.getAttribute('data-variant-id');
-      var p = btn.getAttribute('data-price');
-      var c = btn.getAttribute('data-compare');
-      priceEls.forEach(function (el) { el.textContent = p; });
-      compareEls.forEach(function (el) { el.textContent = c || ''; });
-      ctaPriceEls.forEach(function (el) { el.textContent = p; });
+      var p = btn.getAttribute('data-price'), c = btn.getAttribute('data-compare');
+      root.querySelectorAll('[data-cp-price]').forEach(function (el) { el.textContent = p; });
+      root.querySelectorAll('[data-cp-compare]').forEach(function (el) { el.textContent = c || ''; });
     }
     tiers.forEach(function (t) {
       t.addEventListener('click', function () { selectTier(t); });
-      if (t.getAttribute('aria-pressed') === 'true') selectTier(t);
+      if (t.getAttribute('aria-pressed') === 'true') selectedVariant = t.getAttribute('data-variant-id');
     });
 
     root.querySelectorAll('[data-cp-atc]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        if (!selectedVariant) {
-          var first = root.querySelector('[data-cp-tier]');
-          if (first) selectTier(first);
-        }
+        if (!selectedVariant && tiers.length) selectTier(tiers[0]);
         if (!selectedVariant) return;
         btn.disabled = true;
         fetch('/cart/add.js', {
@@ -541,18 +445,10 @@
           body: JSON.stringify({ items: [{ id: parseInt(selectedVariant, 10), quantity: 1 }] })
         }).then(function (r) {
           btn.disabled = false;
-          if (r.ok) { window.location.href = '/cart'; }
+          if (r.ok) window.location.href = '/cart';
         }).catch(function () { btn.disabled = false; });
       });
     });
-
-    var sticky = root.querySelector('[data-cp-sticky]');
-    var heroCta = root.querySelector('.cp-buybox .cp-cta');
-    if (sticky && heroCta && 'IntersectionObserver' in window) {
-      new IntersectionObserver(function (entries) {
-        sticky.classList.toggle('is-visible', !entries[0].isIntersecting && entries[0].boundingClientRect.top < 0);
-      }, { threshold: 0 }).observe(heroCta);
-    }
   })();
 </script>
 
@@ -562,172 +458,184 @@
   "tag": "section",
   "class": "lullo-cp-section",
   "settings": [
-    { "type": "header", "content": "Product & offer" },
-    { "type": "product", "id": "product", "label": "Product (for cart integration)" },
-    { "type": "text", "id": "product_title", "label": "Product title", "default": "CalmPaw Plus™" },
-    { "type": "text", "id": "price_single", "label": "Single price (display)", "default": "$35.99" },
-    { "type": "text", "id": "compare_single", "label": "Single compare-at (display)", "default": "$59.99" },
-    { "type": "text", "id": "save_badge", "label": "Save badge", "default": "SAVE 40%" },
-    { "type": "text", "id": "cta_label", "label": "CTA button label", "default": "ADD TO CART" },
-    { "type": "text", "id": "tier_note", "label": "Note under tiers", "default": "Most pet parents choose the Calm Nails Kit — a full year of calm trims, one box." },
-    { "type": "text", "id": "final_subline", "label": "Final CTA subline", "default": "🚚 Free 1–3 day shipping · 🛡️ 30-day money-back guarantee · 🎁 Free Calm-Trim Guide" },
-
-    { "type": "header", "content": "Announcement bar" },
-    { "type": "checkbox", "id": "show_announcement", "label": "Show announcement bar", "default": true },
-    { "type": "text", "id": "announcement_text", "label": "Announcement text", "default": "🐾 GET 40% OFF TODAY + FREE SHIPPING — SHIPS IN 1–3 DAYS" },
-
-    { "type": "header", "content": "Hero" },
-    { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
-    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Whisper-quiet nail care for dogs & cats" },
-    { "type": "textarea", "id": "hero_subhead", "label": "Hero subhead", "default": "The CalmPaw Plus uses a whisper-quiet motor — under 40 dB, softer than a quiet conversation — engineered to stay below the sound that triggers your pet's startle reflex. No snap. No scary whine. Just calm, gentle nail trims at home." },
-    { "type": "textarea", "id": "ebook_hero_text", "label": "eBook line under CTA", "default": "🎁 FREE with your order: The Calm-Trim Guide — our step-by-step eBook for turning nail-day dread into a 5-minute calm routine. Sent straight to your email." },
-    { "type": "textarea", "id": "shipping_line", "label": "Shipping trust line", "default": "🚚 Shipping: Free shipping on every order. Ships in 1–3 days with a tracking number sent to your email." },
-    { "type": "textarea", "id": "guarantee_line", "label": "Guarantee trust line", "default": "🛡️ 30-Day Money-Back Guarantee: We don't want you to spend a dollar until you're certain. If nail day isn't calmer within 30 days, email us and we'll refund you — no questions asked." },
-    { "type": "checkbox", "id": "show_buybox_review", "label": "Show buy-box review (real reviews only)", "default": false },
-    { "type": "textarea", "id": "buybox_review_text", "label": "Buy-box review text (real customer)", "default": "" },
-    { "type": "text", "id": "buybox_review_name", "label": "Buy-box review name", "default": "" },
-
-    { "type": "header", "content": "Agitation section" },
-    { "type": "text", "id": "agitation_heading", "label": "Heading", "default": "Caution: Nail Clippers May Be Hurting Your Pet!" },
-
-    { "type": "header", "content": "Solution section" },
-    { "type": "text", "id": "solution_heading", "label": "Heading", "default": "Stress-Free Nail Trims for Healthy, Happy Pets!" },
-    { "type": "textarea", "id": "solution_sub", "label": "Subhead", "default": "Say goodbye to the hiding, the squirming, and the guilt of nail day — no groomers, no vet visits, no sedation required. Just you, your pet, and one calm minute." },
-
-    { "type": "header", "content": "Mechanism section" },
-    { "type": "text", "id": "mechanism_heading", "label": "Heading", "default": "Meet the startle reflex." },
-    { "type": "richtext", "id": "mechanism_body", "label": "Body", "default": "<p>Your pet doesn't decide to panic on nail day. A sudden snap or a high-pitched whine trips an automatic flight response — the same reflex that makes you flinch when a balloon pops. Clippers deliver it as a <em>crack</em>. Ordinary grinders deliver it as a scream against the paw.</p><p>And every scary trim teaches one lesson: <strong>paws = fear.</strong> That's why it gets harder each time, not easier — no matter how gentle you are, no matter how many treats you bring. You weren't doing it wrong. The tool was too loud.</p><p>The fix isn't a braver pet, or a firmer grip. It's a tool that stays <em>below</em> the sound that sets the reflex off. That's the entire reason CalmPaw Plus exists.</p>" },
-
-    { "type": "header", "content": "Features section" },
-    { "type": "text", "id": "features_heading", "label": "Heading", "default": "Engineered around one idea: stay below the trigger" },
-
-    { "type": "header", "content": "Reviews section (real reviews only)" },
-    { "type": "text", "id": "reviews_heading", "label": "Heading", "default": "Calm Pets, Calmer Homes" },
-
-    { "type": "header", "content": "Comparison table" },
-    { "type": "text", "id": "compare_heading", "label": "Heading", "default": "What Sets the CalmPaw Plus Apart?" },
-    { "type": "text", "id": "compare_sub", "label": "Subhead", "default": "Stop terrifying your pet with loud, hazardous tools." },
-    { "type": "text", "id": "compare_col_us", "label": "Column: us", "default": "CalmPaw Plus" },
-    { "type": "text", "id": "compare_col_a", "label": "Column: competitor A", "default": "Nail clippers" },
-    { "type": "text", "id": "compare_col_b", "label": "Column: competitor B", "default": "Standard grinders" },
-
-    { "type": "header", "content": "Proof / demo video" },
-    { "type": "text", "id": "proof_heading", "label": "Heading", "default": "Watch a real trim — start to finish." },
-    { "type": "textarea", "id": "proof_sub", "label": "Subhead", "default": "No wrestling. No second person pinning anyone down. No sedation. Just a paw, a quiet hum, and a pet that doesn't leave the couch." },
-    { "type": "text", "id": "proof_video_url", "label": "Video embed URL (YouTube/Vimeo embed link)", "default": "" },
-
-    { "type": "header", "content": "Guarantee" },
-    { "type": "text", "id": "guarantee_heading", "label": "Heading", "default": "Our 30-Day Calm Guarantee" },
-    { "type": "textarea", "id": "guarantee_body", "label": "Body", "default": "We believe in the CalmPaw Plus so much that we don't want you to spend a dollar until you're 100% certain it works for you and your pet. That's why every order is backed by a 30-day, no-questions-asked money-back guarantee. If nail day isn't genuinely calmer — if your pet doesn't settle, if it's not right for you — email us and we'll issue your refund immediately. The only way to find out if the noise was the problem is to take the noise away. The risk is on us." },
-
-    { "type": "header", "content": "FAQ" },
-    { "type": "text", "id": "faq_heading", "label": "Heading", "default": "Have a question? Here's everything, out in the open." },
-    { "type": "text", "id": "faq_sub", "label": "Subhead", "default": "No hidden menus, no tapping around — every answer is right here." },
-
-    { "type": "header", "content": "Bonus / eBook block" },
-    { "type": "text", "id": "bonus_badge", "label": "Badge", "default": "FREE" },
-    { "type": "text", "id": "bonus_heading", "label": "Heading", "default": "BONUS: Order Today and Get The Calm-Trim Guide — FREE" },
-    { "type": "textarea", "id": "bonus_sub", "label": "Subhead", "default": "Our step-by-step eBook comes free with every CalmPaw Plus, delivered instantly to your email." },
-    { "type": "text", "id": "bonus_reveal_label", "label": "Reveal label", "default": "Revealed inside:" },
-
-    { "type": "header", "content": "Sticky mobile buy bar" },
-    { "type": "checkbox", "id": "show_sticky_bar", "label": "Show sticky buy bar", "default": true },
-
     { "type": "header", "content": "Brand styling" },
-    { "type": "color", "id": "color_primary", "label": "Primary green", "default": "#1f6b43" },
-    { "type": "color", "id": "color_deep", "label": "Deep forest green", "default": "#015704" },
-    { "type": "color", "id": "color_text", "label": "Body text", "default": "#243024" },
-    { "type": "color", "id": "color_cream", "label": "Cream background", "default": "#eef1ea" },
-    { "type": "color", "id": "color_cream_2", "label": "Cream border", "default": "#ece8dd" },
-    { "type": "color", "id": "color_spa_sage", "label": "Spa sage accent", "default": "#d2dad2" },
-    { "type": "color", "id": "color_gold", "label": "Star gold", "default": "#f2a900" },
-    { "type": "color", "id": "color_badge", "label": "Sale badge color", "default": "#b3402f" },
-    { "type": "font_picker", "id": "font_heading", "label": "Heading font", "default": "fredoka_n6" },
-    { "type": "font_picker", "id": "font_body", "label": "Body font", "default": "fredoka_n4" },
-    { "type": "range", "id": "body_size", "label": "Body text size (px)", "min": 15, "max": 22, "step": 1, "default": 17 }
+    { "type": "color", "id": "color_accent", "label": "Accent (buttons, checks, prices)", "default": "#1f6b43" },
+    { "type": "color", "id": "color_ink", "label": "Text / off-black bands", "default": "#243024" },
+    { "type": "font_picker", "id": "font_heading", "label": "Title font (big headings)", "default": "fredoka_n6" },
+    { "type": "font_picker", "id": "font_body", "label": "Body font", "default": "open_sans_n4" },
+    { "type": "range", "id": "body_size", "label": "Body text size (px)", "min": 15, "max": 21, "step": 1, "default": 17 }
   ],
   "blocks": [
     {
-      "type": "bullet",
-      "name": "Hero benefit bullet",
+      "type": "hero",
+      "name": "Hero / buy box",
+      "limit": 1,
       "settings": [
-        { "type": "text", "id": "icon", "label": "Emoji/icon", "default": "🐾" },
-        { "type": "text", "id": "text", "label": "Text", "default": "Ultra-quiet, under 40 dB — below the level that startles pets" }
+        { "type": "image_picker", "id": "image", "label": "Product image" },
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Whisper-quiet nail care for dogs & cats" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Lullo CalmPaw Plus" },
+        { "type": "textarea", "id": "subhead", "label": "Subhead", "default": "The CalmPaw Plus uses a whisper-quiet motor — under 40 dB, softer than a quiet conversation — engineered to stay below the sound that triggers your pet's startle reflex. No snap. No scary whine. Just calm, gentle nail trims at home." },
+        { "type": "text", "id": "save_badge", "label": "Save badge", "default": "SAVE 40%" },
+        { "type": "textarea", "id": "bullets", "label": "Benefit bullets (one per line)", "default": "Whisper-quiet motor, under 40 dB — below the level that startles pets\nLow vibration — nothing buzzing through their paw\nBuilt-in LED light — see exactly where to stop, even on dark nails\nDiamond smoothing head grinds gently — no cracks, no over-trimming, no nicked quick\nGentle on dog and cat nails alike — rabbits and small pets too\nSkip the groomer visits — calm trims at home, on your schedule" },
+        { "type": "header", "content": "Tier 1 (single)" },
+        { "type": "text", "id": "tier1_name", "label": "Name", "default": "Buy 1 CalmPaw Plus" },
+        { "type": "text", "id": "tier1_price", "label": "Price", "default": "$35.99" },
+        { "type": "text", "id": "tier1_compare", "label": "Compare-at", "default": "$59.99" },
+        { "type": "text", "id": "tier1_save", "label": "Savings line", "default": "You save $24.00" },
+        { "type": "text", "id": "tier1_variant", "label": "Shopify variant ID" },
+        { "type": "header", "content": "Tier 2 (bundle)" },
+        { "type": "text", "id": "tier2_name", "label": "Name", "default": "Calm Nails Kit — CalmPaw Plus + replacement heads + grooming glove" },
+        { "type": "text", "id": "tier2_price", "label": "Price", "default": "$49.99" },
+        { "type": "text", "id": "tier2_compare", "label": "Compare-at", "default": "$89.98" },
+        { "type": "text", "id": "tier2_save", "label": "Savings line", "default": "You save $39.99" },
+        { "type": "text", "id": "tier2_badge", "label": "Badge", "default": "MOST POPULAR" },
+        { "type": "text", "id": "tier2_variant", "label": "Shopify variant ID" },
+        { "type": "header", "content": "CTA & trust" },
+        { "type": "text", "id": "cta_label", "label": "CTA label", "default": "ADD TO CART" },
+        { "type": "textarea", "id": "ebook_text", "label": "Free eBook line", "default": "FREE with your order: The Calm-Trim Guide — our step-by-step eBook for turning nail-day dread into a calm one-minute routine. Sent straight to your email." },
+        { "type": "textarea", "id": "shipping_line", "label": "Shipping line", "default": "Free shipping on every order. Ships in 1–3 days with a tracking number sent to your email." },
+        { "type": "text", "id": "guarantee_title", "label": "Guarantee title", "default": "30-Day Money-Back Guarantee" },
+        { "type": "textarea", "id": "guarantee_line", "label": "Guarantee line", "default": "We don't want you to spend a dollar until you're certain. If nail day isn't calmer within 30 days, email us and we'll refund you — no questions asked." }
       ]
     },
     {
-      "type": "tier",
-      "name": "Offer tier",
+      "type": "problem_intro",
+      "name": "Problem section heading",
+      "limit": 1,
       "settings": [
-        { "type": "text", "id": "name", "label": "Tier name", "default": "Buy 1 CalmPaw Plus" },
-        { "type": "text", "id": "price", "label": "Price", "default": "$35.99" },
-        { "type": "text", "id": "compare_at", "label": "Compare-at", "default": "$59.99" },
-        { "type": "text", "id": "save_line", "label": "Savings line", "default": "You save $24.00" },
-        { "type": "text", "id": "badge", "label": "Badge (optional)", "default": "" },
-        { "type": "text", "id": "variant_id", "label": "Shopify variant ID", "default": "" },
-        { "type": "checkbox", "id": "preselected", "label": "Pre-selected", "default": false }
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Read this before your next trim" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Caution: Nail Clippers May Be Hurting Your Pet!" },
+        { "type": "textarea", "id": "subhead", "label": "Subhead", "default": "Your pet isn't being difficult — they're scared. And the tool is usually the reason why." }
       ]
     },
     {
-      "type": "agitation",
-      "name": "Agitation card",
+      "type": "problem_card",
+      "name": "Problem card",
       "settings": [
         { "type": "text", "id": "title", "label": "Title", "default": "Risk of Nail Splitting and Damage" },
         { "type": "textarea", "id": "body", "label": "Body", "default": "Clippers crush before they cut. Even with a steady hand, that crushing force frequently splits the nail — and a split nail isn't just painful. It opens the nail bed to bacteria and debris, raising the risk of infection with every step your pet takes." }
       ]
     },
     {
-      "type": "icon",
-      "name": "Benefit icon",
+      "type": "solution",
+      "name": "Solution + benefits",
+      "limit": 1,
       "settings": [
-        { "type": "text", "id": "icon", "label": "Emoji/icon", "default": "😌" },
-        { "type": "text", "id": "label", "label": "Label", "default": "Calm & Quiet Grooming Experience" }
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The calm way" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Stress-Free Nail Trims for Healthy, Happy Pets" },
+        { "type": "textarea", "id": "subhead", "label": "Subhead", "default": "Say goodbye to the hiding, the squirming, and the guilt of nail day — no groomers, no vet visits, no sedation required. Just you, your pet, and one calm minute." },
+        { "type": "textarea", "id": "items", "label": "Benefit items (one per line)", "default": "Calm & Quiet Grooming Experience\nPrecise & Safe Nail Care\nBoosts Mobility & Paw Health\nEliminates Nail-Day Anxiety — for Both of You" }
+      ]
+    },
+    {
+      "type": "mechanism",
+      "name": "Mechanism (dark band)",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The real reason" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Meet the startle reflex." },
+        { "type": "richtext", "id": "body", "label": "Body", "default": "<p>Your pet doesn't decide to panic on nail day. A sudden snap or a high-pitched whine trips an automatic flight response — the same reflex that makes you flinch when a balloon pops. Clippers deliver it as a crack. Ordinary grinders deliver it as a scream against the paw.</p><p>And every scary trim teaches one lesson: <strong>paws = fear.</strong> That's why it gets harder each time, not easier — no matter how gentle you are, no matter how many treats you bring. You weren't doing it wrong. The tool was too loud.</p><p>The fix isn't a braver pet, or a firmer grip. It's a tool that stays below the sound that sets the reflex off. That's the entire reason the CalmPaw Plus exists.</p>" }
+      ]
+    },
+    {
+      "type": "features_heading",
+      "name": "Features heading",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Technology with love" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Engineered around one idea: stay below the trigger" }
       ]
     },
     {
       "type": "feature",
-      "name": "Feature deep-dive",
+      "name": "Feature row",
       "settings": [
-        { "type": "text", "id": "eyebrow", "label": "Eyebrow (e.g. 01 · THE MOTOR)", "default": "01 · THE MOTOR" },
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow (e.g. 01 — THE MOTOR)", "default": "01 — THE MOTOR" },
         { "type": "text", "id": "title", "label": "Title", "default": "Ultra-Quiet Operation for Truly Relaxed Grooming" },
-        { "type": "textarea", "id": "body", "label": "Body", "default": "The CalmPaw Plus runs at under 40 dB — softer than a quiet conversation, and dramatically quieter than standard grinders, which typically roar past 90 dB (engine-level). More importantly, it's engineered to stay below the threshold that fires your pet's startle reflex. There's no trigger left to fear — which is why so many pets simply settle in, and some doze off mid-trim." },
-        { "type": "image_picker", "id": "image", "label": "Image (optional)" },
-        { "type": "text", "id": "icon", "label": "Placeholder emoji (if no image)", "default": "🔇" }
+        { "type": "textarea", "id": "body", "label": "Body", "default": "The CalmPaw Plus runs at under 40 dB — softer than a quiet conversation, and dramatically quieter than standard grinders. It's engineered to stay below the threshold that fires your pet's startle reflex, so there's no trigger left to fear — which is why so many pets simply settle in, and some doze off mid-trim." },
+        { "type": "image_picker", "id": "image", "label": "Image (optional)" }
       ]
     },
     {
-      "type": "review",
-      "name": "Review (real only)",
+      "type": "compare",
+      "name": "Comparison table",
+      "limit": 1,
       "settings": [
-        { "type": "checkbox", "id": "enabled", "label": "Show this review", "default": false },
-        { "type": "text", "id": "title", "label": "Objection title", "default": "Perfect for Dark Nails" },
-        { "type": "textarea", "id": "body", "label": "Review text (real customer)", "default": "" },
-        { "type": "text", "id": "name", "label": "Customer name", "default": "" }
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Side by side" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "What Sets the CalmPaw Plus Apart?" },
+        { "type": "textarea", "id": "subhead", "label": "Subhead", "default": "Stop terrifying your pet with loud, hazardous tools." },
+        { "type": "text", "id": "col_us", "label": "Column: us", "default": "CalmPaw Plus" },
+        { "type": "text", "id": "col_a", "label": "Column A", "default": "Nail clippers" },
+        { "type": "text", "id": "col_b", "label": "Column B", "default": "Standard grinders" },
+        { "type": "textarea", "id": "rows", "label": "Rows (label | us | A | B, one per line)", "default": "Whisper-quiet motor, under 40 dB | ✓ | ✗ loud snap | ✗ loud whine\nStays below the startle reflex | ✓ | ✗ | ✗\nBuilt-in LED light for dark nails | ✓ | ✗ | ✗\nNo risk of cutting the quick | ✓ | ✗ high risk | Lower, but blind\nDiamond smoothing head | ✓ | ✗ | Sometimes\nPrevents splits & infection | ✓ | ✗ | ✓\nUSB-C rechargeable | ✓ | — | Sometimes\nComfortable one-hand grip | ✓ | ✗ | Varies" }
       ]
     },
     {
-      "type": "comprow",
-      "name": "Comparison row",
+      "type": "proof",
+      "name": "Proof band (dark)",
+      "limit": 1,
       "settings": [
-        { "type": "text", "id": "label", "label": "Row label", "default": "Under-40 dB whisper motor" },
-        { "type": "text", "id": "us", "label": "CalmPaw Plus cell", "default": "✓" },
-        { "type": "text", "id": "a", "label": "Competitor A cell", "default": "✗ (loud snap)" },
-        { "type": "text", "id": "b", "label": "Competitor B cell", "default": "✗ (~90 dB whine)" }
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Proof, not promises" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "The kind of trim your pet can sleep through." },
+        { "type": "textarea", "id": "body", "label": "Body", "default": "No wrestling. No second person pinning anyone down. No sedation. Just a paw, a quiet hum, and a pet that doesn't leave the couch. Short sessions, calm endings — and each trim gets easier than the last." },
+        { "type": "text", "id": "video_url", "label": "Video embed URL (optional — leave empty for no video)" }
       ]
     },
     {
-      "type": "faq",
+      "type": "guarantee",
+      "name": "Guarantee",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Our 30-Day Money-Back Guarantee" },
+        { "type": "textarea", "id": "body", "label": "Body", "default": "We believe in the CalmPaw Plus so much that we don't want you to spend a dollar until you're 100% certain it works for you and your pet. That's why every order is backed by a 30-day, no-questions-asked money-back guarantee. If nail day isn't genuinely calmer — if your pet doesn't settle, if it's not right for you — email us and we'll issue your refund immediately. The only way to find out if the noise was the problem is to take the noise away. The risk is on us." }
+      ]
+    },
+    {
+      "type": "faq_heading",
+      "name": "FAQ heading",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "We have your back" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Have a question? Here's everything, out in the open." },
+        { "type": "textarea", "id": "subhead", "label": "Subhead", "default": "No hidden menus, no tapping around — every answer is right here." }
+      ]
+    },
+    {
+      "type": "faq_item",
       "name": "FAQ item",
       "settings": [
-        { "type": "text", "id": "question", "label": "Question", "default": "What makes the CalmPaw Plus different from other nail grinders?" },
-        { "type": "richtext", "id": "answer", "label": "Answer", "default": "<p>Two things no one else combines. First, an ultra-quiet motor that runs under 40 dB — below the level that fires a pet's startle reflex — with almost no vibration, so there's no snap, whine, or buzz to fear. Second, a built-in LED quick-finder light that illuminates the nail while you work, so you can see exactly where to stop — even on dark nails where the quick is invisible.</p>" }
+        { "type": "text", "id": "question", "label": "Question", "default": "What makes the Lullo CalmPaw Plus different from other nail grinders?" },
+        { "type": "richtext", "id": "answer", "label": "Answer", "default": "<p>It is built to be calm. A whisper-quiet motor under 40 dB, low vibration, and a gentle diamond smoothing head mean less noise and less fear — so your pet stays relaxed instead of running. And the built-in LED light shows you exactly where to stop, even on dark nails where the quick is invisible.</p>" }
       ]
     },
     {
-      "type": "bonus_item",
-      "name": "Bonus reveal item",
+      "type": "bonus",
+      "name": "Bonus / final CTA",
+      "limit": 1,
       "settings": [
-        { "type": "text", "id": "text", "label": "Text", "default": "The most dangerous nail-grooming mistakes pet owners make — and how to avoid every one of them" }
+        { "type": "text", "id": "badge", "label": "Badge", "default": "FREE" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "BONUS: Order Today and Get The Calm-Trim Guide — Free" },
+        { "type": "textarea", "id": "subhead", "label": "Subhead", "default": "Our step-by-step eBook comes free with every CalmPaw Plus, delivered instantly to your email." },
+        { "type": "text", "id": "reveal_label", "label": "Reveal label", "default": "Revealed inside:" },
+        { "type": "textarea", "id": "items", "label": "Reveal items (one per line)", "default": "The most dangerous nail-grooming mistakes pet owners make — and how to avoid every one of them\nThe startle reflex: the real reason nail day became a fight (and how to reverse the fear, step by step)\nExactly how to use your CalmPaw Plus — the LED light, short light passes, and the one-minute weekly routine that keeps nails healthy for life" },
+        { "type": "text", "id": "cta_label", "label": "CTA label", "default": "ADD TO CART" },
+        { "type": "text", "id": "subline", "label": "Subline", "default": "Free 1–3 day shipping · 30-day money-back guarantee · Free Calm-Trim Guide" }
+      ]
+    },
+    {
+      "type": "custom_text",
+      "name": "➕ Custom text",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading (optional)" },
+        { "type": "richtext", "id": "body", "label": "Body", "default": "<p>Your content here.</p>" },
+        { "type": "checkbox", "id": "centered", "label": "Center align", "default": false }
+      ]
+    },
+    {
+      "type": "custom_liquid",
+      "name": "➕ Custom Liquid",
+      "settings": [
+        { "type": "liquid", "id": "code", "label": "Liquid code" }
       ]
     }
   ],
@@ -735,52 +643,35 @@
     {
       "name": "Lullo CalmPaw Landing",
       "blocks": [
-        { "type": "bullet", "settings": { "icon": "🔇", "text": "Ultra-quiet, under 40 dB — below the level that startles pets" } },
-        { "type": "bullet", "settings": { "icon": "🐾", "text": "Low-vibration motor — nothing buzzing through their paw" } },
-        { "type": "bullet", "settings": { "icon": "💡", "text": "Built-in LED quick-finder light — see exactly where to stop, even on dark nails" } },
-        { "type": "bullet", "settings": { "icon": "✂️", "text": "Grinds gently instead of cutting — no cracks, no over-trimming, no nicked quick" } },
-        { "type": "bullet", "settings": { "icon": "💪", "text": "Powerful enough for thick nails, gentle enough for tiny kitten claws" } },
-        { "type": "bullet", "settings": { "icon": "💰", "text": "Skip the $80 groomer visits — calm trims at home, on your schedule" } },
-        { "type": "tier", "settings": { "name": "Buy 1 CalmPaw Plus", "price": "$35.99", "compare_at": "$59.99", "save_line": "You save $24.00", "badge": "", "preselected": true } },
-        { "type": "tier", "settings": { "name": "Calm Nails Kit — CalmPaw Plus + 3 replacement grinding heads + grooming glove", "price": "$49.99", "compare_at": "$89.98", "save_line": "You save $39.99", "badge": "⭐ MOST POPULAR", "preselected": false } },
-        { "type": "agitation", "settings": { "title": "Risk of Nail Splitting and Damage", "body": "Clippers crush before they cut. Even with a steady hand, that crushing force frequently splits the nail — and a split nail isn't just painful. It opens the nail bed to bacteria and debris, raising the risk of infection with every step your pet takes." } },
-        { "type": "agitation", "settings": { "title": "The Danger of Cutting the Quick", "body": "Inside every nail is the quick — a bundle of nerves and blood vessels. Clippers make it frighteningly easy to cut into it, causing sharp pain, bleeding, and swelling. And here's the part nobody tells you: one bad cut is all it takes. Your pet doesn't forget it. The next trim starts harder than the last." } },
-        { "type": "agitation", "settings": { "title": "The Hidden Toll on Walking and Joints", "body": "Overgrown or badly trimmed nails push back into the paw with every step. Over time they change how your pet stands and walks, stressing joints and posture — problems that can end in expensive veterinary care. Your pet can't tell you their paws hurt. They just live with it." } },
-        { "type": "icon", "settings": { "icon": "😌", "label": "Calm & Quiet Grooming Experience" } },
-        { "type": "icon", "settings": { "icon": "🎯", "label": "Precise & Safe Nail Care" } },
-        { "type": "icon", "settings": { "icon": "🦴", "label": "Boosts Mobility & Paw Health" } },
-        { "type": "icon", "settings": { "icon": "💚", "label": "Eliminates Nail-Day Anxiety — for Both of You" } },
-        { "type": "feature", "settings": { "eyebrow": "01 · THE MOTOR", "title": "Ultra-Quiet Operation for Truly Relaxed Grooming", "icon": "🔇", "body": "The CalmPaw Plus runs at under 40 dB — softer than a quiet conversation, and dramatically quieter than standard grinders, which typically roar past 90 dB (engine-level). More importantly, it's engineered to stay below the threshold that fires your pet's startle reflex. There's no trigger left to fear — which is why so many pets simply settle in, and some doze off mid-trim." } },
-        { "type": "feature", "settings": { "eyebrow": "02 · THE LIGHT", "title": "The LED Quick-Finder Light: See Exactly Where to Stop", "icon": "💡", "body": "The single scariest part of nail care is the guessing — especially on dark or black nails where the quick is invisible. CalmPaw Plus is the answer other grinders don't have: a built-in LED light illuminates the nail as you work, so you can watch your progress and stop well before the sensitive quick. No guessing games. Finally, dark nails are as easy as light ones." } },
-        { "type": "feature", "settings": { "eyebrow": "03 · THE FIT", "title": "Effective Grinding for Every Breed and Size", "icon": "🐕", "body": "Three grinding ports and dual-speed settings adapt to every pet in your home — from tiny kitten claws to a big dog's thick nails. Start on the low speed for nervous first-timers, step up as they relax. One tool, every paw in the house." } },
-        { "type": "feature", "settings": { "eyebrow": "04 · THE GRIP", "title": "Comfortable Grip for Steady, Effortless Handling", "icon": "🖐️", "body": "Lightweight, balanced, and shaped to rest in your palm — right- or left-handed — so your free hand stays where it belongs: reassuring your pet. A steady hold means precise control, shorter sessions, and a calmer trim for everyone." } },
-        { "type": "feature", "settings": { "eyebrow": "05 · THE BATTERY", "title": "USB Rechargeable, Ready Whenever They Are", "icon": "🔋", "body": "No battery swaps, no hunting for chargers at the worst moment. CalmPaw Plus charges over USB and delivers hours of grooming per charge — months of one-minute trims. The best time to trim is when your pet is relaxed; CalmPaw Plus is always ready for that moment." } },
-        { "type": "review", "settings": { "enabled": false, "title": "Perfect for Dark Nails", "body": "", "name": "" } },
-        { "type": "review", "settings": { "enabled": false, "title": "Quiet for Real This Time", "body": "", "name": "" } },
-        { "type": "review", "settings": { "enabled": false, "title": "Safe Trimming Without the Fear", "body": "", "name": "" } },
-        { "type": "review", "settings": { "enabled": false, "title": "No More $80 Groomer Trips", "body": "", "name": "" } },
-        { "type": "comprow", "settings": { "label": "Under-40 dB whisper motor", "us": "✓", "a": "✗ (loud snap)", "b": "✗ (~90 dB whine)" } },
-        { "type": "comprow", "settings": { "label": "Stays below the startle reflex", "us": "✓", "a": "✗", "b": "✗" } },
-        { "type": "comprow", "settings": { "label": "LED quick-finder light", "us": "✓", "a": "✗", "b": "✗" } },
-        { "type": "comprow", "settings": { "label": "Safe on dark & thick nails", "us": "✓", "a": "✗", "b": "Sometimes" } },
-        { "type": "comprow", "settings": { "label": "No risk of cutting the quick", "us": "✓", "a": "✗ (high risk)", "b": "Lower, but blind" } },
-        { "type": "comprow", "settings": { "label": "Dual speeds + 3 ports", "us": "✓", "a": "✗", "b": "Sometimes" } },
-        { "type": "comprow", "settings": { "label": "Prevents splits & infection", "us": "✓", "a": "✗", "b": "✓" } },
-        { "type": "comprow", "settings": { "label": "Ergonomic one-hand design", "us": "✓", "a": "✗", "b": "Varies" } },
-        { "type": "faq", "settings": { "question": "What makes the CalmPaw Plus different from other nail grinders?", "answer": "<p>Two things no one else combines. First, an ultra-quiet motor that runs under 40 dB — below the level that fires a pet's startle reflex — with almost no vibration, so there's no snap, whine, or buzz to fear. Second, a built-in LED quick-finder light that illuminates the nail while you work, so you can see exactly where to stop — even on dark nails where the quick is invisible. Add a USB-rechargeable battery, three port sizes, and two speeds, and it's the whole job in one quiet tool.</p>" } },
-        { "type": "faq", "settings": { "question": "Is it suitable for all pet sizes and breeds?", "answer": "<p>Yes. The CalmPaw Plus is built for everything from small cats and tiny dogs to large breeds with thick nails. Three grinding ports match the size of your pet's nails, and the two-speed setting lets you tune it to their thickness and sensitivity.</p>" } },
-        { "type": "faq", "settings": { "question": "How much should I trim?", "answer": "<p><strong>For light or clear nails:</strong> you can usually see the pinkish quick through the nail — the part to avoid. Grind only the pale tip, a little at a time. As you work, watch the center of the nail's cross-section: when a small dark dot appears, you're nearing the quick. Stop there.</p><p><strong>For dark or black nails:</strong> this is exactly what the LED quick-finder light is for. Turn it on, grind small amounts, and watch the lit cross-section for a change in texture or color — that's your signal to stop. Slow, lit, and gradual means you stay safely ahead of the quick every time.</p>" } },
-        { "type": "faq", "settings": { "question": "How does it prevent over-trimming?", "answer": "<p>Unlike clippers — which take a whole slice in one irreversible squeeze — the CalmPaw Plus removes nail gradually, a little at a time, while the LED light shows you your progress. You approach the quick in tiny, visible steps and simply stop before you reach it. That's why grinders are the calm choice for dark nails, and why the added light makes CalmPaw Plus the confident one.</p>" } },
-        { "type": "faq", "settings": { "question": "What if my pet is still anxious about it at first?", "answer": "<p>Totally normal — especially for pets with a rough nail-day history. Their fear was learned, which means it can be unlearned. Start slow: let them sniff the CalmPaw Plus while it's off. Then run it nearby — the quiet hum becomes background noise fast. Touch one nail for two seconds, treat, stop. That's a win. Build up over a week and most pets settle into the routine — the full step-by-step plan is in your free Calm-Trim Guide.</p>" } },
-        { "type": "faq", "settings": { "question": "How do I choose the right port and speed?", "answer": "<p>Match the port to the nail: small for cats and tiny dogs, medium for mid-sized pets, large for big dogs with thicker nails. Always start on the low speed to let your pet get comfortable, then switch to the higher setting if you need more grinding power.</p>" } },
-        { "type": "faq", "settings": { "question": "How long does the battery last, and how do I charge it?", "answer": "<p>The CalmPaw Plus charges with the included USB cable from any standard USB charger or computer port, and one charge powers many grooming sessions. Since a calm trim takes about a minute per session, a single charge lasts most homes for months.</p>" } },
-        { "type": "faq", "settings": { "question": "Why can't I just walk my dog to keep nails short?", "answer": "<p>Walks help a little on hard surfaces, but they wear nails unevenly and almost never enough. Overgrown nails press into the paw, change your dog's posture, and stress the joints over time. And walking does nothing for dewclaws or for cats. A one-minute weekly grind keeps every nail at a healthy length — evenly, safely, on your schedule.</p>" } },
-        { "type": "faq", "settings": { "question": "Can I use one CalmPaw Plus on both my dog and my cat?", "answer": "<p>Absolutely. The small port and low speed handle delicate cat claws; the larger ports and high speed handle dog nails. One tool covers the whole household — it also works for rabbits, guinea pigs, and other small pets.</p>" } },
-        { "type": "faq", "settings": { "question": "How fast will I get it?", "answer": "<p>Every order ships free within 1–3 days, with a tracking number emailed to you as soon as it's on the way.</p>" } },
-        { "type": "faq", "settings": { "question": "What if it doesn't work for us?", "answer": "<p>Then it costs you nothing. Email us within 30 days of receiving your order and we'll refund you in full — no questions, no hassle. The risk is on us.</p>" } },
-        { "type": "bonus_item", "settings": { "text": "The most dangerous nail-grooming mistakes pet owners make — and how to avoid every one of them" } },
-        { "type": "bonus_item", "settings": { "text": "The startle reflex: the real reason nail day became a fight (and how to reverse the fear, step by step)" } },
-        { "type": "bonus_item", "settings": { "text": "Exactly how to use your CalmPaw Plus — ports, speeds, the LED light, and the one-minute weekly routine that keeps nails healthy for life" } }
+        { "type": "hero" },
+        { "type": "problem_intro" },
+        { "type": "problem_card", "settings": { "title": "Risk of Nail Splitting and Damage", "body": "Clippers crush before they cut. Even with a steady hand, that crushing force frequently splits the nail — and a split nail isn't just painful. It opens the nail bed to bacteria and debris, raising the risk of infection with every step your pet takes." } },
+        { "type": "problem_card", "settings": { "title": "The Danger of Cutting the Quick", "body": "Inside every nail is the quick — a bundle of nerves and blood vessels. Clippers make it frighteningly easy to cut into it, causing sharp pain, bleeding, and swelling. And one bad cut is all it takes: your pet doesn't forget it, and the next trim starts harder than the last." } },
+        { "type": "problem_card", "settings": { "title": "The Hidden Toll on Walking and Joints", "body": "Overgrown or badly trimmed nails push back into the paw with every step. Over time they change how your pet stands and walks, stressing joints and posture. Your pet can't tell you their paws hurt — they just live with it." } },
+        { "type": "solution" },
+        { "type": "mechanism" },
+        { "type": "features_heading" },
+        { "type": "feature", "settings": { "eyebrow": "01 — THE MOTOR", "title": "Ultra-Quiet Operation for Truly Relaxed Grooming", "body": "The CalmPaw Plus runs at under 40 dB — softer than a quiet conversation, and dramatically quieter than standard grinders. It's engineered to stay below the threshold that fires your pet's startle reflex, so there's no trigger left to fear — which is why so many pets simply settle in, and some doze off mid-trim." } },
+        { "type": "feature", "settings": { "eyebrow": "02 — THE LIGHT", "title": "Built-In LED Light: See Exactly Where to Stop", "body": "The scariest part of nail care is the guessing — especially on dark or black nails where the quick is invisible. The CalmPaw Plus has the answer most grinders don't: a built-in LED light that illuminates the nail as you work, so you can watch your progress and stop well before the sensitive quick. No guessing games. Dark nails become as easy as light ones." } },
+        { "type": "feature", "settings": { "eyebrow": "03 — THE HEAD", "title": "Diamond Smoothing Head: Gradual, Never Sudden", "body": "A stainless-steel body and a diamond smoothing head spinning at 7,500 RPM take the nail down in short, light passes — there is no sudden cut, and you control exactly how much comes off. Gentle enough for cats, rabbits, and small pets; for very large dogs with thick nails it still works — just go a little slower." } },
+        { "type": "feature", "settings": { "eyebrow": "04 — THE GRIP", "title": "Comfortable Grip for Steady, Effortless Handling", "body": "Lightweight, balanced, and shaped to rest in your palm — right- or left-handed — so your free hand stays where it belongs: reassuring your pet. A steady hold means precise control, shorter sessions, and a calmer trim for everyone." } },
+        { "type": "feature", "settings": { "eyebrow": "05 — THE BATTERY", "title": "USB-C Rechargeable, Ready Whenever They Are", "body": "Charge with the included USB-C cable — a full charge takes about 3 hours and gives you up to 2 hours of trimming, enough for several pets across many sessions. Since a calm trim takes about a minute, one charge lasts most homes for weeks. Tip: charge it fully before first use." } },
+        { "type": "compare" },
+        { "type": "proof" },
+        { "type": "guarantee" },
+        { "type": "faq_heading" },
+        { "type": "faq_item" },
+        { "type": "faq_item", "settings": { "question": "Is it safe for all pet sizes and breeds?", "answer": "<p>Yes. It works on dogs, cats, rabbits, guinea pigs, and other small pets. It shines on small and medium pets; for very large dogs with thick nails it still works — just go a little slower and take short, light passes.</p>" } },
+        { "type": "faq_item", "settings": { "question": "How much should I trim at a time?", "answer": "<p>Just a little. Smooth the nail in short, light passes instead of one big grind. Take off a small amount, check, and stop before you reach the soft pink part (the quick). On dark nails, turn on the LED light and watch the lit cut surface — when the center changes texture or color, that's your signal to stop.</p>" } },
+        { "type": "faq_item", "settings": { "question": "How does it help prevent over-trimming?", "answer": "<p>Because it sands gradually, you control exactly how much comes off — there is no sudden cut like clippers. You approach the quick in tiny, visible steps, and the built-in LED light helps you see the nail clearly so you simply stop before you reach it.</p>" } },
+        { "type": "faq_item", "settings": { "question": "What if my pet is still nervous at first?", "answer": "<p>Totally normal — especially for pets with a rough nail-day history. Their fear was learned, which means it can be unlearned. Let them sniff it while it's off, then run it nearby so the quiet hum becomes background noise. Pair it with treats, do one or two nails at a time, and build up over a few short sessions. The full step-by-step plan is in your free Calm-Trim Guide.</p>" } },
+        { "type": "faq_item", "settings": { "question": "How long does the battery last?", "answer": "<p>Up to about 2 hours of trimming on a full charge — plenty for several pets across multiple sessions. Since a calm weekly trim takes about a minute, one charge lasts most homes for weeks.</p>" } },
+        { "type": "faq_item", "settings": { "question": "How do I charge it, and how long does it take?", "answer": "<p>Charge it with the included USB-C cable from any standard USB charger or computer port. A full charge takes about 3 hours. Tip: charge it fully before the first use.</p>" } },
+        { "type": "faq_item", "settings": { "question": "Can I use it on cats, rabbits, guinea pigs, or other small pets?", "answer": "<p>Yes. The quiet, low-vibration design is gentle enough for cats, rabbits, guinea pigs, and other small animals — not just dogs. One CalmPaw Plus covers the whole household.</p>" } },
+        { "type": "faq_item", "settings": { "question": "Why can't I just walk my dog to keep their nails short?", "answer": "<p>Walking helps a little on hard surfaces, but most dogs still grow nails faster than they wear them down — especially the dewclaws, which never touch the ground. And walks do nothing for cats. A one-minute weekly smoothing keeps every nail at a healthy length — evenly, safely, on your schedule.</p>" } },
+        { "type": "faq_item", "settings": { "question": "How fast will I get it?", "answer": "<p>Every order ships free within 1–3 days, with a tracking number emailed to you as soon as it's on the way.</p>" } },
+        { "type": "faq_item", "settings": { "question": "What if it doesn't work for us?", "answer": "<p>Then it costs you nothing. Email us within 30 days of receiving your order and we'll refund you in full — no questions, no hassle. The risk is on us.</p>" } },
+        { "type": "bonus" }
       ]
     }
   ]

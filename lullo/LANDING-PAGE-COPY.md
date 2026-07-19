@@ -8,6 +8,8 @@ Offer facts used everywhere: **$35.99** (40% off ~~$59.99~~) · **$49.99 Calm Na
 
 ---
 
+> **v2 build note:** the shipped Shopify section (`shopify/lullo-calmpaw-landing.liquid`) omits the announcement bar (theme header already exists), all review slots/sections, and any sticky elements, per final direction. Sections below marked with review slots are reference-only.
+
 ## 1. Announcement bar
 
 > 🐾 GET 40% OFF TODAY + FREE SHIPPING — SHIPS IN 1–3 DAYS
@@ -90,13 +92,13 @@ The CalmPaw Plus runs at under 40 dB — softer than a quiet conversation, and d
 The single scariest part of nail care is the guessing — especially on dark or black nails where the quick is invisible. CalmPaw Plus is the answer other grinders don't have: a built-in LED light illuminates the nail as you work, so you can watch your progress and stop well before the sensitive quick. No guessing games. No "I just… didn't" avoidance. Finally, dark nails are as easy as light ones.
 
 **Feature 3 — Effective Grinding for Every Breed and Size**
-Three grinding ports and dual-speed settings adapt to every pet in your home — from tiny kitten claws to a big dog's thick nails. Start on the low speed for nervous first-timers, step up as they relax. One tool, every paw in the house.
+A stainless-steel body and a diamond smoothing head spinning at 7,500 RPM take the nail down in short, light passes — no sudden cut, and you control exactly how much comes off. Gentle enough for cats, rabbits, and small pets; for very large dogs with thick nails it still works — just go a little slower.
 
 **Feature 4 — Comfortable Grip for Steady, Effortless Handling**
 Lightweight, balanced, and shaped to rest in your palm — right- or left-handed — so your free hand stays where it belongs: reassuring your pet. A steady hold means precise control, shorter sessions, and a calmer trim for everyone.
 
-**Feature 5 — USB Rechargeable, Ready Whenever They Are**
-No battery swaps, no hunting for chargers at the worst moment. CalmPaw Plus charges over USB and delivers hours of grooming per charge — months of one-minute trims. The best time to trim is when your pet is relaxed; CalmPaw Plus is always ready for that moment.
+**Feature 5 — USB-C Rechargeable, Ready Whenever They Are**
+No battery swaps, no hunting for chargers at the worst moment. CalmPaw Plus charges over USB-C — a full charge takes about 3 hours and gives up to 2 hours of trimming, enough for several pets across many sessions. Since a calm trim takes about a minute, one charge lasts most homes for weeks.
 
 ## 7. Section: Calm Pets, Calmer Homes (objection-titled testimonials)
 
@@ -118,7 +120,7 @@ No battery swaps, no hunting for chargers at the worst moment. CalmPaw Plus char
 | LED quick-finder light | ✓ | ✗ | ✗ |
 | Safe on dark & thick nails | ✓ | ✗ | Sometimes |
 | No risk of cutting the quick | ✓ | ✗ (high risk) | Lower, but blind |
-| Dual speeds + 3 ports | ✓ | ✗ | Sometimes |
+| USB-C rechargeable | ✓ | — | Sometimes |
 | Prevents splits & infection | ✓ | ✗ | ✓ |
 | Ergonomic one-hand design | ✓ | ✗ | Varies |
 
@@ -140,10 +142,10 @@ We believe in the CalmPaw Plus so much that we don't want you to spend a dollar 
 **Subhead:** Have a question? Here's everything, out in the open.
 
 **What makes the CalmPaw Plus different from other nail grinders?**
-Two things no one else combines. First, an ultra-quiet motor that runs under 40 dB — below the level that fires a pet's startle reflex — with almost no vibration, so there's no snap, whine, or buzz to fear. Second, a built-in LED quick-finder light that illuminates the nail while you work, so you can see exactly where to stop — even on dark nails where the quick is invisible. Add a USB-rechargeable battery, three port sizes, and two speeds, and it's the whole job in one quiet tool.
+Two things no one else combines. First, an ultra-quiet motor that runs under 40 dB — below the level that fires a pet's startle reflex — with almost no vibration, so there's no snap, whine, or buzz to fear. Second, a built-in LED quick-finder light that illuminates the nail while you work, so you can see exactly where to stop — even on dark nails where the quick is invisible. Add a USB-C rechargeable battery, a stainless-steel body, and a diamond smoothing head, and it's the whole job in one quiet tool.
 
 **Is it suitable for all pet sizes and breeds?**
-Yes. The CalmPaw Plus is built for everything from small cats and tiny dogs to large breeds with thick nails. Three grinding ports match the size of your pet's nails, and the two-speed setting lets you tune it to their thickness and sensitivity.
+Yes. It works on dogs, cats, rabbits, guinea pigs, and other small pets. It shines on small and medium pets; for very large dogs with thick nails it still works — just go a little slower and take short, light passes.
 
 **How much should I trim?**
 *For light or clear nails:* you can usually see the pinkish quick through the nail — the part to avoid. Grind only the pale tip, a little at a time. As you work, watch the center of the nail's cross-section: when a small dark dot appears, you're nearing the quick. Stop there.
@@ -155,17 +157,17 @@ Unlike clippers — which take a whole slice in one irreversible squeeze — the
 **What if my pet is still anxious about it at first?**
 Totally normal — especially for pets with a rough nail-day history. Their fear was learned, which means it can be unlearned. Start slow: let them sniff the CalmPaw Plus while it's off. Then run it nearby — the quiet hum becomes background noise fast. Touch one nail for two seconds, treat, stop. That's a win. Build up over a week and most pets settle into the routine — the full step-by-step plan is in your free Calm-Trim Guide.
 
-**How do I choose the right port and speed?**
-Match the port to the nail: small for cats and tiny dogs, medium for mid-sized pets, large for big dogs with thicker nails. Always start on the low speed to let your pet get comfortable, then switch to the higher setting if you need more grinding power.
+**How much should I take off in one pass?**
+Just a little. Smooth the nail in short, light passes instead of one big grind — take off a small amount, check, and continue. Gradual is the whole point: it keeps your pet calm and keeps you safely ahead of the quick.
 
 **How long does the battery last, and how do I charge it?**
-The CalmPaw Plus charges with the included USB cable from any standard USB charger or computer port, and one charge powers many grooming sessions. Since a calm trim takes about a minute per session, a single charge lasts most homes for months.
+The CalmPaw Plus charges with the included USB-C cable from any standard USB charger or computer port. A full charge takes about 3 hours and gives up to 2 hours of trimming. Since a calm trim takes about a minute per session, a single charge lasts most homes for weeks. Tip: charge fully before first use.
 
 **Why can't I just walk my dog to keep nails short?**
 Walks help a little on hard surfaces, but they wear nails unevenly and almost never enough. Overgrown nails press into the paw, change your dog's posture, and stress the joints over time. And walking does nothing for dewclaws or for cats. A one-minute weekly grind keeps every nail at a healthy length — evenly, safely, on your schedule.
 
 **Can I use one CalmPaw Plus on both my dog and my cat?**
-Absolutely. The small port and low speed handle delicate cat claws; the larger ports and high speed handle dog nails. One tool covers the whole household — it also works for rabbits, guinea pigs, and other small pets.
+Absolutely. The quiet, low-vibration design is gentle enough for delicate cat claws and strong enough for dog nails. One tool covers the whole household — it also works for rabbits, guinea pigs, and other small pets.
 
 **How fast will I get it?**
 Every order ships free within 1–3 days, with a tracking number emailed to you as soon as it's on the way.
