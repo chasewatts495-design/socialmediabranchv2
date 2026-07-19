@@ -45,6 +45,7 @@
     color: var(--cp-ink); line-height: 1.15; margin: 0 0 16px;
   }
   #lullo-cp-{{ section.id }} h1 { font-size: clamp(30px, 5.4vw, 42px); }
+  #lullo-cp-{{ section.id }} .cp-title-suffix { font-family: var(--cp-body-font); font-weight: 600; font-size: 0.45em; color: var(--cp-accent); white-space: nowrap; letter-spacing: 0.02em; }
   #lullo-cp-{{ section.id }} h2 { font-size: clamp(24px, 4.6vw, 32px); }
   #lullo-cp-{{ section.id }} h3 { font-family: var(--cp-body-font); font-weight: 700; font-size: 1.06em; color: var(--cp-ink); margin: 0 0 8px; }
   #lullo-cp-{{ section.id }} p { margin: 0 0 14px; }
@@ -70,6 +71,14 @@
   #lullo-cp-{{ section.id }} .cp-hero-media { position: relative; }
   #lullo-cp-{{ section.id }} .cp-hero-media img { width: 100%; border-radius: 14px; display: block; border: 1px solid var(--cp-line); }
   #lullo-cp-{{ section.id }} .cp-hero-ph { border: 1px solid var(--cp-line); border-radius: 14px; min-height: 320px; display: flex; align-items: center; justify-content: center; color: #9a9a95; font-size: 0.9em; }
+  #lullo-cp-{{ section.id }} .cp-under-image { margin-top: 22px; display: grid; gap: 12px; }
+  #lullo-cp-{{ section.id }} .cp-under-panel { border: 1px solid var(--cp-line); border-radius: 12px; padding: 18px 18px; }
+  #lullo-cp-{{ section.id }} .cp-under-panel h3 { font-family: var(--cp-heading-font); font-size: 1.15em; margin-bottom: 6px; }
+  #lullo-cp-{{ section.id }} .cp-under-panel p { margin-bottom: 0; font-size: 0.95em; }
+  #lullo-cp-{{ section.id }} .cp-under-tiles { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+  #lullo-cp-{{ section.id }} .cp-under-tile { border: 1px solid var(--cp-line); border-radius: 12px; padding: 14px 10px; text-align: center; }
+  #lullo-cp-{{ section.id }} .cp-under-tile b { display: block; font-family: var(--cp-heading-font); color: var(--cp-accent); font-size: 1.05em; margin-bottom: 3px; }
+  #lullo-cp-{{ section.id }} .cp-under-tile span { font-size: 0.82em; line-height: 1.35; display: block; }
   #lullo-cp-{{ section.id }} .cp-save-flag {
     position: absolute; top: 12px; left: 12px; background: var(--cp-bad); color: #fff;
     border-radius: 8px; padding: 6px 12px; font-weight: 700; font-size: 0.82em;
@@ -183,10 +192,33 @@
                 <div class="cp-hero-ph">Product image</div>
               {% endif %}
               {% if block.settings.save_badge != blank %}<span class="cp-save-flag">{{ block.settings.save_badge }}</span>{% endif %}
+              <div class="cp-under-image">
+                {% if block.settings.under_tiles != blank %}
+                  <div class="cp-under-tiles">
+                    {% assign tiles = block.settings.under_tiles | newline_to_br | split: '<br />' %}
+                    {% for tile in tiles %}
+                      {% assign t = tile | strip %}
+                      {% if t != blank %}
+                        {% assign tparts = t | split: '|' %}
+                        <div class="cp-under-tile"><b>{{ tparts[0] | strip }}</b><span>{{ tparts[1] | strip }}</span></div>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                {% if block.settings.under_heading != blank or block.settings.under_text != blank %}
+                  <div class="cp-under-panel">
+                    {% if block.settings.under_heading != blank %}<h3>{{ block.settings.under_heading }}</h3>{% endif %}
+                    {% if block.settings.under_text != blank %}<p>{{ block.settings.under_text }}</p>{% endif %}
+                  </div>
+                {% endif %}
+                {% if block.settings.under_text_2 != blank %}
+                  <div class="cp-under-panel"><p>{{ block.settings.under_text_2 }}</p></div>
+                {% endif %}
+              </div>
             </div>
             <div>
               {% if block.settings.eyebrow != blank %}<span class="cp-eyebrow">{{ block.settings.eyebrow }}</span>{% endif %}
-              <h1>{{ block.settings.title }}</h1>
+              <h1>{{ block.settings.title }}{% if block.settings.title_suffix != blank %} <span class="cp-title-suffix">{{ block.settings.title_suffix }}</span>{% endif %}</h1>
               <p>{{ block.settings.subhead }}</p>
               <div class="cp-price-row">
                 <span class="cp-price" data-cp-price>{{ block.settings.tier1_price }}</span>
@@ -473,9 +505,14 @@
       "settings": [
         { "type": "image_picker", "id": "image", "label": "Product image" },
         { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Whisper-quiet nail care for dogs & cats" },
-        { "type": "text", "id": "title", "label": "Title", "default": "Lullo CalmPaw Plus" },
+        { "type": "text", "id": "title", "label": "Title", "default": "The CalmPaw Plus" },
+        { "type": "text", "id": "title_suffix", "label": "Title suffix (smaller)", "default": "by Lullo" },
         { "type": "textarea", "id": "subhead", "label": "Subhead", "default": "The CalmPaw Plus uses a whisper-quiet motor — under 40 dB, softer than a quiet conversation — engineered to stay below the sound that triggers your pet's startle reflex. No snap. No scary whine. Just calm, gentle nail trims at home." },
         { "type": "text", "id": "save_badge", "label": "Save badge", "default": "SAVE 40%" },
+        { "type": "textarea", "id": "under_tiles", "label": "Under-image tiles (Title | caption, one per line)", "default": "Under 40 dB | Softer than a quiet conversation\nLED light | See the quick, even on dark nails\n30-day promise | Full refund if nail day isn't calmer" },
+        { "type": "text", "id": "under_heading", "label": "Under-image panel heading", "default": "Built for the pet that hides from the clippers" },
+        { "type": "textarea", "id": "under_text", "label": "Under-image panel text", "default": "The squirming, the bolting, the guilt afterward — none of it means you have a bad pet or that you're doing it wrong. It means the tool was scary. The CalmPaw Plus stays below the sound that triggers your pet's startle reflex, so there's nothing left to fear. Most pets settle in by the second or third session — and many doze right through it." },
+        { "type": "textarea", "id": "under_text_2", "label": "Under-image panel 2 (optional)", "default": "Works on dogs, cats, rabbits, and other small pets. One quiet minute a week keeps every nail at a healthy length — no groomer visits, no sedation, no drama." },
         { "type": "textarea", "id": "bullets", "label": "Benefit bullets (one per line)", "default": "Whisper-quiet motor, under 40 dB — below the level that startles pets\nLow vibration — nothing buzzing through their paw\nBuilt-in LED light — see exactly where to stop, even on dark nails\nDiamond smoothing head grinds gently — no cracks, no over-trimming, no nicked quick\nGentle on dog and cat nails alike — rabbits and small pets too\nSkip the groomer visits — calm trims at home, on your schedule" },
         { "type": "header", "content": "Tier 1 (single)" },
         { "type": "text", "id": "tier1_name", "label": "Name", "default": "Buy 1 CalmPaw Plus" },
