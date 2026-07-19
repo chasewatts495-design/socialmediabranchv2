@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Calm-Trim Guide — Lullo</title>
+<style>
+  /* ================= Fonts ================= */
+  @font-face { font-family: 'Fredoka'; src: url('fredoka-400.woff2') format('woff2'); font-weight: 400; }
+  @font-face { font-family: 'Fredoka'; src: url('fredoka-500.woff2') format('woff2'); font-weight: 500; }
+  @font-face { font-family: 'Fredoka'; src: url('fredoka-600.woff2') format('woff2'); font-weight: 600; }
+  @font-face { font-family: 'Fredoka'; src: url('fredoka-700.woff2') format('woff2'); font-weight: 700; }
+
+  /* ================= Grid system =================
+     Page: 8.5in × 11in. Uniform margins: 0.85in sides, 0.8in top, 0.95in bottom.
+     Every page shares identical furniture: top rule + chapter label,
+     bottom footer (brand left, page number right). One idea per page. */
+  :root {
+    --green: #1f6b43;
+    --deep: #015704;
+    --ink: #243024;
+    --cream: #eef1ea;
+    --cream2: #f0ece1;
+    --sage: #d2dad2;
+    --gold: #f2a900;
+    --rust: #b3402f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { font-family: 'Fredoka', 'Trebuchet MS', sans-serif; color: var(--ink); }
+  @page { size: 8.5in 11in; margin: 0; }
+
+  .page {
+    width: 8.5in; height: 11in;
+    padding: 0.8in 0.85in 0.95in;
+    position: relative;
+    page-break-after: always;
+    overflow: hidden;
+    background: #fff;
+    display: flex; flex-direction: column;
+  }
+
+  /* Shared page furniture */
+  .kicker {
+    font-size: 10.5pt; font-weight: 600; letter-spacing: 0.18em;
+    color: var(--green); text-transform: uppercase;
+    border-bottom: 2.5pt solid var(--sage);
+    padding-bottom: 8pt; margin-bottom: 22pt;
+  }
+  .footer {
+    position: absolute; left: 0.85in; right: 0.85in; bottom: 0.42in;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 9pt; color: var(--green); border-top: 1pt solid var(--sage); padding-top: 7pt;
+  }
+  .footer .pg { font-weight: 600; }
+
+  h1 { font-size: 34pt; font-weight: 700; color: var(--deep); line-height: 1.12; }
+  h2 { font-size: 21pt; font-weight: 600; color: var(--deep); line-height: 1.15; margin-bottom: 12pt; }
+  h3 { font-size: 13pt; font-weight: 600; color: var(--green); margin: 14pt 0 5pt; }
+  p  { font-size: 11.5pt; line-height: 1.62; margin-bottom: 10pt; }
+  .lead { font-size: 13pt; line-height: 1.55; color: var(--deep); font-weight: 500; margin-bottom: 14pt; }
+  strong { color: var(--deep); }
+
+  /* Components — always aligned to the grid */
+  .card { background: var(--cream); border-radius: 12pt; padding: 16pt 18pt; margin-bottom: 12pt; }
+  .card h3 { margin-top: 0; }
+  .callout { background: var(--cream2); border-left: 4pt solid var(--green); border-radius: 6pt; padding: 13pt 16pt; margin: 14pt 0; }
+  .callout p { margin-bottom: 0; font-weight: 500; color: var(--deep); }
+
+  ol.steps { list-style: none; counter-reset: step; margin: 6pt 0 0; }
+  ol.steps li {
+    counter-increment: step; position: relative;
+    padding: 0 0 14pt 46pt; font-size: 11.5pt; line-height: 1.55;
+  }
+  ol.steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 0;
+    width: 30pt; height: 30pt; border-radius: 50%;
+    background: var(--green); color: #fff;
+    font-weight: 700; font-size: 14pt;
+    display: flex; align-items: center; justify-content: center;
+  }
+  ol.steps li b { display: block; color: var(--deep); font-size: 12.5pt; margin-bottom: 2pt; }
+
+  ul.checklist { list-style: none; margin: 6pt 0; }
+  ul.checklist li { padding: 6pt 0 6pt 30pt; position: relative; font-size: 11.5pt; line-height: 1.5; border-bottom: 1pt dashed var(--sage); }
+  ul.checklist li::before { content: "✓"; position: absolute; left: 4pt; color: var(--green); font-weight: 700; }
+  ul.checklist.boxes li::before { content: "☐"; color: var(--green); font-size: 13pt; top: 4pt; }
+
+  .mistake-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24pt; height: 24pt; border-radius: 50%;
+    background: var(--rust); color: #fff; font-weight: 700; font-size: 12pt;
+    margin-right: 8pt; vertical-align: middle;
+  }
+  .leaf { color: var(--sage); text-align: center; font-size: 16pt; margin: 10pt 0; letter-spacing: 8pt; }
+
+  /* Cover */
+  .cover { background: linear-gradient(165deg, var(--deep) 0%, var(--green) 70%); color: #fff; justify-content: center; text-align: center; }
+  .cover .paw { font-size: 52pt; margin-bottom: 18pt; }
+  .cover h1 { color: #fff; font-size: 42pt; margin-bottom: 10pt; }
+  .cover .sub { font-size: 15pt; font-weight: 400; opacity: .92; max-width: 5.4in; margin: 0 auto 26pt; line-height: 1.5; }
+  .cover .brand-pill { display: inline-block; align-self: center; background: rgba(255,255,255,.16); border: 1.5pt solid rgba(255,255,255,.5); border-radius: 99pt; padding: 9pt 26pt; font-weight: 600; font-size: 13pt; letter-spacing: .12em; }
+  .cover .free-tag { position: absolute; top: 0.7in; right: 0.7in; background: var(--gold); color: var(--deep); font-weight: 700; border-radius: 99pt; padding: 7pt 18pt; font-size: 11pt; transform: rotate(6deg); }
+
+  /* TOC */
+  .toc-row { display: flex; justify-content: space-between; align-items: baseline; padding: 11pt 2pt; border-bottom: 1pt dashed var(--sage); font-size: 12.5pt; }
+  .toc-row .n { color: var(--green); font-weight: 700; margin-right: 10pt; }
+  .toc-row .pgn { font-weight: 600; color: var(--green); }
+
+  .back { background: linear-gradient(165deg, var(--green) 0%, var(--deep) 80%); color: #fff; justify-content: center; text-align: center; }
+  .back h2 { color: #fff; font-size: 26pt; }
+  .back p { font-size: 12.5pt; max-width: 5.6in; margin: 0 auto 12pt; }
+  .back .seal { font-size: 44pt; margin-bottom: 12pt; }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1 · COVER ============ -->
+<div class="page cover">
+  <div class="free-tag">FREE GIFT</div>
+  <div class="paw">🐾</div>
+  <h1>The Calm-Trim<br>Guide</h1>
+  <p class="sub">How to turn nail-day dread into a one-minute calm routine — step by step, for even the most anxious dogs and cats.</p>
+  <span class="brand-pill">L U L L O</span>
+</div>
+
+<!-- ============ PAGE 2 · WELCOME + TOC ============ -->
+<div class="page">
+  <div class="kicker">Welcome</div>
+  <h2>First: it was never your fault.</h2>
+  <p class="lead">If nail day at your house means hiding, squirming, or a chore you quietly stopped attempting — you haven't failed, and your pet isn't "bad."</p>
+  <p>Almost every nail-day struggle traces back to one thing: a tool that was too loud, too sudden, or too scary. Your pet's body was doing exactly what instinct told it to do. Once you understand that — and change the one thing that triggers it — calm trims stop being a dream and become a routine.</p>
+  <p>This short guide gives you everything in order: the mistakes to stop making, the science of why your pet panics, a 7-day plan to rebuild trust, and exactly how to use your CalmPaw Plus for a lifetime of easy, healthy nails.</p>
+  <div class="leaf">❧ ❧ ❧</div>
+  <h3 style="margin-bottom:8pt;">What's inside</h3>
+  <div class="toc-row"><span><span class="n">1</span>The 7 Most Dangerous Nail-Grooming Mistakes</span><span class="pgn">3–4</span></div>
+  <div class="toc-row"><span><span class="n">2</span>The Startle Reflex: Why Your Pet Panics</span><span class="pgn">5–6</span></div>
+  <div class="toc-row"><span><span class="n">3</span>The 7-Day Calm Introduction Plan</span><span class="pgn">7–8</span></div>
+  <div class="toc-row"><span><span class="n">4</span>Dark Nails &amp; Finding the Quick</span><span class="pgn">9</span></div>
+  <div class="toc-row"><span><span class="n">5</span>Your CalmPaw Plus, Mastered</span><span class="pgn">10–11</span></div>
+  <div class="toc-row"><span><span class="n">6</span>Your Nail-Day Checklist</span><span class="pgn">12</span></div>
+  <div class="footer"><span>Lullo · The Calm-Trim Guide</span><span class="pg">2</span></div>
+</div>
+
+<!-- ============ PAGE 3 · CH1 MISTAKES 1-4 ============ -->
+<div class="page">
+  <div class="kicker">Chapter 1 · The Mistakes</div>
+  <h2>The 7 most dangerous nail-grooming mistakes</h2>
+  <p class="lead">Most of these are made with love — by careful owners trying to do the right thing. Stop these seven, and you've removed almost every source of nail-day fear and injury.</p>
+  <div class="card">
+    <h3><span class="mistake-num">1</span>Waiting too long between trims</h3>
+    <p style="margin-bottom:0;">Rare trims mean long sessions, long nails, and a nervous pet. Worse: the quick (the living center of the nail) grows out with the nail, so overdue nails are <strong>easier</strong> to hurt. Little and often always beats rare and dramatic.</p>
+  </div>
+  <div class="card">
+    <h3><span class="mistake-num">2</span>Taking too much at once</h3>
+    <p style="margin-bottom:0;">One big irreversible squeeze of the clippers is how quicks get cut, nails split, and fear gets learned. Removing a little at a time — the way a grinder works — means you can always stop before trouble.</p>
+  </div>
+  <div class="card">
+    <h3><span class="mistake-num">3</span>Forcing a frightened pet to "get it over with"</h3>
+    <p style="margin-bottom:0;">Holding a panicking pet down finishes today's trim and ruins the next fifty. Every forced session deepens the fear memory. If your pet is panicking, stop — Chapter 3 shows you the way back.</p>
+  </div>
+  <div class="card">
+    <h3><span class="mistake-num">4</span>Trimming in chaos</h3>
+    <p style="margin-bottom:0;">TV blaring, kids running, right after the doorbell — a wound-up pet can't relax for a trim. Pick a calm, sleepy moment: after a walk, after dinner, during couch time.</p>
+  </div>
+  <div class="footer"><span>Lullo · The Calm-Trim Guide</span><span class="pg">3</span></div>
+</div>
+
+<!-- ============ PAGE 4 · CH1 MISTAKES 5-7 ============ -->
+<div class="page">
+  <div class="kicker">Chapter 1 · The Mistakes</div>
+  <div class="card">
+    <h3><span class="mistake-num">5</span>Guessing on dark nails</h3>
+    <p style="margin-bottom:0;">On black nails the quick is invisible, so owners either guess (and sometimes hit it) or give up entirely (and the nails overgrow). Neither is safe. Chapter 4 gives you the no-guess method — and it's exactly what your CalmPaw Plus's LED quick-finder light was built for.</p>
+  </div>
+  <div class="card">
+    <h3><span class="mistake-num">6</span>Ignoring the dewclaws</h3>
+    <p style="margin-bottom:0;">The little "thumb" nails higher on the leg never touch the ground, so they never wear down. Left alone, they can curl all the way into the skin. Check them at every session — they take five extra seconds.</p>
+  </div>
+  <div class="card">
+    <h3><span class="mistake-num">7</span>Skipping trims because "walks handle it"</h3>
+    <p style="margin-bottom:0;">Pavement helps a little, but it wears nails unevenly and rarely enough — and it does nothing for cats or dewclaws. Overgrown nails press into the paw with every step, quietly changing posture and stressing joints over years.</p>
+  </div>
+  <div class="callout">
+    <p>The pattern behind all seven: <strong>big, rare, scary events</strong> hurt pets and teach fear. <strong>Small, frequent, calm sessions</strong> keep nails healthy and teach peace. Everything in this guide builds toward one calm minute a week.</p>
+  </div>
+  <div class="footer"><span>Lullo · The Calm-Trim Guide</span><span class="pg">4</span></div>
+</div>
+
+<!-- ============ PAGE 5 · CH2 STARTLE REFLEX ============ -->
+<div class="page">
+  <div class="kicker">Chapter 2 · The Science</div>
+  <h2>The startle reflex: why your pet panics</h2>
+  <p class="lead">Your pet doesn't decide to fight you on nail day. Their body decides for them — automatically, before thinking ever happens.</p>
+  <p>A sudden, sharp sound — a snap, a crack, a high-pitched whine — trips an ancient survival circuit called the <strong>startle reflex</strong>. It's the same reflex that makes you flinch at a popped balloon. No amount of treats, praise, or patience can talk a body out of a reflex.</p>
+  <p>Nail tools trigger it in two ways:</p>
+  <div class="card">
+    <h3>The snap</h3>
+    <p style="margin-bottom:0;">Clippers crush through the nail with a loud mechanical <em>crack</em> — a sudden sound, right at the paw, at close range. To your pet it's a small explosion happening to their own body.</p>
+  </div>
+  <div class="card">
+    <h3>The whine and the buzz</h3>
+    <p style="margin-bottom:0;">Ordinary grinders scream at high frequencies and buzz hard through the paw. Pets hear far higher frequencies than we do — what sounds like a hum to you can feel like a dentist's drill to them.</p>
+  </div>
+  <div class="footer"><span>Lullo · The Calm-Trim Guide</span><span class="pg">5</span></div>
+</div>
+
+<!-- ============ PAGE 6 · CH2 FEAR MEMORY ============ -->
+<div class="page">
+  <div class="kicker">Chapter 2 · The Science</div>
+  <h2>Paws = fear: how the memory forms</h2>
+  <p class="lead">One scary trim doesn't just ruin one afternoon. It writes a memory — and the memory is why nail day gets harder every time, not easier.</p>
+  <p>Each frightening session teaches your pet one simple lesson: <strong>when my paws are touched, scary things happen.</strong> The next time the tool comes out, they brace before anything touches them. You trim less often, the nails grow longer, the sessions get bigger and scarier — and the spiral tightens.</p>
+  <p>Here's the part that changes everything: <strong>you can't train away a flinch you keep re-triggering.</strong> As long as the tool crosses the startle threshold, every session re-proves the fear. The fix was never a braver pet or a firmer grip.</p>
+  <div class="callout">
+    <p>The fix is a tool that stays <strong>below the trigger</strong> — quiet enough and still enough that the reflex never fires. Remove the trigger, and the fear has nothing left to feed on. That is the entire reason the CalmPaw Plus exists: an under-40 dB motor, softer than a quiet conversation, with almost no vibration.</p>
+  </div>
+  <p>And because the fear was <em>learned</em>, it can be <em>unlearned</em>. That's Chapter 3.</p>
+  <div class="leaf">❧ ❧ ❧</div>
+  <div class="footer"><span>Lullo · The Calm-Trim Guide</span><span class="pg">6</span></div>
+</div>
+
+<!-- ============ PAGE 7 · CH3 PLAN DAYS 1-3 ============ -->
+<div class="page">
+  <div class="kicker">Chapter 3 · The Plan</div>
+  <h2>The 7-day calm introduction plan</h2>
+  <p class="lead">One week, a few minutes a day, zero drama. Go at your pet's pace — if a day wobbles, simply repeat it. There is no falling behind.</p>
+  <ol class="steps">
+    <li><b>Days 1–2 — Just exist together</b>
+    Leave the CalmPaw Plus (switched off) near your pet's favorite spot. Let them sniff it, ignore it, walk past it. Every calm glance earns a treat. The tool becomes furniture — boring, harmless furniture.</li>
+    <li><b>Day 3 — The quiet hum, from a distance</b>
+    Turn it on across the room for a few seconds while your pet does something pleasant — dinner works beautifully. The under-40 dB hum blends into the household quickly. Treat, switch off, done. Repeat two or three times.</li>
+    <li><b>Day 4 — Closer, calmer</b>
+    Run it in the same area as your pet while you relax together. If they stay settled, treat and praise. If they get uneasy, add distance and shorten the session. You're teaching one sentence: <em>that sound means nothing bad.</em></li>
+  </ol>
+  <div class="footer"><span>Lullo · The Calm-Trim Guide</span><span class="pg">7</span></div>
+</div>
+
+<!-- ============ PAGE 8 · CH3 PLAN DAYS 5-7 ============ -->
+<div class="page">
+  <div class="kicker">Chapter 3 · The Plan</div>
+  <ol class="steps" style="counter-reset: step 3;">
+    <li><b>Day 5 — Touch, no trim</b>
+    With the grinder off, gently hold a paw for a second or two, treat, release. Then hold a paw while the grinder hums nearby. Handling paws becomes ordinary, pleasant, and always ends well.</li>
+    <li><b>Day 6 — One nail. Two seconds. That's the whole day.</b>
+    One nail, the lightest touch for two seconds. Treat like they just won a medal, and stop while everything is still calm. Ending early is the strategy, not a compromise.</li>
+    <li><b>Day 7 — A few nails, still short</b>
+    Two to four nails, short light passes, treats between each. Stop before your pet asks you to. From here, add a few nails per session until a full paw — then a full trim — is just another quiet minute.</li>
+  </ol>
+  <div class="callout">
+    <p><strong>The golden rule for week two and forever:</strong> short sessions, always ending calm. One minute a week keeps nails healthy and keeps the memory good. Careful the first time, easier the next — soon it's as ordinary as brushing.</p>
+  </div>
+  <div class="footer"><span>Lullo · The Calm-Trim Guide</span><span class="pg">8</span></div>
+</div>
+
+<!-- ============ PAGE 9 · CH4 DARK NAILS ============ -->
+<div class="page">
+  <div class="kicker">Chapter 4 · Dark Nails</div>
+  <h2>Dark nails &amp; finding the quick</h2>
+  <p class="lead">The quick is the living core of the nail — nerves and blood vessels. Avoiding it is the whole game, and dark nails hide it. Here's the no-guess method.</p>
+  <h3>On light or clear nails</h3>
+  <p>You can usually see the pinkish quick through the nail. Grind only the pale tip, a little at a time. Watch the center of the nail's cut surface: when a small dark dot appears, the quick is near. That dot is your stop sign.</p>
+  <h3>On dark or black nails — use the light</h3>
+  <p>Switch on your CalmPaw Plus's <strong>LED quick-finder light</strong>. It illuminates the nail as you work, so instead of guessing, you're watching. Grind a small amount, look at the lit cut surface, grind a little more. When the surface changes — a darker, softer-looking center appears — stop there.</p>
+  <div class="callout">
+    <p><strong>Slow, lit, and gradual.</strong> Because a grinder removes fractions of a millimeter at a time, you can always stop before the quick. The blind one-shot gamble of clippers simply doesn't exist here.</p>
+  </div>
+  <h3>A quiet bonus</h3>
+  <p style="margin-bottom:0;">Trim a small amount weekly and the quick slowly recedes toward the paw. Overgrown nails become short, healthy nails — gently, over weeks, with no drama on any single day.</p>
+  <div class="footer"><span>Lullo · The Calm-Trim Guide</span><span class="pg">9</span></div>
+</div>
+
+<!-- ============ PAGE 10 · CH5 SETUP ============ -->
+<div class="page">
+  <div class="kicker">Chapter 5 · Your CalmPaw Plus</div>
+  <h2>Your CalmPaw Plus, mastered</h2>
+  <p class="lead">Everything on the tool exists to keep sessions short, quiet, and precise. Here's the right setting for every pet in the house.</p>
+  <h3>Know the tool</h3>
+  <ul class="checklist">
+    <li><strong>Diamond smoothing head</strong> — stainless steel, 7,500 RPM. It sands gradually; there is no blade and no sudden cut.</li>
+    <li><strong>Built-in LED light</strong> — lights the nail so you can see the cut surface and stop before the quick, even on dark nails.</li>
+    <li><strong>Fits the whole household</strong> — dogs, cats, rabbits, guinea pigs, and other small pets.</li>
+  </ul>
+  <h3>Use short, light passes</h3>
+  <ul class="checklist">
+    <li><strong>Light touch, two–three seconds per pass</strong> — the diamond smoothing head does the work; never press.</li>
+    <li><strong>Thick or overdue nails</strong> — same light passes, just a few more of them. For very large dogs, go a little slower and check often.</li>
+  </ul>
+  <h3>Charging</h3>
+  <p style="margin-bottom:0;">Charge with the included USB-C cable from any USB charger or computer port. A full charge takes about 3 hours and gives up to 2 hours of trimming — with one-minute weekly trims, that's weeks of sessions. Tip: charge it fully before first use, and it's ready the moment your pet is relaxed and willing.</p>
+  <div class="footer"><span>Lullo · The Calm-Trim Guide</span><span class="pg">10</span></div>
+</div>
+
+<!-- ============ PAGE 11 · CH5 ROUTINE ============ -->
+<div class="page">
+  <div class="kicker">Chapter 5 · Your CalmPaw Plus</div>
+  <h2>The one-minute weekly routine</h2>
+  <p class="lead">This is the destination: sixty calm seconds, once a week, for life.</p>
+  <ol class="steps">
+    <li><b>Pick the sleepy moment</b> — after a walk or dinner, during couch time. Calm pet, calm room, treats within reach.</li>
+    <li><b>Power on, LED on</b> — let the quiet hum start before you touch a paw. No surprises.</li>
+    <li><b>Hold gently, grind lightly</b> — two or three seconds per nail, watching the lit cut surface. A steady palm, never a squeeze.</li>
+    <li><b>Treat and move on</b> — a nail, a kind word, the next nail. Keep it easy and rhythmic.</li>
+    <li><b>Stop while it's still pleasant</b> — if you finish every nail, wonderful. If you do one paw today and one tomorrow, equally wonderful. Ending calm is the win that makes next week effortless.</li>
+  </ol>
+  <div class="callout">
+    <p><strong>Weekly beats monthly, every time.</strong> Tiny weekly grinds keep the quick short, the nails healthy, the sessions boring — and "boring" is exactly what nail day should be.</p>
+  </div>
+  <div class="footer"><span>Lullo · The Calm-Trim Guide</span><span class="pg">11</span></div>
+</div>
+
+<!-- ============ PAGE 12 · CHECKLIST ============ -->
+<div class="page">
+  <div class="kicker">Chapter 6 · Quick Reference</div>
+  <h2>Your nail-day checklist</h2>
+  <p class="lead">Print this page or keep it on your phone. If every box gets a tick, you're doing it perfectly.</p>
+  <h3>Before</h3>
+  <ul class="checklist boxes">
+    <li>Pet is relaxed (post-walk, post-meal, or couch time)</li>
+    <li>Room is calm — no chaos, no hurry</li>
+    <li>CalmPaw Plus charged · LED on · quiet hum running before you start</li>
+    <li>Treats within arm's reach</li>
+  </ul>
+  <h3>During</h3>
+  <ul class="checklist boxes">
+    <li>Let the quiet hum start before touching a paw</li>
+    <li>Two–three seconds per nail, light touch, steady palm</li>
+    <li>Watch the lit cut surface — stop at the dark center dot</li>
+    <li>Treat between nails · check the dewclaws</li>
+  </ul>
+  <h3>After</h3>
+  <ul class="checklist boxes">
+    <li>End while everything is still calm — even if unfinished</li>
+    <li>Big praise, favorite treat</li>
+    <li>Note the date — same time next week</li>
+  </ul>
+  <div class="footer"><span>Lullo · The Calm-Trim Guide</span><span class="pg">12</span></div>
+</div>
+
+<!-- ============ PAGE 13 · BACK COVER ============ -->
+<div class="page back">
+  <div class="seal">🛡️</div>
+  <h2>You're covered, always.</h2>
+  <p>Every CalmPaw Plus is backed by our <strong style="color:#fff;">30-day money-back guarantee</strong>. If nail day isn't genuinely calmer, email us and we'll refund you in full — no questions asked.</p>
+  <p>Questions about your CalmPaw Plus, your order, or a nervous pet who needs a little extra help? We read every message.</p>
+  <p style="font-weight:600; font-size:14pt;">lullo.us</p>
+  <div style="margin-top:22pt;">
+    <span class="brand-pill" style="display:inline-block;background:rgba(255,255,255,.16);border:1.5pt solid rgba(255,255,255,.5);border-radius:99pt;padding:9pt 26pt;font-weight:600;font-size:13pt;letter-spacing:.12em;">L U L L O · CALM NAIL CARE</span>
+  </div>
+  <p style="margin-top:26pt;font-size:9.5pt;opacity:.7;">© 2026 Lullo. This guide is educational and isn't veterinary advice — for medical concerns about your pet's nails or paws, please see your veterinarian.</p>
+</div>
+
+</body>
+</html>
