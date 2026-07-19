@@ -131,8 +131,21 @@
   #lullo-cp-{{ section.id }} .cp-tier-compare { text-decoration: line-through; color: #6f6f6a; white-space: nowrap; }
 
   #lullo-cp-{{ section.id }} .cp-ebook-flag {
-    border: 1.5px dashed var(--cp-accent); border-radius: 12px;
-    padding: 13px 16px; margin: 14px 0; font-size: 0.95em;
+    display: flex; align-items: center; gap: 14px;
+    background: var(--cp-accent); color: #fff; border-radius: 12px;
+    padding: 14px 16px; margin: 14px 0; font-size: 0.95em;
+  }
+  #lullo-cp-{{ section.id }} .cp-ebook-flag img {
+    flex: 0 0 74px; width: 74px; height: 74px; object-fit: contain;
+    background: #fff; border-radius: 10px; display: block;
+  }
+  #lullo-cp-{{ section.id }} .cp-ebook-flag .cp-ebook-title {
+    display: block; font-weight: 700; font-size: 1.05em; margin-bottom: 3px;
+  }
+  #lullo-cp-{{ section.id }} .cp-ebook-flag .cp-ebook-badge {
+    display: inline-block; background: #fff; color: var(--cp-accent);
+    border-radius: 6px; padding: 1px 8px; font-weight: 700; font-size: 0.78em;
+    letter-spacing: .05em; margin-right: 6px; vertical-align: 1px;
   }
   #lullo-cp-{{ section.id }} .cp-trust { margin: 4px 0 0; }
   #lullo-cp-{{ section.id }} .cp-trust p { margin: 0 0 8px; font-size: 0.95em; }
@@ -276,7 +289,17 @@
                 </button>
               </div>
               <button type="button" class="cp-cta" data-cp-atc>{{ block.settings.cta_label }}</button>
-              {% if block.settings.ebook_text != blank %}<div class="cp-ebook-flag">{{ block.settings.ebook_text }}</div>{% endif %}
+              {% if block.settings.ebook_text != blank %}
+                <div class="cp-ebook-flag">
+                  {% if block.settings.ebook_image %}
+                    {{ block.settings.ebook_image | image_url: width: 200 | image_tag: loading: 'lazy', alt: block.settings.ebook_title }}
+                  {% endif %}
+                  <div>
+                    <span class="cp-ebook-title"><span class="cp-ebook-badge">{{ block.settings.ebook_badge }}</span>{{ block.settings.ebook_title }}</span>
+                    {{ block.settings.ebook_text }}
+                  </div>
+                </div>
+              {% endif %}
               <div class="cp-trust">
                 <p><strong>Shipping:</strong> {{ block.settings.shipping_line }}</p>
                 <p><strong>{{ block.settings.guarantee_title }}:</strong> {{ block.settings.guarantee_line }}</p>
@@ -561,7 +584,10 @@
         { "type": "text", "id": "tier2_variant", "label": "Shopify variant ID" },
         { "type": "header", "content": "CTA & trust" },
         { "type": "text", "id": "cta_label", "label": "CTA label", "default": "ADD TO CART" },
-        { "type": "textarea", "id": "ebook_text", "label": "Free eBook line", "default": "FREE with your order: The Calm-Trim Guide — our step-by-step eBook for turning nail-day dread into a calm one-minute routine. Sent straight to your email." },
+        { "type": "image_picker", "id": "ebook_image", "label": "eBook graphic" },
+        { "type": "text", "id": "ebook_badge", "label": "eBook badge", "default": "FREE" },
+        { "type": "text", "id": "ebook_title", "label": "eBook title line", "default": "The Calm-Trim Guide — included with your order" },
+        { "type": "textarea", "id": "ebook_text", "label": "eBook description", "default": "Our step-by-step eBook for turning nail-day dread into a calm one-minute routine. Sent straight to your email." },
         { "type": "textarea", "id": "shipping_line", "label": "Shipping line", "default": "Free shipping on every order. Ships in 1–3 days with a tracking number sent to your email." },
         { "type": "text", "id": "guarantee_title", "label": "Guarantee title", "default": "30-Day Money-Back Guarantee" },
         { "type": "textarea", "id": "guarantee_line", "label": "Guarantee line", "default": "We don't want you to spend a dollar until you're certain. If nail day isn't calmer within 30 days, email us and we'll refund you — no questions asked." }
