@@ -46,6 +46,10 @@
   }
   #lullo-cp-{{ section.id }} h1 { font-size: clamp(30px, 5.4vw, 42px); }
   #lullo-cp-{{ section.id }} .cp-title-suffix { font-family: var(--cp-body-font); font-weight: 600; font-size: 0.45em; color: var(--cp-accent); white-space: nowrap; letter-spacing: 0.02em; }
+  #lullo-cp-{{ section.id }} .cp-rating { display: flex; align-items: center; gap: 8px; margin: 2px 0 12px; }
+  #lullo-cp-{{ section.id }} .cp-rating .cp-stars { display: inline-flex; gap: 2px; }
+  #lullo-cp-{{ section.id }} .cp-rating .cp-stars svg { width: 17px; height: 17px; display: block; }
+  #lullo-cp-{{ section.id }} .cp-rating .cp-rating-text { font-size: 0.92em; font-weight: 600; }
   #lullo-cp-{{ section.id }} h2 { font-size: clamp(24px, 4.6vw, 32px); }
   #lullo-cp-{{ section.id }} h3 { font-family: var(--cp-body-font); font-weight: 700; font-size: 1.06em; color: var(--cp-ink); margin: 0 0 8px; }
   #lullo-cp-{{ section.id }} p { margin: 0 0 14px; }
@@ -66,8 +70,22 @@
   #lullo-cp-{{ section.id }} .cp-cta:hover { filter: brightness(.92); }
 
   /* Hero */
-  #lullo-cp-{{ section.id }} .cp-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; align-items: start; }
-  @media (min-width: 900px) { #lullo-cp-{{ section.id }} .cp-hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+  #lullo-cp-{{ section.id }} .cp-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 26px; align-items: start; }
+  /* Mobile order: title → image → buy box → info panels (Heusom-style) */
+  #lullo-cp-{{ section.id }} .cp-mobile-head { order: 1; }
+  #lullo-cp-{{ section.id }} .cp-hero-media { order: 2; }
+  #lullo-cp-{{ section.id }} .cp-buybox { order: 3; }
+  #lullo-cp-{{ section.id }} .cp-under-image { order: 4; }
+  #lullo-cp-{{ section.id }} .cp-buybox .cp-head-group { display: none; }
+  @media (min-width: 900px) {
+    #lullo-cp-{{ section.id }} .cp-hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: min-content 1fr; gap: 32px; }
+    #lullo-cp-{{ section.id }} .cp-under-image { align-self: start; margin-top: 0; }
+    #lullo-cp-{{ section.id }} .cp-mobile-head { display: none; }
+    #lullo-cp-{{ section.id }} .cp-hero-media { order: 0; grid-column: 1; grid-row: 1; }
+    #lullo-cp-{{ section.id }} .cp-under-image { order: 0; grid-column: 1; grid-row: 2; }
+    #lullo-cp-{{ section.id }} .cp-buybox { order: 0; grid-column: 2; grid-row: 1 / span 2; }
+    #lullo-cp-{{ section.id }} .cp-buybox .cp-head-group { display: block; }
+  }
   #lullo-cp-{{ section.id }} .cp-hero-media { position: relative; }
   #lullo-cp-{{ section.id }} .cp-hero-media img { width: 100%; border-radius: 14px; display: block; border: 1px solid var(--cp-line); }
   #lullo-cp-{{ section.id }} .cp-hero-ph { border: 1px solid var(--cp-line); border-radius: 14px; min-height: 320px; display: flex; align-items: center; justify-content: center; color: #9a9a95; font-size: 0.9em; }
@@ -182,9 +200,18 @@
     {% case block.type %}
 
       {% when 'hero' %}
+      {%- capture cp_rating -%}
+{% if block.settings.rating_text != blank %}<div class="cp-rating"><span class="cp-stars">{% for i in (1..5) %}<svg viewBox="0 0 20 20"><path d="M10 1.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L1.6 7.7l5.8-.8z" fill="{{ section.settings.color_gold | default: '#f2a900' }}"/></svg>{% endfor %}</span><span class="cp-rating-text">{{ block.settings.rating_text }}</span></div>{% endif %}
+{%- endcapture -%}
       <div class="cp-band" {{ block.shopify_attributes }}>
         <div class="cp-wrap">
           <div class="cp-hero-grid">
+            <div class="cp-mobile-head">
+              {% if block.settings.eyebrow != blank %}<span class="cp-eyebrow">{{ block.settings.eyebrow }}</span>{% endif %}
+              <h1>{{ block.settings.title }}{% if block.settings.title_suffix != blank %} <span class="cp-title-suffix">{{ block.settings.title_suffix }}</span>{% endif %}</h1>
+              {{ cp_rating }}
+              <p style="margin-bottom:0;">{{ block.settings.subhead }}</p>
+            </div>
             <div class="cp-hero-media">
               {% if block.settings.image %}
                 {{ block.settings.image | image_url: width: 1000 | image_tag: loading: 'eager', alt: block.settings.title }}
@@ -192,7 +219,8 @@
                 <div class="cp-hero-ph">Product image</div>
               {% endif %}
               {% if block.settings.save_badge != blank %}<span class="cp-save-flag">{{ block.settings.save_badge }}</span>{% endif %}
-              <div class="cp-under-image">
+            </div>
+            <div class="cp-under-image">
                 {% if block.settings.under_tiles != blank %}
                   <div class="cp-under-tiles">
                     {% assign tiles = block.settings.under_tiles | newline_to_br | split: '<br />' %}
@@ -215,11 +243,13 @@
                   <div class="cp-under-panel"><p>{{ block.settings.under_text_2 }}</p></div>
                 {% endif %}
               </div>
-            </div>
-            <div>
-              {% if block.settings.eyebrow != blank %}<span class="cp-eyebrow">{{ block.settings.eyebrow }}</span>{% endif %}
-              <h1>{{ block.settings.title }}{% if block.settings.title_suffix != blank %} <span class="cp-title-suffix">{{ block.settings.title_suffix }}</span>{% endif %}</h1>
-              <p>{{ block.settings.subhead }}</p>
+            <div class="cp-buybox">
+              <div class="cp-head-group">
+                {% if block.settings.eyebrow != blank %}<span class="cp-eyebrow">{{ block.settings.eyebrow }}</span>{% endif %}
+                <h1>{{ block.settings.title }}{% if block.settings.title_suffix != blank %} <span class="cp-title-suffix">{{ block.settings.title_suffix }}</span>{% endif %}</h1>
+                {{ cp_rating }}
+                <p>{{ block.settings.subhead }}</p>
+              </div>
               <div class="cp-price-row">
                 <span class="cp-price" data-cp-price>{{ block.settings.tier1_price }}</span>
                 <span class="cp-compare" data-cp-compare>{{ block.settings.tier1_compare }}</span>
@@ -493,6 +523,7 @@
     { "type": "header", "content": "Brand styling" },
     { "type": "color", "id": "color_accent", "label": "Accent (buttons, checks, prices)", "default": "#1f6b43" },
     { "type": "color", "id": "color_ink", "label": "Text / off-black bands", "default": "#243024" },
+    { "type": "color", "id": "color_gold", "label": "Star color", "default": "#f2a900" },
     { "type": "font_picker", "id": "font_heading", "label": "Title font (big headings)", "default": "fredoka_n6" },
     { "type": "font_picker", "id": "font_body", "label": "Body font", "default": "open_sans_n4" },
     { "type": "range", "id": "body_size", "label": "Body text size (px)", "min": 15, "max": 21, "step": 1, "default": 17 }
@@ -507,6 +538,7 @@
         { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Whisper-quiet nail care for dogs & cats" },
         { "type": "text", "id": "title", "label": "Title", "default": "The CalmPaw Plus" },
         { "type": "text", "id": "title_suffix", "label": "Title suffix (smaller)", "default": "by Lullo" },
+        { "type": "text", "id": "rating_text", "label": "Rating text under title (e.g. 4.8/5 (120 Reviews)) — leave empty to hide stars", "default": "" },
         { "type": "textarea", "id": "subhead", "label": "Subhead", "default": "The CalmPaw Plus uses a whisper-quiet motor — under 40 dB, softer than a quiet conversation — engineered to stay below the sound that triggers your pet's startle reflex. No snap. No scary whine. Just calm, gentle nail trims at home." },
         { "type": "text", "id": "save_badge", "label": "Save badge", "default": "SAVE 40%" },
         { "type": "textarea", "id": "under_tiles", "label": "Under-image tiles (Title | caption, one per line)", "default": "Under 40 dB | Softer than a quiet conversation\nLED light | See the quick, even on dark nails\n30-day promise | Full refund if nail day isn't calmer" },
